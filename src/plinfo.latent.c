@@ -4,7 +4,7 @@ void plinfo_wrapper (double *heads, double *tails, double *dnedges,
 		   double *dn, int *dflag, int *optionnum, char **funnames,
 		   char **sonames, double *inputs,  
 		   double *responsevec, double *covmat,
-                   Vertex *start, Vertex *end)
+                   int *start, int *end)
 {
   Gptr g;
 
@@ -20,7 +20,7 @@ void plinfo_wrapper (double *heads, double *tails, double *dnedges,
   g=GraphInitialize(heads, tails, (Edge)*dnedges);  /* Coerce *dnedges to type Edge */
   ModelInitialize(*funnames, *sonames, inputs);
   
-  plinfoInitialize(responsevec, covmat, start, end, g);
+  plinfoInitialize(responsevec, covmat, (Vertex*)start, (Vertex*)end, g);
   
   ModelDestroy();
   GraphDestroy();

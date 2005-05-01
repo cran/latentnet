@@ -9,7 +9,7 @@ void plinfo_wrapper (double *heads, double *tails, double *dnedges,
                    double *dn, int *dflag, int *optionnum, char **funnames,
                    char **sonames, double *inputs,
                    double *responsevec, double *covmat,
-                   Vertex *start, Vertex *end);
+                   int *start, int *end);
 
 void plinfoInitialize (double *responsevec, double *covmat,
                        Vertex *start, Vertex *end,

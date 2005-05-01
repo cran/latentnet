@@ -54,13 +54,13 @@ In fact, an \code{object} contains the matrix of
 statistics from the MCMC run as component \code{$sample}.
 This matrix is actually an object of class \code{mcmc} and
 can be used directly in the \code{CODA} package to assess MCMC
-convergence. \emph{Hence all MCMC diagnostic methods available
-in \code{coda} are available directly.} See the examples and
+convergence. Hence MCMC diagnostic methods available
+in \code{coda} may be available directly. See the examples and
 %\url{http://www.mrc-bsu.cam.ac.uk/bugs/classic/coda04/readme.shtml}.
 the \code{coda} package.
 
-  More information can be found by looking at the documentation of
-  \code{\link{ergmm}}.
+More information can be found by looking at the documentation of
+\code{\link{ergmm}}.
 }
 \value{\code{mcmc.diagnostics.ergmm} returns a table of Raftery-Lewis diagnostics.
       }
@@ -76,21 +76,9 @@ data(sampson)
 gest <- ergmm(samplike ~ latent(k=2))
 summary(gest)
 #
-# Plot the probabilities first
+# Plot the traces and densities
 #
 mcmc.diagnostics(gest)
-#
-# Use coda directly
-#
-\dontrun{
-library(coda)
-#
-plot(gest$sample, ask=FALSE)
-raftery.diag(gest$sample, r=0.1)
-#
-# A full range of diagnostics are available 
-# using codamenu()
-#
 }
 }
 \keyword{graphs}

@@ -18,12 +18,17 @@ void klswitch(long p, long nnodes, long nsamp, long ngroups,
 	      long npermute, double *Z, double *mu, double *Sigma, 
 	      double *qig, long *permute, long *minat);
 
-void call_klswitch(long *p, long *nnodes, long *nsamp, long *ngroups, 
-		   long *npermute, double *Z, double *mu, double *Sigma, 
-		   double *qig, long *permute, long *minat)
+void call_klswitch(int *p, int *nnodes, int *nsamp, int *ngroups, 
+		   int *npermute, double *Z, double *mu, double *Sigma, 
+		   double *qig, int *permute, int *minat)
 {
-  klswitch(*p, *nnodes, *nsamp, *ngroups, *npermute, Z, mu, Sigma, qig, 
-	   permute, minat);
+  klswitch((long)*p, (long)*nnodes, (long)*nsamp, (long)*ngroups,
+	   (long)*npermute, Z, mu, Sigma, qig, 
+	   (long*)permute, (long*)minat);
+  /*  Note:  The above variables are coerced to long but they start as    */
+  /*         int:  It's impossible to pass longs from R to call_klswitch. */
+  /*         This could eventually be changed, since there is no benefit  */
+  /*         of coercing int to long.                                     */
 }
 
 void klswitch(long p, long nnodes, long nsamp, long ngroups, 

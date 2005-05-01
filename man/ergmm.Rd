@@ -241,7 +241,7 @@ plot(samp.fit,density=TRUE,drawarrows=TRUE)
 #
 # Add contours
 #
-add.contours(samp.fit,nlevels=8,lwd=2)
+ergmm.add.contours(samp.fit,nlevels=8,lwd=2)
 points(samp.fit$Z.mkl,pch=19,col=samp.fit$class)
 #
 # Try a covariate on the group
