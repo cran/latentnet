@@ -1,4 +1,4 @@
-ergm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin, 
+ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin, 
             interval, formula, 
             X,dimSpace, maxit, pmodes=TRUE, penalty.sigma=c(10,0.5),
             redo.mle=FALSE, verbose=FALSE,iter.max=10) 
@@ -79,7 +79,7 @@ ergm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 #  Calculate the correct MLE
 #
    Y <- sociomatrix(z$newnetwork)
-   reach <- ergm.geodesicmatrix(z$newnetwork)!=Inf
+   reach <- ergmm.geodesicmatrix(z$newnetwork)!=Inf
    nnodes <- dim(z$Z)[1]
    dp <- length(X)
 #  
@@ -196,7 +196,7 @@ ergm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
   {
     mu.0 <- apply(z$Z.mle,2,function(x,ki)tapply(x,ki,mean),ki = z$Ki.mle)
 
-    permute <- permutation(ngroups)
+    permute <- ergmm.permutation(ngroups)
 
     vt.c <- matrix(0,samplesize,ngroups)
     Z.mu <- array(0,c(ngroups,ndim,samplesize))
@@ -244,7 +244,7 @@ ergm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
         d1.min <- order(d1.vec)[1]
         per.to <- order(permute[d1.min,])
         vt.c[loop,] <- per.to
-        Z.Ki[loop,] <-labelswitch(z$Ki[loop,],per.to)
+        Z.Ki[loop,] <-ergmm.labelswitch(z$Ki[loop,],per.to)
         Z.mu[,,loop] <- mu.1[per.to,]
         Z.sigma[,loop] <- z$Sigma[loop,per.to]
       }
@@ -291,7 +291,7 @@ ergm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 
     Z.Ki <- matrix(0,dim(Z.proc)[3],dim(Z.proc)[1])
     for(i in 1:nrow(Z.Ki))
-      Z.Ki[i,] <- labelswitch(z$Ki[i,],vt[i,])
+      Z.Ki[i,] <- ergmm.labelswitch(z$Ki[i,],vt[i,])
   } else {
     qig <- matrix(1,Nnodes,ngroups)
     vt <- matrix(1,samplesize,ngroups)
@@ -357,5 +357,5 @@ ergm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
   l$Sigma <- Sigma.new
   ####################################################################
   
-  structure(l, class = "ergm")
+  structure(l, class = "ergmm")
 }

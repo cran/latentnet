@@ -1,4 +1,4 @@
-add.contours <- function(x,mycol=1:10,nlevels=4,...)
+ergmm.add.contours <- function(x,mycol=1:10,nlevels=4,...)
 {
   Z.Ki.v <- as.vector(t(x$Ki))
   Z.proc.mean <- cbind(as.vector(x$Z[,1,]),as.vector(x$Z[,2,]))

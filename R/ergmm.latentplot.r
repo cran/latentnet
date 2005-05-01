@@ -1,4 +1,4 @@
-ergm.latentplot <- function(gY, dimSpace=2, theta0=NULL,
+ergmm.latentplot <- function(gY, dimSpace=2, theta0=NULL,
                         MCMCSampleSize=1000, burnin=0, interval=1,
                         z.delta=0.1, z.prior.mu=0, z.prior.sd=10,
                         b.delta=0.5, b.prior.mu=0, b.prior.sd=10,
@@ -11,7 +11,7 @@ ergm.latentplot <- function(gY, dimSpace=2, theta0=NULL,
 #  if(!is.null(Ydesign)){
 #    Ydesign <- sociomatrix(Ydesign)==0
 #  }
-   D <- ergm.geodesicmatrix(gY)
+   D <- ergmm.geodesicmatrix(gY)
 #
 #  Make the maximum distance close to the rest
 #

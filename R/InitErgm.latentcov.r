@@ -1,4 +1,4 @@
-InitErgm.latentcov<-function (g, model, x, attrname=NULL, drop=TRUE, ...) 
+InitErgmm.latentcov<-function (g, model, x, attrname=NULL, drop=TRUE, ...) 
 {
   #Check to ensure that we got the right number of arguments
   if (!(nargs() %in% 4:5))

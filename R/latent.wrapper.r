@@ -40,7 +40,7 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
       }
       plm$coef.names <- plm$coef.names[!killlatentcov]
       if(!is.null(plm$coef.names)){
-        pl.info <- ergm.plinfo.latent(ergm.Cprepare.latent(g, plm), mClist, plm)$xmat
+        pl.info <- ergmm.plinfo.latent(ergmm.Cprepare.latent(g, plm), mClist, plm)$xmat
         P <- P + ncol(pl.info) + addintercept
       }else{
         pl.info <- matrix(0,ncol=0,nrow=1)
@@ -86,7 +86,7 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
 
       if(!is.latent.cluster(m))
       {
-        z <- ergm.latent(gY=g,dimSpace=uo[4],p=p,X=X,
+        z <- ergmm.latent(gY=g,dimSpace=uo[4],p=p,X=X,
                          theta0=theta0,
                          MCMCSampleSize=MCMCsamplesize,
                          burnin=burnin, interval=interval,
@@ -97,14 +97,14 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
                          MLEonly=latent.control$MLEonly,
                          verbose=verbose, ...)
         ###NEED to organise output of the function.
-        v <- ergm.statseval.latent(z, Clist, m, MCMCsamplesize, 
+        v <- ergmm.statseval.latent(z, Clist, m, MCMCsamplesize, 
 	    burnin, interval, formula, 
 	    X,dimSpace=uo[4],
 	    maxit=latent.control$maxit,
 	    penalty.sigma=latent.control$penalty.sigma)
       }else{
         #do latentcluster
-        z <- ergm.latentcluster(gY=g,dimSpace=uo[4],ng=uo[5],p=p,X=X,
+        z <- ergmm.latentcluster(gY=g,dimSpace=uo[4],ng=uo[5],p=p,X=X,
                          theta0=theta0,
                          MCMCSampleSize=MCMCsamplesize,
                          burnin=burnin, interval=interval,
@@ -116,7 +116,7 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
 #                         penalty.sigma=latent.control$penalty.sigma,
 #                         verbose=verbose, ...)
         ###NEED to organise output of the function.
-        v <- ergm.statseval.latentcluster(z, Clist, m, MCMCsamplesize, 
+        v <- ergmm.statseval.latentcluster(z, Clist, m, MCMCsamplesize, 
 	    burnin, interval, formula, 
 	    X,dimSpace=uo[4],
 	    maxit=latent.control$maxit,

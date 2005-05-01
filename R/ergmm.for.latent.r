@@ -1,4 +1,4 @@
-ergm <- function(formula, theta0=NULL, 
+ergmm <- function(formula, theta0=NULL, 
         burnin=1000, MCMCsamplesize=1000, interval=100, maxit=5,
         latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
         returnMCMCstats=TRUE, randseed=NULL,
@@ -12,15 +12,15 @@ ergm <- function(formula, theta0=NULL,
     verb <- match(verbose,
       c("FALSE","TRUE", "very"), nomatch=1)-1
 
-    trms <- ergm.getterms.latent(formula)
-    termnames <- ergm.gettermnames.latent(trms)
+    trms <- ergmm.getterms.latent(formula)
+    termnames <- ergmm.gettermnames.latent(trms)
     g <- try(as.network(eval(trms[[2]],sys.parent())))
     if(inherits(g,"try-error")){
      stop("Invalid network. Is the left-hand-side of the formula correct?")
     }
 
-    m <- ergm.getmodel.latent(trms, g)
-    Clist <- ergm.Cprepare.latent(g, m)
+    m <- ergmm.getmodel.latent(trms, g)
+    Clist <- ergmm.Cprepare.latent(g, m)
 
     if(is.null(randseed)){randseed <- sample(10000000, size=1)}
     set.seed(as.integer(randseed))
@@ -29,7 +29,7 @@ ergm <- function(formula, theta0=NULL,
     if(is.null(notobserved)){
      mClist <- list(heads=0, tails=0, nedges=0, dir=is.directed(g))
     }else{
-     mClist <- ergm.Cprepare.latent(notobserved, m)
+     mClist <- ergmm.Cprepare.latent(notobserved, m)
      cat("Design matrix:\n")
      summary(notobserved)
     }

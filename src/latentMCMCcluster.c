@@ -3,7 +3,7 @@
 /*  Updated by: Jeremy Tantrum, tantrum@stat.washington.edu                 */
 /*  Purpose: main functions for parameter estimation model 2                */
 /*           All of this code is for an R function which is incorporated    */
-/*           into the R ERGM package.                                       */
+/*           into the R ERGMMM package.                                       */
 /****************************************************************************/
 /*####                 General Notes good to know                      #####*/
 /*#  Z is the matrix of positions                                           */
@@ -32,7 +32,7 @@
 
 
 
-void ergm_latent2(int* heads, int* tails, 
+void ergmm_latent2(int* heads, int* tails, 
 		  int n_edges, int g,
 		  int MCMCSampleSize, int burnin, 
 		  int interval, int k, 
@@ -68,7 +68,7 @@ void MCMC_latent2_wrapper( int *heads, int *tails,
 			   int *chisqprop, double *thetaprop);
 
 
-/* Here is the wrapper function we will call from the ergm R code */
+/* Here is the wrapper function we will call from the ergmm R code */
 /* NOTE THE RANDOM SEED MUST BE SET IN R*/
 void MCMC_latent2_wrapper( int *heads, int *tails, int *n_edges, int *n,
 			   int *MCMCSampleSize, int *burnin, 
@@ -123,7 +123,7 @@ void MCMC_latent2_wrapper( int *heads, int *tails, int *n_edges, int *n,
   /* R function enabling uniform RNG */
   GetRNGstate();
  
-  ergm_latent2(heads, tails,*n_edges, *n, *MCMCSampleSize, *burnin, 
+  ergmm_latent2(heads, tails,*n_edges, *n, *MCMCSampleSize, *burnin, 
 	       *interval, *dimSpace,
 	       *z_prior_mu, *z_prior_sd,
 	       *b_prior_mu, *b_prior_sd,
@@ -142,7 +142,7 @@ void MCMC_latent2_wrapper( int *heads, int *tails, int *n_edges, int *n,
   return;
 }
 
-void ergm_latent2(int* heads, int* tails, 
+void ergmm_latent2(int* heads, int* tails, 
 		  int n_edges, int g,
 		  int MCMCSampleSize, int burnin, 
 		  int interval, int dim, 

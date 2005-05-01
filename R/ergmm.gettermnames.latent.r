@@ -1,4 +1,4 @@
-ergm.gettermnames.latent <- function (trms) 
+ergmm.gettermnames.latent <- function (trms) 
 {
     v <- attr(trms, "variables")
     vnames <- character(length=length(v)-2)

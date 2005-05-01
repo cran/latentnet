@@ -1,13 +1,14 @@
-rergm <- function(object, ...)
-UseMethod("rergm")
+if(!exists("rergm", mode="function")){
+ rergm <- function(object, ...)
+  UseMethod("rergm")
 
 rergm.default <- function(object,...,prob,theta0,n=1,directed=TRUE,
                           numedges=NULL)
-{
+ {
   #should take in nnodes, and one of prob or theta0
-  #returns a bernouli network.
-  if(is.latent(object))
-    return(rergm.latent(object,n=n,...))
+  #returns a bernouli graph.
+# if(is.latent(object))
+#   return(rergm.latent(object,n=n,...))
   nnodes <- object
   if(directed){
    ndyads <- nnodes*(nnodes-1)
@@ -29,10 +30,10 @@ rergm.default <- function(object,...,prob,theta0,n=1,directed=TRUE,
   }
 # cat(paste("prob =",prob,"\n"))
 
-  networks <- list()
+  graphs <- list()
   for(k in 1:n)
   {
-    networks <- vector("list",length=n)
+    graphs <- vector("list",length=n)
     g.mat <- matrix(0,nnodes,nnodes)
     dimnames(g.mat) <- list(1:nnodes,1:nnodes)
     if(is.null(numedges)){
@@ -48,24 +49,15 @@ rergm.default <- function(object,...,prob,theta0,n=1,directed=TRUE,
      g.mat <- g.mat + t(g.mat)
 #    g.mat[col(g.mat) < row(g.mat)] <- gij
     }
-    networks[[k]] <- network(g.mat,directed=directed)
+    graphs[[k]] <- network(g.mat,directed=directed)
   }
   if(n > 1){
-   out.list <- list(formula = ~1, networks = networks,
+   out.list <- list(formula = ~1, networks = graphs,
                     stats = numeric(0),coef=prob)
    class(out.list) <- "network.series"
   }else{
-   out.list <- networks[[1]]
+   out.list <- graphs[[1]]
   }
   return(out.list)
+ }
 }
-rergm.ergm <- function(object, ..., theta0=NULL, n=1,
-                       burnin=1000, interval=1000, 
-                       randseed=NULL,
-		       sequential=TRUE, summarizestats=FALSE,
-		       verbose=FALSE)
-{
-  if(is.latent(object)){
-    return(rergm.latent(object,n=n,...))
-  }
-}    

@@ -3,7 +3,7 @@
 
 /*  Next to flag for Windows specific code */
 /*  In reality this is done in ~/RCrossbuild/Makefile */
-/*  under the ergm entry. It appends these lines to the end. */
+/*  under the ergmm entry. It appends these lines to the end. */
 /*   */
 /* #ifndef Win32 */
 /*  #define Win32 */

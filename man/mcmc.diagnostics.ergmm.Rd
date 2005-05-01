@@ -1,8 +1,8 @@
-\name{mcmc.diagnostics.ergm}
-\alias{mcmc.diagnostics.ergm}
+\name{mcmc.diagnostics.ergmm}
+\alias{mcmc.diagnostics.ergmm}
 \alias{mcmc.diagnostics}
-\alias{ergm.raftery.diag}
-\title{Conduct MCMC diagnostics on an ergm fit}
+\alias{ergmm.raftery.diag}
+\title{Conduct MCMC diagnostics on an ergmm fit}
 \description{
   This function creates simple diagnostic plots for the MCMC sampled
   statistics produced from a fit. It also prints the Raftery-Lewis 
@@ -10,14 +10,14 @@
   and suggests the run length required.
 }
 \usage{
-\method{mcmc.diagnostics}{ergm}(object, sample = "sample",
+\method{mcmc.diagnostics}{ergmm}(object, sample = "sample",
                       smooth=TRUE, r = 0.0125, digits = 6,
                       maxplot = 1000, verbose = TRUE, 
                       mcmc.title = "Summary of MCMC samples", \dots)
-ergm.raftery.diag(data, q = 0.025, rmargin = 0.005, s = 0.95, converge.eps = 0.001)
+ergmm.raftery.diag(data, q = 0.025, rmargin = 0.005, s = 0.95, converge.eps = 0.001)
 }
 \arguments{
-  \item{object}{An object.  See documentation for \code{\link{ergm}}.}
+  \item{object}{An object.  See documentation for \code{\link{ergmm}}.}
   \item{sample}{The component of \code{object} on which the
     diagnosis is based. The two usual ones are \code{thetasample} from the 
     auxiliary sample of the natural parameter and \code{sample} the (default)
@@ -60,20 +60,20 @@ in \code{coda} are available directly.} See the examples and
 the \code{coda} package.
 
   More information can be found by looking at the documentation of
-  \code{\link{ergm}}.
+  \code{\link{ergmm}}.
 }
-\value{\code{mcmc.diagnostics.ergm} returns a table of Raftery-Lewis diagnostics.
+\value{\code{mcmc.diagnostics.ergmm} returns a table of Raftery-Lewis diagnostics.
       }
 
 }
-\seealso{ergm, network, coda}
+\seealso{ergmm, network, coda}
 \examples{
 #
 data(sampson)
 #
 # test the mcmc.diagnostics function
 #
-gest <- ergm(samplike ~ latent(k=2))
+gest <- ergmm(samplike ~ latent(k=2))
 summary(gest)
 #
 # Plot the probabilities first
@@ -82,13 +82,15 @@ mcmc.diagnostics(gest)
 #
 # Use coda directly
 #
+\dontrun{
 library(coda)
 #
 plot(gest$sample, ask=FALSE)
-ergm.raftery.diag(gest$sample, r=0.1)
+raftery.diag(gest$sample, r=0.1)
 #
 # A full range of diagnostics are available 
 # using codamenu()
 #
+}
 }
 \keyword{graphs}

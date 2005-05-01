@@ -1,13 +1,13 @@
-\name{ergm}
-\alias{ergm}
+\name{ergmm}
+\alias{ergmm}
 \title{Fit a Latent Space Random Graph Model}
 \description{
-  \code{\link{ergm}} is used to fit latent space and latent space cluster random network models, 
+  \code{\link{ergmm}} is used to fit latent space and latent space cluster random network models, 
     as described in Hoff, Raftery and Handcock (2002) and 
     Handcock, Raftery and tantrum (2005).
-  \code{\link{ergm}} can return either a Bayesian model fit
+  \code{\link{ergmm}} can return either a Bayesian model fit
   or an approximate MLE based on a Monte Carlo scheme.
-% \code{\link{ergm}} can also be used to fit linear exponential random network models, in which
+% \code{\link{ergmm}} can also be used to fit linear exponential random network models, in which
 % the probability of a given network, \eqn{g}, on a set of nodes is 
 % \eqn{\exp(\theta^{T}S(g))/c(\theta)}, where 
 % \eqn{S(g)} is a vector of network statistics,
@@ -15,7 +15,7 @@
 % normalizing constant for the distribution.
 }
 \usage{
-ergm(formula, theta0=NULL, 
+ergmm(formula, theta0=NULL, 
      burnin=1000, MCMCsamplesize=1000, interval=100, maxit=5,
      latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
      returnMCMCstats=TRUE, randseed=NULL, 
@@ -82,11 +82,11 @@ ergm(formula, theta0=NULL,
 \section{Model Terms}{
   The \code{\link{latentnet}} package itself allows only three type of terms:
   \code{\link{latent}}, \code{\link{latentcluster}} and \code{\link[latentcov]{latentcov}}.
-  The \code{\link{ergm}} package allows the user to explore a large number
+  The umbrella \code{ergm} package allows the user to explore a large number
   of potential models for their network data in addition to these terms.  The
   terms currently supported by the program,
   and a brief description of each is given in the documentation
-  \code{\link[terms.ergm]{terms.ergm}} for the \code{\link{ergm}} package.
+  \code{\link[terms.ergm]{terms.ergm}} for the \code{ergm} package.
   In the formula for the model, the model terms are various function-like
   calls, some of which require arguments, separated by \code{+} signs.
   The current options are:
@@ -110,7 +110,7 @@ ergm(formula, theta0=NULL,
     than once, to model the effects of multiple covariates.
  }
 }
-\value{\code{\link{ergm}} returns an object of class \code{\link{ergm}} that is a list
+\value{\code{\link{ergmm}} returns an object of class \code{\link{ergmm}} that is a list
   consisting of the following elements:
  \item{\$coef}{The Monte Carlo maximum likelihood estimate
   of \eqn{\theta}, the vector of coefficients for the model
@@ -136,19 +136,19 @@ ergm(formula, theta0=NULL,
   function, evaluated at the maximizer.  This matrix may be inverted to
   give an approximate covariance matrix for the MLE.}
  \item{\$samplesize}{The size of the MCMC sample}
- \item{\$formula}{The original formula we entered into the \code{\link{ergm}} function.}
+ \item{\$formula}{The original formula entered into the \code{\link{ergmm}} function.}
  \item{\$statsmatrix}{If the option \code{$returnMCMCstats=TRUE}, this is 
   the the matrix of change statistics from the MCMC run.}
  \item{\$newnetwork}{The network generated at the end of the MCMC sampling.}
 
-  See the function \code{print.ergm} for details on how
-  an \code{\link{ergm}} object is printed.  Note that we have written a
-  function, \code{\link{summary.ergm}} that returns a summary of the
-  relevant parts of the \code{\link{ergm}} object in concise summary
+  See the function \code{print.ergmm} for details on how
+  an \code{\link{ergmm}} object is printed.  Note that we have written a
+  function, \code{\link{summary.ergmm}} that returns a summary of the
+  relevant parts of the \code{\link{ergmm}} object in concise summary
   format.
 }
 \seealso{network, set.vertex.attributes, set.network.attributes,
-         summary.ergm, print.ergm}
+         summary.ergmm, print.ergmm}
 \references{
  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
  \emph{Latent space approaches to social network analysis.} 
@@ -212,7 +212,7 @@ data(sampson)
 group <- get.vertex.attribute(samplike,"group")
 samp.labs <- substr(group,1,1)
 #
-samp.fit <- ergm(samplike ~ latent(k=2), burnin=10000,
+samp.fit <- ergmm(samplike ~ latent(k=2), burnin=10000,
                  MCMCsamplesize=2000, interval=30)
 #
 # See if we have convergence in the MCMC
@@ -225,7 +225,7 @@ plot(samp.fit,label=samp.labs, vertex.col="group")
 # Using Sampson's Monk data, lets fit a latent clustering model
 #
 \dontrun{
-samp.fit <- ergm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
+samp.fit <- ergmm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
                  MCMCsamplesize=2000, interval=30)
 #
 # See if we have convergence in the MCMC
@@ -248,7 +248,7 @@ points(samp.fit$Z.mkl,pch=19,col=samp.fit$class)
 #
 samegroup <- outer(group, group, "==")
 diag(samegroup) <- 0
-samp.fit <- ergm(samplike ~ latentcov(samegroup) + latent(k=2))
+samp.fit <- ergmm(samplike ~ latentcov(samegroup) + latent(k=2))
 summary(samp.fit)
 }
 }

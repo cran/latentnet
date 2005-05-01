@@ -5,7 +5,7 @@
 /*           and Mark S. Handcock in                                        */
 /*           "Latent Space Approaches to Social Network Analysis"           */
 /*           All of this code is for an R function to be incorporated       */
-/*           into the R ERGM package.                                       */
+/*           into the R ERGMM package.                                       */
 /****************************************************************************/
 #include <math.h>
 #include <stdio.h>

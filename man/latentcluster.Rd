@@ -3,14 +3,14 @@
 \title{Latent cluster models for networks}
 \description{
   \code{latentcluster()} is a term to the  %\code{\link{statnet}}
-  function \code{\link{ergm}}
+  function \code{\link{ergmm}}
   to fit a latent postion model to a 
   given network, \eqn{g}.
-  \code{\link{ergm}} returns a Bayesian model fit based on a Monte Carlo scheme
+  \code{\link{ergmm}} returns a Bayesian model fit based on a Monte Carlo scheme
   The default prior specifications are diffuse. An approximate MLE fit is
   also returned. 
 
-  The \code{\link{ergm}} specifies models via: \code{g ~ latentcluster(<options>)}
+  The \code{\link{ergmm}} specifies models via: \code{g ~ latentcluster(<options>)}
   where \code{g} is a \code{network} object
   For the list of possible \code{<options>}, see below.
 }
@@ -48,9 +48,9 @@ the cluster mean. If a constant is passed it is used for each dimension.}
 the cluster mean. If a constant is passed it is used for each dimension.}
 \item{\dots}{Specific to the model term.}
 }
-\value{\code{\link{ergm}} returns an object of class 'ergm' that is a list.
+\value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
 }
-\seealso{latent, plot.ergm, sna, network, terms.ergm}
+\seealso{latent, plot.ergmm, sna, network, terms.ergmm}
 \references{
  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
  \emph{Latent space approaches to social network analysis.} 
@@ -76,7 +76,7 @@ samp.labs <- substr(get.vertex.attribute(samplike,"group"),1,1)
 #
 # Using Sampson's Monk data, lets fit a latent clustering model
 #
-samp.fit <- ergm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
+samp.fit <- ergmm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
                  MCMCsamplesize=2000, interval=30)
 #
 # See if we have convergence in the MCMC
@@ -89,7 +89,7 @@ plot(samp.fit,pie=TRUE,label=samp.labs)
 plot(samp.fit,density=c(2,2))
 plot(samp.fit,contours=5,contour.color="red")
 plot(samp.fit,density=TRUE,drawarrows=TRUE)
-add.contours(samp.fit,nlevels=8,lwd=2)
+ergmm.add.contours(samp.fit,nlevels=8,lwd=2)
 points(samp.fit$Z.mkl,pch=19,col=samp.fit$class)
 }
 }

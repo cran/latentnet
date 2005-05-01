@@ -1,4 +1,4 @@
-ergm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin, 
+ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin, 
             interval, formula, 
             X,dimSpace, maxit, pmodes=TRUE, penalty.sigma=c(10,0.5),
             redo.mle=FALSE, verbose=TRUE) 
@@ -55,7 +55,7 @@ ergm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
 #  Calculate the correct MLE
 #
    Y <- sociomatrix(z$newnetwork)
-   reach <- ergm.geodesicmatrix(z$newnetwork)!=Inf
+   reach <- ergmm.geodesicmatrix(z$newnetwork)!=Inf
    nnodes <- dim(z$Z)[1]
    dp <- length(X)
 #  
@@ -160,5 +160,5 @@ ergm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
   l$latent <- TRUE
   l$newnetwork <- z$newnetwork
   l$formula <- formula
-  structure(l, class = "ergm")
+  structure(l, class = "ergmm")
 }

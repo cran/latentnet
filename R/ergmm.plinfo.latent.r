@@ -1,4 +1,4 @@
-ergm.plinfo.latent<-function(Clist, mClist, m, fix=NULL, theta.offset=NULL)
+ergmm.plinfo.latent<-function(Clist, mClist, m, fix=NULL, theta.offset=NULL)
 {
   numobs <- Clist$ndyads
 

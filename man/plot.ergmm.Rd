@@ -1,8 +1,8 @@
-\name{plot.ergm}
-\alias{plot.ergm}
-\title{Plotting Method for class ERGM}
+\name{plot.ergmm}
+\alias{plot.ergmm}
+\title{Plotting Method for class ERGMM}
 \usage{
-plot.ergm(x, \dots, mle=FALSE, comp.mat = NULL,
+plot.ergmm(x, \dots, mle=FALSE, comp.mat = NULL,
           label = NULL, label.col = "black",
           xlab, ylab, main, label.cex = 0.8, edge.lwd = 1,
           edge.col=1, al = 0.1,
@@ -16,18 +16,18 @@ plot.ergm(x, \dots, mle=FALSE, comp.mat = NULL,
 
 }
 \description{
-  \code{\link{plot.ergm}} is the plotting method for \code{\link{ergm}} objects.  For
+  \code{\link{plot.ergmm}} is the plotting method for \code{\link{ergmm}} objects.  For
   latent models, this plots the minimum Kullback-Leibler positions by 
   default.  The maximum likelihood positions
   can be used instead, or pie charts of the posterior
   probabilities of cluster membership can be shown.  It also plots the
   posterior density of the nodes or a series of contour plots, one for
-  each node. See \code{\link{ergm}} for more information on how to fit these
+  each node. See \code{\link{ergmm}} for more information on how to fit these
   models.
 }
 \arguments{
-  \item{x}{an R object of class \code{\link{ergm}}.
-    See documentation for \code{\link{ergm}}.}
+  \item{x}{an R object of class \code{\link{ergmm}}.
+    See documentation for \code{\link{ergmm}}.}
 
   \item{mle}{Plots the network using the MLE of the positions for latent models.}
 
@@ -80,15 +80,15 @@ plot.ergm(x, \dots, mle=FALSE, comp.mat = NULL,
 }
 
 \details{
-  Plots the results of an ergm fit.
+  Plots the results of an ergmm fit.
   
   More information can be found by looking at the documentation of
-  \code{\link{ergm}}.
+  \code{\link{ergmm}}.
 }
 \value{NULL
 
 }
-\seealso{ergm, network, plot.network, plot, add.contours}
+\seealso{ergmm, network, plot.network, plot, ergmm.add.contours}
 \examples{
 \dontrun{
 #
@@ -101,7 +101,7 @@ data(sampson)
 #
 samp.labs <- substr(get.vertex.attribute(samplike,"group"),1,1)
 #
-samp.fit <- ergm(samplike ~ latent(k=2), burnin=10000,
+samp.fit <- ergmm(samplike ~ latent(k=2), burnin=10000,
                  MCMCsamplesize=2000, interval=30)
 #
 # See if we have convergence in the MCMC
@@ -113,7 +113,7 @@ plot(samp.fit,label=samp.labs, vertex.col="group")
 #
 # Using Sampson's Monk data, lets fit a latent clustering model
 #
-samp.fit <- ergm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
+samp.fit <- ergmm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
                  MCMCsamplesize=2000, interval=30)
 #
 # See if we have convergence in the MCMC
@@ -126,7 +126,7 @@ plot(samp.fit,pie=TRUE,label=samp.labs)
 plot(samp.fit,density=c(2,2))
 plot(samp.fit,contours=5,contour.color="red")
 plot(samp.fit,density=TRUE,drawarrows=TRUE)
-add.contours(samp.fit,nlevels=8,lwd=2)
+ergmm.add.contours(samp.fit,nlevels=8,lwd=2)
 points(samp.fit$Z.mkl,pch=19,col=samp.fit$class)
 }
 }

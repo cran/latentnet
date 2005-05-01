@@ -1,8 +1,8 @@
-permutation <- function(n)
+ergmm.permutation <- function(n)
 {
   if(n==2)
     return(matrix(c(1,2,2,1),2,2))
-  temp <- permutation(n-1)
+  temp <- ergmm.permutation(n-1)
   for(i in 0:(n-1))
   {
     if(i==0)

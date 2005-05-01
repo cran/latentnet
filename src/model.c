@@ -142,7 +142,7 @@ int ModelInitialize (char *funnames, char *sonames, double *inputs) {
       free((void *)sn);
 
       /*   Now process the values in model$option[[optionnumber]]$inputs; */
-      /*   See comments in InitErgm.r for details.     */
+      /*   See comments in InitErgmm.r for details.     */
       offset = (int) *inputs++;  /*  Set offset for attr vector */
       in->nstats = (int) *inputs++; /*  Set number of statistics returned */
       if (in->nstats <= 0)

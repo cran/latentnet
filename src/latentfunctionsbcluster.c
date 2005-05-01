@@ -3,7 +3,7 @@
 /*  Updated by: Jeremy Tantrum, tantrum@stat.washington.edu                 */
 /*  Purpose: support functions for parameter estimation model 2             */
 /*           All of this code is for an R function which is incorporated    */
-/*           into the R ERGM package.                                       */
+/*           into the R ERGMM package.                                       */
 /****************************************************************************/
 /*####                 General Notes good to know                      #####*/
 /*#  Z is the matrix of positions                                           */

@@ -1,4 +1,4 @@
-"plot.ergm" <- function (x, ..., mle=FALSE, comp.mat = NULL,
+"plot.ergmm" <- function (x, ..., mle=FALSE, comp.mat = NULL,
             label = NULL, label.col = "black",
             xlab, ylab, main, label.cex = 0.8, edge.lwd = 1,
             edge.col=1, al = 0.1,
@@ -108,7 +108,7 @@
           for (i in 1:network.size(x$network))
             for (j in 1:network.size(x$network))
               if (newnetwork[i,j])
-                midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
+                ergmm.midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
                          y1 = z.pos[j, 2], length = 0.1,col="yellow")
         box()
       }
@@ -170,7 +170,7 @@
           for (j in 1:network.size(x$network))
             if (newnetwork[i,j])
             {
-              midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
+              ergmm.midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
                        y1 = z.pos[j, 2], length = al/10,lwd=edge.lwd,col=edge.col)
             }
         if(!is.null(label) && length(label)==1 && is.character(label)){
@@ -211,10 +211,10 @@
         for (j in 1:network.size(x$network))
           if (newnetwork[i,j])
           {
-#           midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
-#                    y1 = z.pos[j, 2], length = al,lwd=edge.lwd,col=edge.col)
-            segments(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
+            ergmm.midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
                      y1 = z.pos[j, 2], length = al,lwd=edge.lwd,col=edge.col)
+#           segments(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
+#                    y1 = z.pos[j, 2], length = al,lwd=edge.lwd,col=edge.col)
           }
       if (is.null(label)) 
         label <- 1:network.size(x$network)
@@ -232,7 +232,7 @@
       if(pie)
         for(i in 1:nrow(x$Z.mkl))
         {
-          drawpie(z.pos[i,],piesize,x$qig[i,],n=50,cols=mycol)
+          ergmm.drawpie(z.pos[i,],piesize,x$qig[i,],n=50,cols=mycol)
           text(z.pos[, 1], z.pos[, 2], label, col = "white", cex = label.cex)
         }
       else      

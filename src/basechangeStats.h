@@ -5,7 +5,7 @@
 
 /*  Node and dyad covariates are now passed as part of inputparams.  However, */
 /*  attrib can still be set to point to the start of these attributes if */
-/*  you want; see comments in InitErgm.r          Dave H  12/17/2003 */
+/*  you want; see comments in InitErgmm.latent.r          Dave H  12/17/2003 */
 struct OptionInput {
 	void (*func)(int, Vertex*, Vertex*, struct OptionInput*, Gptr);
 	double *attrib; /* Ptr to vector of attributes (node or dyad)*/

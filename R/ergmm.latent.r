@@ -1,5 +1,5 @@
 #############################################################################
-###  ergm.latent: R function prepares the R data to be passed into the C  ###
+###  ergmm.latent: R function prepares the R data to be passed into the C  ###
 ###  function, calls the C function to estimate the latent space model    ###
 ###  and then puts the C data back into readable R storage.               ###
 #############################################################################
@@ -52,7 +52,7 @@
 ###                    Description of Return Value                        ###
 #############################################################################
 
-ergm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
+ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
                         MCMCSampleSize=1000, burnin=0, interval=1,
                         z.delta=0.1, z.prior.mu=0, z.prior.sd=10,
                         b.delta=0.5, b.prior.mu=0, b.prior.sd=10,
@@ -278,7 +278,7 @@ ergm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
 #
 #  New Procrustes of the fit including reflections
 #
-   Zp<-array(apply(Zp,3,ergm.procAdj,a=NULL,fa=ergm.procAdj.fcnt(Z.mle)),
+   Zp<-array(apply(Zp,3,ergmm.procAdj,a=NULL,fa=ergmm.procAdj.fcnt(Z.mle)),
              dim=dim(Zp))
 
   # Return all the results of the chain
@@ -654,13 +654,13 @@ lpz.dist<-function(Z)
 }
 
 ###############################################################################
-   "ergm.procAdj.fcnt" <- function(a){sweep(a,2,apply(a,2,mean))}
-   "ergm.procAdj" <- function(b,a,fa=ergm.procAdj.fcnt(a)){
+   "ergmm.procAdj.fcnt" <- function(a){sweep(a,2,apply(a,2,mean))}
+   "ergmm.procAdj" <- function(b,a,fa=ergmm.procAdj.fcnt(a)){
 #
 #   Ordinary Procustes analysis of b onto a: 
 #    using translation, rotation and reflections by least squares.
 #
-    fb   <- ergm.procAdj.fcnt(b)
+    fb   <- ergmm.procAdj.fcnt(b)
     Rsvd <- svd(t(fa) %*% fb)
     R <- Rsvd$v %*% t(Rsvd$u)
 #   returns the estimated orthogonal rotation matrix

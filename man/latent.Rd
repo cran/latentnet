@@ -3,14 +3,14 @@
 \title{Latent position models for networks}
 \description{
   \code{\link{latent}} is a term to the %\code{\link{statnet}}
-  function \code{\link{ergm}}
+  function \code{\link{ergmm}}
   which is used to fit a latent position model to a 
   given network, \eqn{g}.
-  \code{\link{ergm}} returns a Bayesian model fit based on a Monte Carlo scheme
+  \code{\link{ergmm}} returns a Bayesian model fit based on a Monte Carlo scheme
   The default prior specifications are diffuse. An approximate MLE fit is
   also returned. 
 
-  The \code{\link{ergm}} specifies models via: \code{g ~ latent(<options>)}
+  The \code{\link{ergmm}} specifies models via: \code{g ~ latent(<options>)}
   where \code{g} is a \code{network} object
   For the list of possible \code{<options>}, see below.
 }
@@ -33,9 +33,9 @@ passed it is used for each dimension.}
 constant is passed it is used for each dimension.}
 %\item{\dots}{Specific to the model term.}
 }
-\value{\code{\link{ergm}} returns an object of class 'ergm' that is a list.
+\value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
 }
-\seealso{latentcluster, plot.ergm, sna, network, terms.ergm}
+\seealso{latentcluster, plot.ergmm, sna, network, terms.ergmm}
 \references{
  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
  \emph{Latent space approaches to social network analysis.} 
@@ -53,7 +53,7 @@ data(sampson)
 # Get the group labels
 samp.labs <- substr(get.vertex.attribute(samplike,"group"),1,1)
 #
-samp.fit <- ergm(samplike ~ latent(k=2), burnin=10000,
+samp.fit <- ergmm(samplike ~ latent(k=2), burnin=10000,
                  MCMCsamplesize=2000, interval=30)
 #
 # See if we have convergence in the MCMC

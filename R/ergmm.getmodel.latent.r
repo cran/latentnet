@@ -1,4 +1,4 @@
-ergm.getmodel.latent <- function (trms, g, drop=TRUE, expanded=FALSE) 
+ergmm.getmodel.latent <- function (trms, g, drop=TRUE, expanded=FALSE) 
 {
     v <- attr(trms, "variables")
     degindexcount <- 1
@@ -12,10 +12,10 @@ ergm.getmodel.latent <- function (trms, g, drop=TRUE, expanded=FALSE)
     m <- structure(list(node.attrib = NULL, coef.names = NULL,
           options = NULL, networkstats.0 = NULL, degreeinfo = NULL,
           latent=FALSE, cluster=FALSE),
-        class = "model.ergm")
+        class = "model.ergmm")
     for (i in 3:length(v)) {
         if (is.call(v[[i]])) {
-            v[[i]][[1]] <- as.name(paste("InitErgm.", v[[i]][[1]], 
+            v[[i]][[1]] <- as.name(paste("InitErgmm.", v[[i]][[1]], 
                 sep = ""))
             for (j in length(v[[i]]):1) {
                 v[[i]][[j + 2]] <- v[[i]][[j]]
@@ -31,7 +31,7 @@ ergm.getmodel.latent <- function (trms, g, drop=TRUE, expanded=FALSE)
             }
         } else {
             degindexcount <- degindexcount + 1
-            v[[i]] <- call(paste("InitErgm.", v[[i]], sep = ""))
+            v[[i]] <- call(paste("InitErgmm.", v[[i]], sep = ""))
         }
         v[[i]][[2]] <- g
         names(v[[i]])[2] <-  ""

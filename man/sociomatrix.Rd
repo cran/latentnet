@@ -6,7 +6,7 @@ sociomatrix(object, matrix.type="adjacency", attrname = NULL)
 }
 \description{
   Return the sociomatrix corresponding to a network object as a matrix.
-  See \code{\link{ergm}} for more information.
+  See \code{\link{ergmm}} for more information.
 }
 \arguments{
   \item{object}{a \code{network} object. See documentation for the \code{network}
@@ -18,7 +18,7 @@ sociomatrix(object, matrix.type="adjacency", attrname = NULL)
 \value{\code{sociomatrix} returns a matrix of zeros and one
 (or the attribute value) indicating the presence of a tie from i to j.
 }
-\seealso{ergm, network}
+\seealso{ergmm, network}
 \examples{
 
 #

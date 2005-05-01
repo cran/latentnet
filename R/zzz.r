@@ -15,6 +15,8 @@
 #
 ######################################################################
 
+.conflicts.OK <- "0.6-1"
+
 .First.lib <- function(lib, pkg){
     if(substr(as.character(Sys.Date()),start=1,stop=4) > "2005"){
      stop('Your version of the "latentnet" package is out-of-date.\nGo to http://www.csde.washington.edu/statnet for an update.')

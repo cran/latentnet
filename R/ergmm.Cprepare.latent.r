@@ -1,4 +1,4 @@
-ergm.Cprepare.latent<-function(g, m) 
+ergmm.Cprepare.latent<-function(g, m) 
 {
     Clist<-list(n=g$gal$n, dir=is.directed(g))
     e<-as.matrix.network(g,matrix.type="edgelist")

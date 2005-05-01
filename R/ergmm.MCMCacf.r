@@ -1,4 +1,4 @@
-ergm.MCMCacf<-function(statsmatrix, statsmatrix.miss=NULL, lag.max=50)
+ergmm.MCMCacf<-function(statsmatrix, statsmatrix.miss=NULL, lag.max=50)
 {
   if(ncol(statsmatrix)==1){
    av <- mean(statsmatrix)

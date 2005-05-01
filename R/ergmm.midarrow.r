@@ -1,4 +1,4 @@
-midarrow <- function(x0, y0, x1, y1, length = 0.25, angle = 30, code = 2, 
+ergmm.midarrow <- function(x0, y0, x1, y1, length = 0.25, angle = 30, code = 2, 
                      col = par("fg"), lty = NULL, lwd = par("lwd"), xpd = NULL)
 {
   ymid <- (y0+y1)/2
@@ -20,7 +20,7 @@ midarrow <- function(x0, y0, x1, y1, length = 0.25, angle = 30, code = 2,
 }
 
 
-drawcircle <- function(center,radius,length=50,...)
+ergmm.drawcircle <- function(center,radius,length=50,...)
 {
   x0 <- seq(-radius,radius,length=length)
   x1 <- seq(radius,-radius,length=length)
@@ -30,7 +30,7 @@ drawcircle <- function(center,radius,length=50,...)
 }
 
 
-drawpie <- function(center,radius,probs,n=50,cols=1:length(probs),...)
+ergmm.drawpie <- function(center,radius,probs,n=50,cols=1:length(probs),...)
 {
   x <- c(0,cumsum(probs)/sum(probs))
   dx <- diff(x)

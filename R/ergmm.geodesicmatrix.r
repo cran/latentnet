@@ -1,14 +1,14 @@
-ergm.geodesicmatrix<-function(g, directed=is.directed(g)){
- ergm.geodesicmatrix.edgelist(edgelist=as.matrix.network(g,matrix.type="edgelist"),
+ergmm.geodesicmatrix<-function(g, directed=is.directed(g)){
+ ergmm.geodesicmatrix.edgelist(edgelist=as.matrix.network(g,matrix.type="edgelist"),
                n=g$gal$n, directed=directed)
 }
 
-ergm.geodesicmatrix.edgelist <- function(edgelist, n=max(edgelist), directed=FALSE) {
+ergmm.geodesicmatrix.edgelist <- function(edgelist, n=max(edgelist), directed=FALSE) {
 # edgelist is an mx2 matrix of edges.  n=#nodes.
 # This function returns an nxn matrix, where
 #      M[i,j] : length of shortest path from vertex i to vertex j
   
-# This function starts off just like ergm.geodistn:
+# This function starts off just like ergmm.geodistn:
   edgelist<-edgelist[edgelist[,1]!=edgelist[,2],] # get rid of self-edges
   if (!directed) 
     edgelist<-rbind(edgelist,edgelist[,2:1])

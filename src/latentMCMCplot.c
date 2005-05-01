@@ -5,7 +5,7 @@
 /*           and Mark S. Handcock in                                        */
 /*           "Latent Space Approaches to Social Network Analysis"           */
 /*           All of this code is for an R function to be incorporated       */
-/*           into the R ERGM package.                                       */
+/*           into the R ERGMM package.                                       */
 /****************************************************************************/
 /*####                 General Notes good to know                      #####*/
 /*#  Z is the matrix of positions                                           */
@@ -31,7 +31,7 @@
 #define FOUND 0
 #define NOTFOUND 1
 
-void ergm_latentplot(int* heads, int* tails, 
+void ergmm_latentplot(int* heads, int* tails, 
 		 int n_edges, int g,
 		 int MCMCSampleSize, int burnin, 
 		 int interval, int k, 
@@ -59,7 +59,7 @@ void MCMC_latent_wrapperplot( int *heads, int *tails,
 );
 
 
-/* Here is the wrapper function we will call from the ergm R code */
+/* Here is the wrapper function we will call from the ergmm R code */
 /* NOTE THE RANDOM SEED MUST BE SET IN R*/
 void MCMC_latent_wrapperplot( int *heads, int *tails, int *n_edges,	int *n,
 			  int *MCMCSampleSize, int *burnin, 
@@ -87,7 +87,7 @@ void MCMC_latent_wrapperplot( int *heads, int *tails, int *n_edges,	int *n,
 
   /* R function enabling uniform RNG */
   GetRNGstate(); 
-  ergm_latentplot(heads, tails,*n_edges, *n, *MCMCSampleSize, *burnin, 
+  ergmm_latentplot(heads, tails,*n_edges, *n, *MCMCSampleSize, *burnin, 
 	      *interval, *dimSpace,
 	      *z_prior_mu, *z_prior_sd,
 	      *b_prior_mu, *b_prior_sd,
@@ -99,7 +99,7 @@ void MCMC_latent_wrapperplot( int *heads, int *tails, int *n_edges,	int *n,
   free_dmatrix(Z_mle,*n);
   return;
 }
-void ergm_latentplot(int* heads, int* tails, 
+void ergmm_latentplot(int* heads, int* tails, 
 		 int n_edges, int g,
 		 int MCMCSampleSize, int burnin, 
 		 int interval, int k, 

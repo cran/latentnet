@@ -1,18 +1,18 @@
-rergm.latent <- function(object,mkl=TRUE,n=1,...)
+rergm.ergmm <- function(object,mkl=TRUE,n=1,...)
 {
   out.list <- list()
   theta0 <- object$beta.mkl
   if(mkl)
     {
       for(i in 1:n)
-        out.list[[i]] <- network(rergm.latent.sociomatrix(object,mkl=mkl))
+        out.list[[i]] <- network(rergm.ergmm.latent.sociomatrix(object,mkl=mkl))
     }
   else
     {
       if(n > object$samplesize)
         n <- object$samplesize
       for(i in 1:n)
-        out.list[[i]] <- network(rergm.latent.sociomatrix(object,mkl=mkl,which=i))
+        out.list[[i]] <- network(rergm.ergmm.latent.sociomatrix(object,mkl=mkl,which=i))
     }
 
   if(n>1)
@@ -26,7 +26,7 @@ rergm.latent <- function(object,mkl=TRUE,n=1,...)
   return(out.list)
 }
 
-rergm.latent.sociomatrix <- function(object, ..., mkl=TRUE,which)
+rergm.ergmm.latent.sociomatrix <- function(object, ..., mkl=TRUE,which)
 {
   if(is.null(object$newnetwork)){
     newnetwork <- object$network

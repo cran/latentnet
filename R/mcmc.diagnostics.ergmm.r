@@ -1,12 +1,13 @@
-mcmc.diagnostics <- function(object, ...)
+if(!exists("mcmc.diagnostics", mode="function")){
+ mcmc.diagnostics <- function(object, ...)
   UseMethod("mcmc.diagnostics")
 
-mcmc.diagnostics.default <- function(object,...)
-{
+ mcmc.diagnostics.default <- function(object,...){
   stop("An object must be given as an argument ")
+ }
 }
 
-mcmc.diagnostics.ergm <- function(object, sample="sample",
+mcmc.diagnostics.ergmm <- function(object, sample="sample",
                                   smooth=TRUE,
                                   r=0.0125, digits=6,
                                   maxplot=1000, verbose=TRUE,
@@ -22,7 +23,7 @@ mcmc.diagnostics.ergm <- function(object, sample="sample",
   novar <- apply(statsmatrix,2,var)<1e-6
   if(all(novar)){
      warning("All the statistics are the same.\n")
-     print(apply(statsmatrix,2,summary.statsmatrix.ergm),scipen=6)
+     print(apply(statsmatrix,2,summary.statsmatrix.ergmm),scipen=6)
      return(invisible())
   }else{
     statsmatrix <- as.matrix(statsmatrix[,!novar])
@@ -31,7 +32,7 @@ mcmc.diagnostics.ergm <- function(object, sample="sample",
 
     cat("\nCorrelations of sample statistics:\n")
     if(is.null(object$acf)){
-      print(ergm.MCMCacf(statsmatrix))
+      print(ergmm.MCMCacf(statsmatrix))
     }else{
       print(object$acf)
     }
@@ -39,7 +40,7 @@ mcmc.diagnostics.ergm <- function(object, sample="sample",
     attr(statsmatrix, "mcpar") <- attr(object[[component]], "mcpar")
     attr(statsmatrix, "class") <- "mcmc"
     if(require("coda", quietly = TRUE)) {
-     plot.mcmc.ergm(statsmatrix, ask=FALSE, smooth=smooth, 
+     plot.mcmc.ergmm(statsmatrix, ask=FALSE, smooth=smooth, 
                     maxplot=maxplot, parallel=0,
                     x0=x0, mcmc.title=mcmc.title, ...)
     }else{
@@ -47,8 +48,8 @@ mcmc.diagnostics.ergm <- function(object, sample="sample",
      return(invisible())
     }
     cat("\nr=0.0125 and 0.9875:\n")
-    raft9875 <- ergm.raftery.diag(statsmatrix, rmargin=0.9875, ...)
-    raft     <- ergm.raftery.diag(statsmatrix, rmargin=0.0125, ...)
+    raft9875 <- ergmm.raftery.diag(statsmatrix, rmargin=0.9875, ...)
+    raft     <- ergmm.raftery.diag(statsmatrix, rmargin=0.0125, ...)
     aaa <- raft9875$resmatrix > raft$resmatrix
     aaa[is.na(aaa)] <- FALSE
     raft$resmatrix[aaa] <- raft9875$resmatrix[aaa]
@@ -62,7 +63,7 @@ mcmc.diagnostics.ergm <- function(object, sample="sample",
     return(invisible(raft))
   }
 }
-"ergm.raftery.diag" <-
+"ergmm.raftery.diag" <-
 function (data, q = 0.025, rmargin = 0.005, s = 0.95, converge.eps = 0.001) 
 {
     if (is.mcmc.list(data)) 
@@ -94,7 +95,7 @@ function (data, q = 0.025, rmargin = 0.005, s = 0.95, converge.eps = 0.001)
       use <- 1:nrow(data)
       while (bic >= 0) {
         kthin <- kthin + 1
-#       testres <- as.vector(ergm.window.mcmc(dichot, thin = kthin))
+#       testres <- as.vector(ergmm.window.mcmc(dichot, thin = kthin))
         testres <- dichot[use <= trunc((length(dichot) - 1)/kthin + 1.5)]
         newdim <- length(testres)
 #       testtran <- table(testres[1:(newdim - 2)],
@@ -145,10 +146,10 @@ function (data, q = 0.025, rmargin = 0.005, s = 0.95, converge.eps = 0.001)
     }
     resmatrix[is.na(resmatrix)] <- 0
     y <- list(params = c(r = rmargin, s = s, q = q), resmatrix = resmatrix)
-    class(y) <- "raftery.diag.ergm"
+    class(y) <- "raftery.diag.ergmm"
     return(y)
 }
-print.raftery.diag.ergm <- function (x, digits = 3, simvalues=NULL, ...) 
+print.raftery.diag.ergmm <- function (x, digits = 3, simvalues=NULL, ...) 
 {
     if(is.null(simvalues)){
       simvalues <- c(2, nrow(x$resmatrix), 1)
@@ -179,7 +180,7 @@ print.raftery.diag.ergm <- function (x, digits = 3, simvalues=NULL, ...)
     }
     invisible(x)
 }
-"plot.mcmc.ergm" <- function(x, trace = TRUE, density = TRUE, 
+"plot.mcmc.ergmm" <- function(x, trace = TRUE, density = TRUE, 
                          smooth = TRUE, bwf, 
                          auto.layout = TRUE, ask = TRUE,
                          maxplot=1000, parallel=0, x0, mcmc.title="", ...) 
@@ -187,7 +188,7 @@ print.raftery.diag.ergm <- function (x, digits = 3, simvalues=NULL, ...)
   oldpar <- NULL
   on.exit(par(oldpar))
   if (auto.layout) {
-    mfrow <- set.mfrow(Nchains = nchain(x), Nparms = nvar(x), 
+    mfrow <- ergmm.set.mfrow(Nchains = nchain(x), Nparms = nvar(x), 
                        nplots = trace + density)
     oldpar <- par(mfrow = mfrow)
   }
@@ -196,7 +197,7 @@ print.raftery.diag.ergm <- function (x, digits = 3, simvalues=NULL, ...)
     y <- x[, i, drop = FALSE]
     attr(y, "class") <- "mcmc"
     if (trace){ 
-      traceplot.ergm(y, smooth = smooth, maxplot=maxplot, parallel=parallel)
+      traceplot.ergmm(y, smooth = smooth, maxplot=maxplot, parallel=parallel)
       abline(h=x0[i],lty=2)
     }
     if (density){
@@ -208,7 +209,7 @@ print.raftery.diag.ergm <- function (x, digits = 3, simvalues=NULL, ...)
     if(i==1){mtext(text=mcmc.title, outer=TRUE, line = -1.5)}
   }
 }
-"traceplot.ergm" <-
+"traceplot.ergmm" <-
 function (x, smooth = TRUE, col = 1:6, type = "l",
           ylab = "", maxplot=1000, parallel=0, ...) 
 {
@@ -236,7 +237,7 @@ function (x, smooth = TRUE, col = 1:6, type = "l",
     }
   }
 }
-"set.mfrow" <-
+"ergmm.set.mfrow" <-
 function (Nchains = 1, Nparms = 1, nplots = 1, sepplot = FALSE) 
 {
   ## Set up dimensions of graphics window: 

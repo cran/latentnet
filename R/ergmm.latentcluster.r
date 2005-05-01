@@ -1,5 +1,5 @@
 #############################################################################
-###  ergm.latentCluster: R function prepares the R data to be passed into ###
+###  ergmm.latentCluster: R function prepares the R data to be passed into ###
 ###  the C function, calls the C function to estimate the latent space    ###
 ###  model and then puts the C data back into readable R storage.         ###
 #############################################################################
@@ -62,7 +62,7 @@
 #############################################################################
 
 
-ergm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1,
+ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1,
                         MCMCSampleSize=1000, burnin=0, interval=1,
                         z.delta=0.1, z.prior.mu=0, z.prior.sd=10,
                         b.delta=0.5, b.prior.mu=0, b.prior.sd=10,
