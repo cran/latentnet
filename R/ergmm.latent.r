@@ -160,9 +160,11 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
     if(inherits(MLE.fit,"try-error")){
      warning("MLE could not be found.")
      MLE.like <- abvZ.mds$value
+     MLE.iterations <- abvZ.mds$iter
     }else{
      abvZ <- MLE.fit$par
      MLE.like <- MLE.fit$value
+     MLE.iterations <- MLE.fit$iter
     }
     Z.mle <- matrix(abvZ[-(1:p)],nrow=g,ncol=dimSpace)
     if(MLEonly){
@@ -286,7 +288,8 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
               Llik=ret[[24]],
               Beta=ret[[19]],
               Beta.rate=ret[[20]],
-              Z=Zp,Z.rate=ret[[18]], newnetwork=gY, mle.like = MLE.like
+              Z=Zp,Z.rate=ret[[18]], newnetwork=gY, mle.like = MLE.like,
+              mle.iterations=MLE.iterations
               )
    Results
 }

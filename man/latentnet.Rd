@@ -7,46 +7,48 @@
   on a set of nodes is \eqn{\exp(\theta^{T}S(g))/c(\theta)},
   where \eqn{S(g)} is a vector of network statistics, \eqn{\theta}
   is a parameter vector of the same length and \eqn{c(\theta)}
-  is the normalizing constant for the distribution.  \code{\link{ergmm}}
-  can return either a maximum pseudo-likelihood estimate or
+  is the normalizing constant for the distribution.  The \code{ergm}
+  function can return either a maximum pseudo-likelihood estimate or
   an approximate MLE based on a Monte Carlo scheme.
 
-  The package \code{\link{latentnet}} adds latent variable models to the traditional 
+  The package \code{\link{latentnet}} adds latent variable models 
+  to the traditional 
   exponential random network models. These latent models are
-  fit using the \code{\link{ergmm}} function that is also used
-  by \code{statnet}. See \url{http://www.csde.washington.edu/statnet}.
+  fit using the \code{\link{ergmm}} function.
+  See \url{http://www.csde.washington.edu/statnet}.
 
   The \code{\link{ergmm}} specifies models via: \code{g ~ <model terms>}
   where \code{g} is a \code{network} object
   For the list of possible \code{<model terms>}, see 
-% the \code{Details} section below.
-  the \code{Model Terms} section of the \code{\link{ergmm}} function.
+  the manual pages for \code{terms.ergmm}.
 }
 \usage{
 }
 \arguments{
 \item{\dots}{Specific to the latent variable model terms.}
 }
-
-\details{
-
-    The arguments in the \code{\link{ergmm}} function specific to latent 
-    variable models
-    are \code{latent.control}. See the help page for \code{\link{ergmm}} for the 
-    details.
-
-    The result of a latent variable model fit is an \code{\link{ergmm}} object.
-    Hence the \code{\link{summary}}, \code{print}, and \code{plot} functions
-    apply to the fits.
-    The \code{\link{plot.ergmm}} function has many options specific to latent 
-    variable models.
-% are \code{mle}, \code{pie}, \code{contour},
-% \code{contour.colors}.
-    See the help page for \code{\link{plot.ergmm}} for the details.
-}
+%\usage{
+%ergmm(formula, theta0=NULL, 
+%     burnin=1000, MCMCsamplesize=1000, interval=10,
+%     latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
+%     returnMCMCstats=TRUE, randseed=NULL, 
+%     verbose=FALSE, \dots)
+%}
+%\arguments{
+% \item{formula}{An \R formula object, of the form 
+%    \code{g ~ <term 1> + <term 2> ...},
+%  where \code{g} is a network object or a matrix that can be coerced to a graph
+%  object, and \code{<term 1>}, \code{<term 2>}, etc, are each model terms.
+%  For the list of possible \code{<model terms>}, see
+%  the manual pages for \code{terms.ergmm}.
+%  To create a network object in \R, use the \code{network()} function,
+%  then, if necessary, add nodal
+%  attributes to it using \code{set.vertex.attributes()}.}
+%}
+%
 \value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
 }
-\seealso{latent, latentcluster, sna, network, terms.ergmm}
+\seealso{ergmm, latent, latentcluster, sna, network, terms.ergmm}
 \references{
  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
  \emph{Latent space approaches to social network analysis.} 

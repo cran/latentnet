@@ -129,6 +129,7 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
 	    maxit=latent.control$maxit,
 	    penalty.sigma=latent.control$penalty.sigma)
         }
+        v$logl <- NULL
       }#end if cluster
       yij <- as.matrix.network(g, matrix.type="adjacency")
       X.l <- X
@@ -165,12 +166,25 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
       attr(statsmatrix, "mcpar") <- c(burnin+1, endrun, interval)
       attr(statsmatrix, "class") <- "mcmc"
       v$sample <- statsmatrix
-      v$mc.se <- NA 
+#     v$mc.se <- NA 
+      v$mc.se <- NULL 
+      v$gradient <- NULL 
+      v$MCMCtheta <- NULL 
       v$network <- g
-      v$newnetwork <- z$newnetwork
-      v$glm <- glm.out
-      v$glm.names <- m$coef.names
-      v$null.deviance <- v$glm$null.deviance
+#     v$newnetwork <- z$newnetwork
+      v$network <- z$newnetwork
+      v$newnetwork <- NULL
+#     v$glm <- glm.out
+      v$glm <- NULL
+      v$glm.names <- NULL
+#     v$samplesize <- NULL
+      v$coef.names <- m$coef.names
+#     v$null.deviance <- v$glm$null.deviance
+      v$null.deviance <- glm.out$null.deviance
 #     v$mle.lik <- -0.5*v$glm$deviance
+      if(is.null(v$cluster)){v$cluster <- FALSE} 
+#     Nullify some clustering stuff
+      v$d.mbc <- NULL
+      v$bic <- NULL
       v
 }

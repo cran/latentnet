@@ -326,7 +326,8 @@ void ergmm_latent2(int* heads, int* tails,
 /* 	Sigma[i] = (alphaprior *Sigprior + (n[i]-1) *Shat/dim +  */
 /* 		    muSigprior*n[i]/(muSigprior+n[i]) *  */
 /* 		    (mubar[i][0]*mubar[i][0] + mubar[i][1]*mubar[i][1])/2) /  */
-/* 	  (n[i] + alphaprior) / temp;  /*  2D model only. */
+/* 	  (n[i] + alphaprior) / temp; */
+        	/*  2D model only. */
 
 	Sigma[i] = (Sigprior +  Shat/dim) /temp;
 	/* Sigma[i] = (alphaprior *Sigprior +  n[i]*Shat/dim)/(alphaprior+n[i]) /temp; */

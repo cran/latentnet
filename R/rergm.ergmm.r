@@ -47,7 +47,7 @@ rergm.ergmm.latent.sociomatrix <- function(object, ..., mkl=TRUE,which)
     beta <- object$beta.mkl
   }
   ##currently only renames the match'ed variables
-  varnames <- sub("nodematch.","",object$glm.names)[-1]
+  varnames <- sub("nodematch.","",object$coef.names)[-1]
   vars <- list()
   eta <- matrix(beta[1],nnodes,nnodes)
   if(length(varnames)>0)

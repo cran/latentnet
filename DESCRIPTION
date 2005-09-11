@@ -1,5 +1,5 @@
 Package: latentnet
-Version: 0.6-6
+Version: 0.6-8
 Date: September 11, 2005
 Title:  Latent position and cluster models for statistical networks
 Author: Mark S. Handcock <handcock@stat.washington.edu>, 
@@ -14,4 +14,4 @@ Depends: network, locfit, mvtnorm, mclust, shapes, KernSmooth
 Suggests: coda
 License: GPL version 2 (June, 1991)
 URL: http://csde.washington.edu/statnet
-Packaged: Fri Oct 21 01:37:38 2005; handcock
+Packaged: Mon Oct 24 00:00:51 2005; handcock

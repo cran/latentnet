@@ -4,7 +4,7 @@
 \description{
   \code{latentcluster()} is a term to the  %\code{\link{statnet}}
   function \code{\link{ergmm}}
-  to fit a latent postion model to a 
+  to fit a latent position model to a 
   given network, \eqn{g}.
   \code{\link{ergmm}} returns a Bayesian model fit based on a Monte Carlo scheme
   The default prior specifications are diffuse. An approximate MLE fit is
@@ -13,6 +13,8 @@
   The \code{\link{ergmm}} specifies models via: \code{g ~ latentcluster(<options>)}
   where \code{g} is a \code{network} object
   For the list of possible \code{<options>}, see below.
+  For the list of other model terms, see
+  the manual pages for \code{terms.ergmm}.
 }
 \usage{
  latentcluster(k=2, ngroups, z.prior.mu=0, z.prior.sd=10, b.delta=0.5,

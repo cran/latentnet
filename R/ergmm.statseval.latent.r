@@ -5,11 +5,14 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
 {
   vnames <- m$coef.names
   if(!is.null(z$Z)){
-   l <- list(sample=NA, iterations=z$Beta.rate[1],
-             MCMCtheta = z$beta.mle, 
-             loglikelihood=mean(z$Llik),
-             mcmc.loglikelihood=z$Llik,
-             gradient = NA)
+#
+#  So MCMC values
+#
+   l <- list(sample=NA, iterations=z$mle.iterations,
+#            MCMCtheta = z$beta.mle, 
+             loglikelihood=max(c(z$Llik,z$mle.lik)),
+             mcmc.loglikelihood=z$Llik)
+#            gradient = NA)
    Nnodes <- dim(z$Z)[1]
    ndim <- dim(z$Z)[2]
    samplesize <- dim(z$Z)[3]
@@ -125,7 +128,7 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
      MLE.like <- MLE.fit$value
      l$mle.lik <- MLE.fit$value
     }
-    l$MCMCtheta <- abvZ[(1:dp)]
+#   l$MCMCtheta <- abvZ[(1:dp)]
     Z.mle <- matrix(abvZ[-(1:dp)],nrow=nnodes,ncol=dimSpace)
    }else{
     l$mle.lik <- z$mle.like
@@ -133,11 +136,14 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
    }
    l$Z <- z$Z
   }else{
-   l <- list(sample=NA, iterations=z$Beta.rate,
-             MCMCtheta = z$beta.mle, 
-             loglikelihood=mean(z$Llik),
-             mcmc.loglikelihood=z$Llik,
-             gradient = z$Z.rate)
+#
+#  So no MCMC and use MLE fits
+#
+   l <- list(sample=NA, iterations=z$mle.iterations,
+#            MCMCtheta = z$beta.mle, 
+             loglikelihood=max(c(z$Llik,z$mle.lik)),
+             mcmc.loglikelihood=z$Llik)
+#            gradient = z$Z.rate)
    Z.pm <- NULL
    Z.pmode <- NULL
    Z.mle <- NULL
@@ -157,7 +163,7 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
 # Z.mle <- (mean(z$Alpha)/z$alpha.mle)*(z$Z.mle)
   l$samplesize <- samplesize
   l$Z.mle <- Z.mle
-  l$Z.pm <- Z.pm
+  l$Z.pmean <- Z.pm
   l$Z.pmode <- Z.pmode
   l$latent <- TRUE
   l$newnetwork <- z$newnetwork

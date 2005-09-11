@@ -1,3 +1,5 @@
+#define __BASECHANGESTATS_C__
+
 #include "basechangeStats.h"
 
 void d_latentcov (int ntoggles, Vertex *heads, Vertex *tails, 
@@ -60,3 +62,5 @@ void d_latentcov (int ntoggles, Vertex *heads, Vertex *tails,
   while (--i>=0)  /*  Undo all previous toggles. */
     ToggleEdge(heads[i], tails[i], g); 
 }
+
+#undef __BASECHANGESTATS_C__

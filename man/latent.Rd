@@ -13,6 +13,8 @@
   The \code{\link{ergmm}} specifies models via: \code{g ~ latent(<options>)}
   where \code{g} is a \code{network} object
   For the list of possible \code{<options>}, see below.
+  For the list of other model terms, see
+  the manual pages for \code{terms.ergmm}.
 }
 \usage{
  latent(k=2, z.delta=0.1, z.prior.mu=0,

@@ -1,3 +1,5 @@
+#define __EDGE_TREE_C__
+
 #include "edgeTree.h"
 
 
@@ -505,3 +507,5 @@ void GraphDestroy0() {
   free(outdegree0);
   free(indegree0);  
 }
+
+#undef __EDGE_TREE_C__

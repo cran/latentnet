@@ -13,17 +13,21 @@
 typedef unsigned long Vertex;
 typedef unsigned long Edge;
 
+#ifdef __EDGE_TREE_C__
+#define extern 
+#endif
+
 /*  next_inedge and next_outedge are continually updated to give
     the smallest index of an edge object not being used.
 */
-Edge next_inedge;
-Edge next_outedge;
+extern Edge next_inedge;
+extern Edge next_outedge;
 
-Edge next_minedge;
-Edge next_moutedge;
+extern Edge next_minedge;
+extern Edge next_moutedge;
 
-Edge next_inedge0;
-Edge next_outedge0;
+extern Edge next_inedge0;
+extern Edge next_outedge0;
 
 /*  outdegree[] and indegree[] are continually updated to give
     the appropriate degree values for each vertex.  These should
@@ -31,20 +35,20 @@ Edge next_outedge0;
     simply the number of vertices in the graph.  directed_flag is
     1 or 0, depending on whether or not the graph is directed.
 */
-Vertex *outdegree;
-Vertex *indegree;
-Vertex n_nodes;
-Vertex n_edges;
-int directed_flag;
+extern Vertex *outdegree;
+extern Vertex *indegree;
+extern Vertex n_nodes;
+extern Vertex n_edges;
+extern int directed_flag;
 
-Vertex designempty;
-Vertex *moutdegree;
-Vertex *mindegree;
-Vertex n_medges;
+extern Vertex designempty;
+extern Vertex *moutdegree;
+extern Vertex *mindegree;
+extern Vertex n_medges;
 
-Vertex *outdegree0;
-Vertex *indegree0;
-Vertex n_edges0;
+extern Vertex *outdegree0;
+extern Vertex *indegree0;
+extern Vertex n_edges0;
 
 /*  Edgestruct is a binary tree structure, which is how the edgelists 
     are stored.  The root of the tree for vertex i will be inedges[i]
@@ -65,9 +69,9 @@ typedef struct estruct {
 /*  inedges and outedges are arrays of Edgestruct that are used to 
     store all of the incoming and outgoing edges, respectively.
 */
-Edgestruct inedges[MAXEDGES], outedges[MAXEDGES];
-Edgestruct minedges[MAXEDGES], moutedges[MAXEDGES];
-Edgestruct inedges0[MAXEDGES], outedges0[MAXEDGES];
+extern Edgestruct inedges[MAXEDGES], outedges[MAXEDGES];
+extern Edgestruct minedges[MAXEDGES], moutedges[MAXEDGES];
+extern Edgestruct inedges0[MAXEDGES], outedges0[MAXEDGES];
 
 /* The Gptr is a structure containing pointers to all essential elements
    of a given graph; it is intended to be used to allow the various

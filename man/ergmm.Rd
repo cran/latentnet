@@ -4,9 +4,8 @@
 \description{
   \code{\link{ergmm}} is used to fit latent space and latent space cluster random network models, 
     as described in Hoff, Raftery and Handcock (2002) and 
-    Handcock, Raftery and tantrum (2005).
-  \code{\link{ergmm}} can return either a Bayesian model fit
-  or an approximate MLE based on a Monte Carlo scheme.
+    Handcock, Raftery and Tantrum (2005).
+  \code{\link{ergmm}} can produces likelihood-based inference. Approximate maximum likelihood estimators are computed, and Bayesian inference is implemented via a MCMC algorithm.
 % \code{\link{ergmm}} can also be used to fit linear exponential random network models, in which
 % the probability of a given network, \eqn{g}, on a set of nodes is 
 % \eqn{\exp(\theta^{T}S(g))/c(\theta)}, where 
@@ -16,7 +15,7 @@
 }
 \usage{
 ergmm(formula, theta0=NULL, 
-     burnin=1000, MCMCsamplesize=1000, interval=10, maxit=5,
+     burnin=1000, MCMCsamplesize=1000, interval=10,
      latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
      returnMCMCstats=TRUE, randseed=NULL, 
      verbose=FALSE, \dots)
@@ -27,33 +26,33 @@ ergmm(formula, theta0=NULL,
   where \code{g} is a network object or a matrix that can be coerced to a
   network object, and \code{<term 1>}, \code{<term 2>}, etc, are each 
   terms chosen from the list given below.
-  To create a network object in \R, use the \code{network} function,
-  then add nodal attributes to it using \code{set.vertex.attribute} 
-  if necessary.}
- \item{theta0}{The parameter value used to generate
-  the MCMC sample. By default the MPLE is used (\code{startatMPLE=TRUE}).}
+  To create a network object in \R, use the \code{network} function.
+  For a description of the possible terms see the \code{\link{terms.ergmm}}.
+ }
+ \item{theta0}{The initial parameter value used to find
+  the MLE. The default is based on
+  multidimensional scaling fit to the positions.}
  \item{burnin}{The number of proposals before any MCMC sampling
-  is done.  Currently, there is no support for any check of the Markov
-  chain mixing, so \code{burnin} should be set to a fairly large number.}
- \item{MCMCsamplesize}{Size of the sample of network statistics,
-  randomly drawn from a given distribution on the set of all networks,
-  returned by the Metropolis-Hastings algorithm.}
- \item{interval}{The number of proposals between sampled statistics.
-  The program prints a warning if too few proposals are being
-  accepted in any interval before each sample.
+  is done.}
+ \item{MCMCsamplesize}{The number of posterior samples to draw.}
+ \item{interval}{The number of proposal steps between sampled statistics.}
+% The program prints a warning if too few proposals are being
+% accepted in any interval before each sample.
 % (if the number of proposals between sampled observations
 % ever equals an integral multiple of 100(1+the number of proposals accepted)).
-  }
- \item{maxit}{The number of times the parameter for the MCMC
-  should be updated by maximizing the MCMC likelihood. At each
-  step the parameter is changed to the values that maximizes
-  the MCMC likelihood based on the current sample. For each
-  step both the MCMCsamplesize and the interval are increased by 10\%.}
+% }
+%\item{maxit}{The number of times the parameter for the MCMC
+% should be updated by maximizing the MCMC likelihood. At each
+% step the parameter is changed to the values that maximizes
+% the MCMC likelihood based on the current sample. For each
+% step both the MCMCsamplesize and the interval are increased by 10\%.}
  \item{latent.control}{Control
   variables for the latent space algorithm. This are used only if
   a \code{\link{latent}} term is included in the model. \code{maxit}
   sets the maximum number of iterations to use in the
   Quasi-Newton-Raphson algorithm to maximize the MCMC likelihood.
+  \code{MLEonly} is a logical flag set to compute only the MLE estimates and not
+  Bayesian inference based on the MCMC algorithm.
   \code{penalty.sigma} is the penalty on the norm of the
   latent distances to use in the penalized log-likelihood. The multiplier is 
   \code{1/(penalty.sigma[1]^2} so that smaller values offer greater penalties.
@@ -79,44 +78,35 @@ ergmm(formula, theta0=NULL,
   in the future.}
 }
 
-\section{Model Terms}{
-  The \code{\link{latentnet}} package itself allows only three type of terms:
-  \code{\link{latent}}, \code{\link{latentcluster}} and \code{\link[latentcov]{latentcov}}.
-  The umbrella \code{ergm} package allows the user to explore a large number
-  of potential models for their network data in addition to these terms.  The
-  terms currently supported by the program,
-  and a brief description of each is given in the documentation
-  \code{\link[terms.ergm]{terms.ergm}} for the \code{ergm} package.
-  In the formula for the model, the model terms are various function-like
-  calls, some of which require arguments, separated by \code{+} signs.
-  The current options are:
- \item{\code{latent(k=2, \ldots)}}{\emph{Latent position model term.}
-  where \code{k} is the dimension of the latent space. For information on the
-  other arguments look for help on \code{\link{latent}}.
- }
- \item{\code{latentcluster(k=2, ngroups, \dots)}}{\emph{Latent position cluster model term.}
-  where \code{k} is the dimension of the latent space
-  and \code{ngroups} is the number of clusters in the latent space.
-  For information on the other arguments look for help on
-  \code{\link{latentcluster}}.
- }
- \item{\code{latentcov(cv, attrname=NULL)}}{\emph{Covariates for the latent model.}  \code{cv} is either a matrix of
-    covariates on each pair of vertices, or a network; 
-    if the latter, optional argument
-    \code{attrname} provides the name of the edge attribute to
-    use for edge values.  This option adds one statistic to the
-    model, representing the effect of the given covariate on
-    the appearance of edges.  \code{edgecov} can be called more
-    than once, to model the effects of multiple covariates.
- }
-}
-\value{\code{\link{ergmm}} returns an object of class \code{\link{ergmm}} that is a list
-  consisting of the following elements:
- \item{\$coef}{The Monte Carlo maximum likelihood estimate
-  of \eqn{\theta}, the vector of coefficients for the model
-  parameters.}
- \item{\$sample}{The \eqn{n\times (p+2+k)} matrix of network statistics, 
-  where \eqn{n} is the
+\value{\code{\link{ergmm}} returns an object of class \code{\link{ergmm}} that is a list. 
+  Fits including a \code{latentcluster} term  will have at least the following
+components and fits including a \code{latent} term  will have at least
+the components up to and including \code{network}.
+
+ \item{Beta}{The \code{MCMCsamplesize}\eqn{\times p} matrix of coefficients for the model
+  parameters corresponding to each of the posterior samples. By default this is
+  the intercept only.}
+ \item{coef}{The maximum likelihood estimate
+  the \eqn{p} vector of coefficients for the model
+  parameters (excluding the latent positions and cluster parameters). 
+  By default this is just the intercept with \eqn{p=1}.}
+ \item{coef.names}{A \eqn{p} vector of the coefficient names.}
+ \item{Z}{The \code{MCMCsamplesize}\eqn{\times k} matrix of (Procrustified)
+  posterior positions, where \code{MCMCsamplesize} is the
+  sample size and \eqn{k} is the number of dimension of the space.}
+ \item{Z.mkl}{The \code{network.size(g)}\eqn{\times} \code{k} matrix of 
+  minimum Kullback-Leibler positions for each of the nodes.}
+ \item{Z.pmean}{The \code{network.size(g)}\eqn{\times} \code{k} matrix of 
+  posterior mean positions for each of the nodes.}
+ \item{Z.pmode}{The \code{network.size(g)}\eqn{\times} \code{k} matrix of 
+  posterior modal positions for each of the nodes.}
+ \item{Z.mle}{The \code{network.size(g)}\eqn{\times} \code{k} matrix of 
+  MLE positions for each of the nodes.}
+ \item{beta.mkl}{The \eqn{p} vector of coefficients for the model
+  parameters based on the minimum Kullback-Leibler positions for each of the nodes.}
+ \item{samplesize}{The number of MCMC samples drawn from the posterior.}
+ \item{sample}{The \code{MCMCsamplesize}\eqn{\times (p+2+k)} matrix of network statistics, 
+  where \code{MCMCsamplesize} is the
   sample size and \eqn{p} is the number of network covariates specified in the
   model via the \code{latentcov} terms (usually 0). The columns are:
   "mcmc.loglikelihood", the log-likelihood value;
@@ -124,36 +114,77 @@ ergmm(formula, theta0=NULL,
   the \code{p} covariates;
   "Z 1", "Z 2", ..., "Z k", the \code{k} dimensional
    positions of the first node. The values are recorded for each sample drawn.}
- \item{\$iterations}{The number of Newton-Raphson iterations required
+ \item{iterations}{The number of Newton-Raphson iterations required
   before convergence.}
- \item{\$MCMCtheta}{The value of \eqn{\theta} used to produce the Markov chain
-  Monte Carlo sample.  As long as the Markov chain mixes sufficiently
-  well, \code{$sample} is roughly a random sample from the distribution
-  of network statistics specified by the model with the parameter equal
-  to \code{$MCMCtheta}.  In the current version, if startatMPLE is 
-  \code{TRUE}, then \code{$MCMCtheta} equals the MPLE.}
- \item{\$loglikelihood}{The approximate log-likelihood for the MLE.
-  The value is only approximate because it is based on the MCMC random sample.}
- \item{\$gradient}{The value of the gradient vector of the approximated
-  loglikelihood function, evaluated at the maximizer.  This vector
-  should be very close to zero.}
- \item{\$hessian}{The Hessian matrix of the approximated loglikelihood
+ \item{interval}{The number of proposals between sampled statistics.}
+%\item{MCMCtheta}{The value of used to produce the Markov chain
+% Monte Carlo sample.  As long as the Markov chain mixes sufficiently
+% well, \code{$sample} is roughly a random sample from the distribution
+% of network statistics specified by the model with the parameter equal
+% to \code{$MCMCtheta}.  In the current version, if startatMPLE is 
+% \code{TRUE}, then \code{$MCMCtheta} equals the MPLE.}
+ \item{null.deviance}{The deviance for the null model, comparable with
+    \code{-2 loglikelihood}. The null model will include the 
+    intercept if there is one in the model, but not the latent variables or latent
+    clusters.}
+ \item{mcmc.loglikelihood}{The log-likelihood values corresponding to each of the posterior samples.}
+ \item{loglikelihood}{The log-likelihood for the MLE of positions}
+ \item{mle.lik}{The log-likelihood for the initial MLE fit of positions.}
+% The value is only approximate because it is based on the MCMC random sample.}
+%\item{gradient}{The value of the gradient vector of the approximated
+% loglikelihood function, evaluated at the maximizer.  This vector
+% should be very close to zero.}
+ \item{hessian}{The Hessian matrix of the approximated loglikelihood
   function, evaluated at the maximizer.  This matrix may be inverted to
-  give an approximate covariance matrix for the MLE.}
- \item{\$samplesize}{The size of the MCMC sample}
- \item{\$formula}{The original formula entered into the \code{\link{ergmm}} function.}
- \item{\$sample}{If the option \code{$returnMCMCstats=TRUE}, this is 
-  the the matrix of change statistics from the MCMC run.}
- \item{\$newnetwork}{The network generated at the end of the MCMC sampling.}
-
-  See the function \code{print.ergmm} for details on how
-  an \code{\link{ergmm}} object is printed.  Note that we have written a
+  give an approximate covariance matrix for the MLE of the parameters.}
+ \item{formula}{The original formula entered into the \code{\link{ergmm}} function.}
+ \item{latent}{A flag to indicate that this is a fit of latent variable model.
+  This is always \code{TRUE} for \code{ergmm} fits 
+  and is included for consistency with the \code{statnet}
+  package.} 
+ \item{cluster}{A flag to indicate that this is a fit of a latent cluster model.
+  This is always \code{TRUE} for \code{ergmm} fits if a \code{latentcluster}
+  term is in the model
+  and is included for consistency with the \code{statnet}
+  package.} 
+%\item{newnetwork}{The network generated at the end of the MCMC sampling.}
+ \item{network}{The modeled network as an \code{network} object.}
+ \item{BIC}{A Bayesian Information Criterion for the model. See the reference
+            for details.}
+ \item{class}{The vector of posterior modal classes for each node.}
+%\item{d.mbc}{}
+ \item{Ki}{The \code{MCMCsamplesize}\eqn{\times}\code{network.size(g)}
+  matrix of posterior draws of the classes, where \code{MCMCsamplesize} is the
+  sample size and \code{network.size(g)} is the number of nodes in the
+  network.}
+ \item{Ki.mle}{The \code{network.size(g)} vector of maximum likelihood classes for each node.}
+%\item{logl}{The log-likelihood.}
+ \item{logl.lr}{The log-likelihood for the latent space component of the model.}
+ \item{logl.mbc}{The log-likelihood for the model-based clustering component of
+the model.}
+ \item{mu}{The \code{ngroups}\eqn{\times}\code{k}\eqn{\times}\code{MCMCsamplesize} array of posterior draws of the mean positions
+  of the class, where \code{MCMCsamplesize} is the
+  sample size and \code{ngroups} is the number of classes.}
+ \item{mu.mle}{The \code{ngroups}\eqn{\times}\code{k} matrix of 
+  maximum likelihood mean positions for each class.}
+ \item{ngroups}{The number of classes or clusters.}
+ \item{qig}{The \code{network.size(g)}\eqn{\times}\code{ngroups}
+  matrix of posterior probabilities of class membership for each of the nodes.}
+ \item{Sigma}{The \code{MCMCsamplesize}\eqn{\times}\code{ngroups}
+  array of posterior draws of the variances of the positions
+  of the class, where \code{MCMCsamplesize} is the
+  sample size and \code{ngroups} is the number of classes.}
+ \item{Sigma.mle}{The maximum likelihood variances of the
+  positions for each class.}
+% See the function \code{print.ergmm} for details on how
+% an \code{\link{ergmm}} object is printed.
+  Note that we have written a
   function, \code{\link{summary.ergmm}} that returns a summary of the
   relevant parts of the \code{\link{ergmm}} object in concise summary
   format.
 }
 \seealso{network, set.vertex.attributes, set.network.attributes,
-         summary.ergmm, print.ergmm}
+         summary.ergmm}%, print.ergmm}
 \references{
  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
  \emph{Latent space approaches to social network analysis.} 
@@ -168,7 +199,10 @@ ergmm(formula, theta0=NULL,
 \examples{
 #
 # See http://www.csde.washington.edu/statnet
-# for examples
+# for more examples
+#
+# For an explanation and examples of creating 'network' objects
+# see the required 'network' package.
 #
 # Use 'data(package = "latentnet")' to list the data sets in a
 #

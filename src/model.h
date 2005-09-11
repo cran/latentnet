@@ -42,7 +42,7 @@ struct ModelOption {
    receives the entire OptionInput structure as part of its input
    and modifies the .dstats vector of statistics.
 */
-struct OptionInput *selected_options;
+extern struct OptionInput *selected_options;
 
 
 
@@ -51,7 +51,7 @@ struct OptionInput *selected_options;
     completely specify the model; total_options is the total number
     of different options available in option_list.
 */
-int n_options;  
+extern int n_options;  
 /* int total_options; Commented 12/15/03 by CTB */
 
 /*  n_param is the total number of parameters in the model (which is
@@ -59,7 +59,7 @@ int n_options;
     this is not necessarily the same as n_options, unless each option
     returns just a single statistic.
 */
-int n_param;
+extern int n_param;
 
 int ModelInitialize (char *funnames, char *sonames, double *inputs);
 
@@ -68,5 +68,6 @@ void ModelDestroy();
 void DegreeBoundInitialize(int *attribs, int *maxout, int *maxin, int *minout, int *minin, int condAllDegExact, int attriblength);
 
 int GetIndexForAttrValue(int value);
+
 
 #endif

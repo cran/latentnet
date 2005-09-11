@@ -34,7 +34,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
   if(!is.null(z$Z)){
    l <- list(sample=NA, iterations=NA,
              MCMCtheta = z$beta.mle, 
-             loglikelihood=mean(z$Llik),
+             loglikelihood=max(c(z$Llik,z$mle.lik)),
              mcmc.loglikelihood=z$Llik,
              gradient = NA)
    l$Beta <- matrix(z$Beta,nrow=samplesize)
@@ -162,7 +162,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
  }else{
    l <- list(sample=NA, iterations=z$Beta.rate,
              MCMCtheta = z$beta.mle, 
-             loglikelihood=mean(z$Llik),
+             loglikelihood=max(c(z$Llik,z$mle.lik)),
              mcmc.loglikelihood=z$Llik,
              gradient = z$Z.rate)
    Z.pm <- NULL
@@ -184,7 +184,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 # Z.mle <- (mean(z$Alpha)/z$alpha.mle)*(z$Z.mle)
   l$samplesize <- samplesize
   l$Z.mle <- Z.mle
-  l$Z.pm <- Z.pm
+  l$Z.pmean <- Z.pm
   l$Z.pmode <- Z.pmode
   l$latent <- TRUE
   l$cluster <- TRUE

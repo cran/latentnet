@@ -187,7 +187,7 @@ ergmm.statseval.latent1cluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 # Z.mle <- (mean(z$Alpha)/z$alpha.mle)*(z$Z.mle)
   l$samplesize <- samplesize
   l$Z.mle <- Z.mle
-  l$Z.pm <- Z.pm
+  l$Z.pmean <- Z.pm
   l$Z.pmode <- Z.pmode
   l$latent <- TRUE
   l$cluster <- TRUE

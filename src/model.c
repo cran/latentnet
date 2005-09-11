@@ -1,4 +1,7 @@
+#define __MODEL_C__
+
 #include <string.h>
+
 #include "model.h"
 /*  option_list is the master list of option names and corresponding 
     C functions.  Each option name should be paired with a function 
@@ -285,3 +288,6 @@ void DegreeBoundInitialize(int *attribs, int *maxout, int *maxin, int *minout,
 
 
 /* int GetIndexForAttrValue(int value);  unused and undefined */
+
+
+#undef __MODEL_C__

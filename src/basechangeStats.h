@@ -1,6 +1,7 @@
 #ifndef CHANGESTATS_H
 #define CHANGESTATS_H
 
+
 #include "edgeTree.h"
 
 /*  Node and dyad covariates are now passed as part of inputparams.  However, */
@@ -15,11 +16,17 @@ struct OptionInput {
 	double *inputparams; /* ptr to input parameters passed */
 };
 
+
 /*  change_statistics is an array of doubles of length n_param.
-    It is a temporary workspace for holding the value of the
-    change in the graph statistics from one graph to the next.
+It is a temporary workspace for holding the value of the
+change in the graph statistics from one graph to the next.
 */
-double *change_statistics;
+
+#ifdef __BASECHANGESTATS_C__
+#define extern
+#endif
+extern double *change_statistics;
+
 
 void d_latentcov (int ntoggles, Vertex *heads, Vertex *tails, 
 	      struct OptionInput *inp, Gptr g);

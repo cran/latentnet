@@ -33,7 +33,7 @@ rergm(object, \dots)
  \item{n}{Size of the sample of networks to be randomly drawn
     from the given distribution on the set of all networks,
     returned by the Metropolis-Hastings algorithm.}
- \item{mkl}{If this is \code{TRUE}, we will use the minimum Kullback-Leibler positions as the basis of the simulalation (rather than the default MLE positions).}
+ \item{mkl}{If this is \code{TRUE}, we will use the minimum Kullback-Leibler positions as the basis of the simulation (rather than the default MLE positions).}
   \item{\dots}{further arguments passed to or used by methods.}
 }
 
@@ -54,9 +54,9 @@ rergm(object, \dots)
 }
 \value{\code{rergm} returns an object of class \code{network.series} that is a list
   consisting of the following elements:
-  \item{\$formula}{The formula used to generate the sample.}
-  \item{\$networks}{A list of the generated networks.}
-  \item{\$stats}{The \eqn{n\times p}  matrix of network change statistics, 
+  \item{formula}{The formula used to generate the sample.}
+  \item{networks}{A list of the generated networks.}
+  \item{stats}{The \eqn{n\times p}  matrix of network change statistics, 
    where \eqn{n} is the sample size and \eqn{p} is the number
    of network change statistics specified in the model.}
 
