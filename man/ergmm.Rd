@@ -16,7 +16,7 @@
 }
 \usage{
 ergmm(formula, theta0=NULL, 
-     burnin=1000, MCMCsamplesize=1000, interval=100, maxit=5,
+     burnin=1000, MCMCsamplesize=1000, interval=10, maxit=5,
      latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
      returnMCMCstats=TRUE, randseed=NULL, 
      verbose=FALSE, \dots)
@@ -115,10 +115,15 @@ ergmm(formula, theta0=NULL,
  \item{\$coef}{The Monte Carlo maximum likelihood estimate
   of \eqn{\theta}, the vector of coefficients for the model
   parameters.}
- \item{\$sample}{The \eqn{n\times p} matrix of network statistics, 
+ \item{\$sample}{The \eqn{n\times (p+2+k)} matrix of network statistics, 
   where \eqn{n} is the
-  sample size and \eqn{p} is the number of network statistics specified in the
-  model, that is used in the maximum likelihood estimation routine.}
+  sample size and \eqn{p} is the number of network covariates specified in the
+  model via the \code{latentcov} terms (usually 0). The columns are:
+  "mcmc.loglikelihood", the log-likelihood value;
+  "density", the constant term in the latent model;
+  the \code{p} covariates;
+  "Z 1", "Z 2", ..., "Z k", the \code{k} dimensional
+   positions of the first node. The values are recorded for each sample drawn.}
  \item{\$iterations}{The number of Newton-Raphson iterations required
   before convergence.}
  \item{\$MCMCtheta}{The value of \eqn{\theta} used to produce the Markov chain
@@ -137,7 +142,7 @@ ergmm(formula, theta0=NULL,
   give an approximate covariance matrix for the MLE.}
  \item{\$samplesize}{The size of the MCMC sample}
  \item{\$formula}{The original formula entered into the \code{\link{ergmm}} function.}
- \item{\$statsmatrix}{If the option \code{$returnMCMCstats=TRUE}, this is 
+ \item{\$sample}{If the option \code{$returnMCMCstats=TRUE}, this is 
   the the matrix of change statistics from the MCMC run.}
  \item{\$newnetwork}{The network generated at the end of the MCMC sampling.}
 
@@ -164,39 +169,6 @@ ergmm(formula, theta0=NULL,
 #
 # See http://www.csde.washington.edu/statnet
 # for examples
-#
-# load the Florentine marriage data matrix
-#
-data(flo)
-#
-# attach the sociomatrix for the Florentine marriage data
-# This is not yet a network object.
-#
-flo
-#
-# Create a network object out of the adjacency matrix
-#
-flomarriage <- network(flo,directed=FALSE)
-flomarriage
-#
-# print out the sociomatrix for the Florentine marriage data
-#
-sociomatrix(flomarriage)
-#
-# create a vector indicating the wealth of each family (in thousands of lira) 
-# and add it as a covariate to the network object
-#
-flomarriage <- set.vertex.attribute(flomarriage,"wealth",
-  c(10,36,27,146,55,44,20,8,42,103,48,49,10,48,32,3))
-flomarriage
-#
-# create a plot of the social network
-#
-plot(flomarriage)
-#
-# now make the vertex size proportional to their wealth
-#
-plot(flomarriage, vertex.cex="wealth", main="Marriage Ties")
 #
 # Use 'data(package = "latentnet")' to list the data sets in a
 #

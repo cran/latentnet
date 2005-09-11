@@ -132,7 +132,7 @@ void ergmm_latent(int* heads, int* tails,
    double **Z, **Znew, **pZ;
    /*  double *avZ, *param; */
    /* double *vZ, *svZ, *NRvZ, *AvZ; */
-   double lik = 0.0, llkold;
+   double lik = 0.0;
    int n_accept_z=0, n_accept_b=0, top=0;
    int i=0,j=0,l=0, n_sample=0;
    /*    int **D; */
@@ -148,15 +148,15 @@ void ergmm_latent(int* heads, int* tails,
    /*    printf("Here is the initial Z:\n"); */
    /*    print_dmatrix(Z,g,k,stdout); */
     
-   llkold = loglike_y(heads,tails,n_edges,g,Z,k,beta,p,dir,X);
+   lik = loglike_y(heads,tails,n_edges,g,Z,k,beta,p,dir,X);
 
    for(i=0;i<MCMCSampleSize;i++){
 
      /* update Z */
      /*      Rprintf("Testing if new.\n"); */
      tempINT = Z_up(heads,tails,n_edges,Z,zdelta,z_prior_mu,z_prior_sd,
-		    g,k,Znew,beta,p,dir,&llkold,X);
-     /*   Rprintf("llkold = %f %d\n",llkold,tempINT); */
+		    g,k,Znew,beta,p,dir,&lik,X);
+     /* Rprintf("lik = %f %d\n",lik,tempINT); */
      /*   Rprintf("We found Z_up = %d whereas NEW = %d\n",tempINT,NEW); */
      if(tempINT == NEW){
 	 n_accept_z++;
@@ -168,7 +168,7 @@ void ergmm_latent(int* heads, int* tails,
      /* and conditioned on everything else*/
      /*      lik=loglike_y(heads,tails,n_edges,g,Z,k,beta,p,dir,X); */
      if( beta_up(heads,tails,n_edges,Z,g,k,b_prior_mu,
- 	   b_prior_sd,&llkold,beta,p,dir,X,bdelta) == NEW )
+ 	   b_prior_sd,&lik,beta,p,dir,X,bdelta) == NEW )
      {
       /*   Rprintf("lik = %f\n",lik); */
 	   n_accept_b++;
@@ -188,6 +188,7 @@ void ergmm_latent(int* heads, int* tails,
 /* 	 init_dmatrix(pZ,g,k,0.0);  */
 /*        } */
        Llike[top] = lik; 
+/*         Rprintf("lik = %f, Llike %f, top %d\n",lik,Llike[top],top); */
        for(j=0;j<k;j++){ 
 	 for(l=0;l<g;l++){  
 	   vZ_post[top*g*k+j*g+l] = Z[l][j];  

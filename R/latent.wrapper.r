@@ -145,18 +145,22 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
       glm.out <- glm(form,family="binomial")
       aaa <- t(v$Z[1,,])
       if(dim(v$Z)[2]==1){aaa <- matrix(aaa,ncol=1)}
-      statsmatrix <- cbind(v$mcmc.loglikelihood[1:nrow(v$Beta)],
-                           v$Beta, aaa)
-      if(is.latent.cluster(m))
+      if(is.latent.cluster(m)){
+        statsmatrix <- cbind(v$mcmc.loglikelihood[1:nrow(v$Beta)],
+                             v$Beta[,-ncol(v$Beta)], aaa)
         colnames(statsmatrix) <- c("mcmc.loglikelihood", 
-                                   m$coef.names,"beta1",
+                                   m$coef.names,
+#                                 "beta1",
                                    paste("Z",1:dim(v$Z)[2])
                                   )
-      else
+      }else{
+        statsmatrix <- cbind(v$mcmc.loglikelihood[1:nrow(v$Beta)],
+                             v$Beta, aaa)
         colnames(statsmatrix) <- c("mcmc.loglikelihood", 
                                    m$coef.names,
                                    paste("Z",1:dim(v$Z)[2])
                                   )
+      }
       endrun <- burnin+interval*(MCMCsamplesize-1)
       attr(statsmatrix, "mcpar") <- c(burnin+1, endrun, interval)
       attr(statsmatrix, "class") <- "mcmc"

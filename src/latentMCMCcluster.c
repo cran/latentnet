@@ -161,7 +161,7 @@ void ergmm_latent2(int* heads, int* tails,
 {
   double **Z, **Znew, **pZ, *pK, temp, **mubar, Shat;
   double useSig, *vec1, *choldecomp, sum, Sbar, rms;
-  double lik = 0.0, llkold;
+  double lik = 0.0;
   int n_accept_z=0, n_accept_b=0, top=0, i=0,j=0,l=0, n_sample=0, *n, tempINT;
   int loop1, mcmcloop;
   long longdim;
@@ -211,9 +211,9 @@ void ergmm_latent2(int* heads, int* tails,
   for(mcmcloop=0;mcmcloop<MCMCSampleSize;mcmcloop++){
     /*     Rprintf("iteration %3d - ",mcmcloop); */
     /* update Z */
-    llkold = loglike2_y(heads,tails,n_edges,g,Z,dim,beta,p,dir,X, mu, Sigma, Ki, ng);
+    lik = loglike2_y(heads,tails,n_edges,g,Z,dim,beta,p,dir,X, mu, Sigma, Ki, ng);
     tempINT = Z_up2(heads,tails,n_edges,Z,zdelta,z_prior_mu,z_prior_sd,
-		    g,dim,Znew,beta,p,dir,X,mu,Sigma,Ki,ng,&llkold,
+		    g,dim,Znew,beta,p,dir,X,mu,Sigma,Ki,ng,&lik,
 		    chisqprop, thetaprop, Z_mle, A, tZ, tZo, Ahalf, AhalfInv, 
 		    tptrans, eAvectors, eADvalues, teAvectors, avZ, 
 		    avZo, eAvalues, kk_helper, gg_helper, gk_helper, 
@@ -237,9 +237,9 @@ void ergmm_latent2(int* heads, int* tails,
     /* update beta given this new value of Z*/
     /* and conditioned on everything else*/
 
-    llkold=loglike2_y(heads,tails,n_edges,g,Z,dim,beta,p,dir,X, mu, Sigma, Ki, ng);
+    lik=loglike2_y(heads,tails,n_edges,g,Z,dim,beta,p,dir,X, mu, Sigma, Ki, ng);
     if( beta_up2(heads,tails,n_edges,Z,g,dim,b_prior_mu,
-		 b_prior_sd,&llkold,beta,p,dir,X,bdelta,
+		 b_prior_sd,&lik,beta,p,dir,X,bdelta,
 		 mu,Sigma,Ki,ng) == NEW )
     {
       n_accept_b++;

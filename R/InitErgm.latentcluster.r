@@ -1,4 +1,4 @@
-InitErgmm.latentcluster<-function(g, model, k, ngroups, z.delta=0.1,
+InitErgmm.latentcluster<-function(g, model, k, ngroups, drop, z.delta=0.1,
                                  z.prior.mu=0, z.prior.sd=10, b.delta=0.5,
                                  b.prior.mu=0, b.prior.sd=10,
                                  Sigprior = qchisq(0.05,3),

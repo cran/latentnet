@@ -1,5 +1,5 @@
 ergmm <- function(formula, theta0=NULL, 
-        burnin=1000, MCMCsamplesize=1000, interval=100, maxit=5,
+        burnin=1000, MCMCsamplesize=1000, interval=10, maxit=5,
         latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
         returnMCMCstats=TRUE, randseed=NULL,
         verbose=FALSE, ...)
