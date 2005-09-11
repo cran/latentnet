@@ -24,6 +24,7 @@
 \alias{ergmm.procAdj}
 \alias{ergmm.procAdj.fcnt}
 \alias{ergmm.statseval.latentcluster}
+\alias{ergmm.statseval.latent1cluster}
 \alias{is.latent}
 \alias{is.latent.cluster}
 \alias{klswitch.c}

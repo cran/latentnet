@@ -116,11 +116,19 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
 #                         penalty.sigma=latent.control$penalty.sigma,
 #                         verbose=verbose, ...)
         ###NEED to organise output of the function.
-        v <- ergmm.statseval.latentcluster(z, Clist, m, MCMCsamplesize, 
+        if(uo[4] > 1){
+         v <- ergmm.statseval.latentcluster(z, Clist, m, MCMCsamplesize, 
 	    burnin, interval, formula, 
 	    X,dimSpace=uo[4],
 	    maxit=latent.control$maxit,
 	    penalty.sigma=latent.control$penalty.sigma)
+        }else{
+         v <- ergmm.statseval.latent1cluster(z, Clist, m, MCMCsamplesize, 
+	    burnin, interval, formula, 
+	    X,dimSpace=uo[4],
+	    maxit=latent.control$maxit,
+	    penalty.sigma=latent.control$penalty.sigma)
+        }
       }#end if cluster
       yij <- as.matrix.network(g, matrix.type="adjacency")
       X.l <- X
