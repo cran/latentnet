@@ -88,14 +88,14 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
 #
   abz.list <- list(Y=Y,dp=p,X=X,Z=Z,nnodes=g,dimSpace=dimSpace)
 #   abvZ.mds <- optim(par=vector(length=p,mode="numeric"),
-#                     fn=mlpYmdsZ, gr=mlpYmdsZ.grad,
+#                     fn=mlpY.clustermdsZ, gr=mlpY.clustermdsZ.grad,
 #                     method="BFGS", 
 #                     control=list(fnscale=-1, maxit=maxit),
 #                     abz.list=abz.list)
   if(p>0)
   {
     abvZ.mds <- try(optim(par=vector(length=p,mode="numeric"),
-                      fn=mlpYmdsZ, gr=mlpYmdsZ.grad,
+                      fn=mlpY.clustermdsZ, gr=mlpY.clustermdsZ.grad,
                       method="BFGS", 
                       control=list(fnscale=-1, maxit=maxit),
                       abz.list=abz.list))
@@ -103,7 +103,7 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
     {
       abz.list <- list(Y=Y,dp=p,X=X,Z=Z+rnorm(dim(Z)[1]),nnodes=g,dimSpace=dimSpace)
       abvZ.mds <- optim(par=vector(length=p,mode="numeric"),
-                        fn=mlpYmdsZ, gr=mlpYmdsZ.grad,
+                        fn=mlpY.clustermdsZ, gr=mlpY.clustermdsZ.grad,
                         method="BFGS", 
                         control=list(fnscale=-1, maxit=maxit),
                         abz.list=abz.list)
@@ -111,7 +111,7 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
   }
   else
     abvZ.mds <- optim(par=vector(length=1,mode="numeric"),
-                      fn=mlpYmdsZ, gr=mlpYmdsZ.grad,
+                      fn=mlpY.clustermdsZ, gr=mlpY.clustermdsZ.grad,
                       method="BFGS", 
                       control=list(fnscale=-1, maxit=maxit),
                       abz.list=abz.list)    
@@ -139,12 +139,12 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
     else abvZ <- as.vector(Z)
 
     #simulated annealing to find rough mle
-#  abvZ <- optim(par=abvZ,fn=mlpY,Y=Y,dp=p,X=X,nnodes=g,k=dimSpace,
+#  abvZ <- optim(par=abvZ,fn=mlpY.cluster,Y=Y,dp=p,X=X,nnodes=g,k=dimSpace,
 #                method="SANN",
 #                control=list(fnscale=-1, maxit=maxit))$par
    #BFGS  use previous found mle to plug into quasi newton raphson
 #  cat("Calling MLE fit\n")
-#  MLE.fit0 <- optim(par=abvZ,fn=mlpY,Y=Y,dp=p,X=X,nnodes=g,k=dimSpace,
+#  MLE.fit0 <- optim(par=abvZ,fn=mlpY.cluster,Y=Y,dp=p,X=X,nnodes=g,k=dimSpace,
 #                method="BFGS",
 #                control=list(fnscale=-1, maxit=maxit,trace=trace))
 #  cat("Calling MLE fit\n")
@@ -155,11 +155,11 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
     #BFGS  use previous found MDS fit to plug into quasi newton raphson
     abz.list <- list(Y=Y,dp=p,X=X,nnodes=g,dimSpace=dimSpace)
     cat("Calling MLE fit\n")
-#     MLE.fit <- optim(par=abvZ,fn=mlpY,gr=mlpY.grad,
+#     MLE.fit <- optim(par=abvZ,fn=mlpY.cluster,gr=mlpY.cluster.grad,
 #                      method="BFGS",
 #                      control=list(fnscale=-1, maxit=maxit,trace=trace),
 #                      abz.list=abz.list)
-    MLE.fit <- try(optim(par=abvZ,fn=mlpY,gr=mlpY.grad,
+    MLE.fit <- try(optim(par=abvZ,fn=mlpY.cluster,gr=mlpY.cluster.grad,
                          method="BFGS",
                          control=list(fnscale=-1, maxit=maxit,trace=trace),
                          abz.list=abz.list))
@@ -169,7 +169,7 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
         abvZ <- c(beta,Z+rnorm(dim(Z)[1]))
       else abvZ <- as.vector(Z+rnorm(dim(Z)[1]))
 
-      MLE.fit <- optim(par=abvZ,fn=mlpY,gr=mlpY.grad,
+      MLE.fit <- optim(par=abvZ,fn=mlpY.cluster,gr=mlpY.cluster.grad,
                        method="BFGS",
                        control=list(fnscale=-1, maxit=maxit,trace=trace),
                        abz.list=abz.list)
@@ -189,7 +189,7 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
   }else{
     abvZ <- beta
     abz.list <- list(Y=Y,dp=p,X=X,Z=Z,nnodes=g,dimSpace=dimSpace)
-    abvZ.0 <- optim(par=abvZ,fn=mlpY0,gr=mlpY0.grad,
+    abvZ.0 <- optim(par=abvZ,fn=mlpY.cluster0,gr=mlpY.cluster0.grad,
                     hessian=T, method="BFGS",
                     control=list(fnscale=-1, maxit=maxit,trace=trace),
                     abz.list=abz.list)
@@ -274,16 +274,32 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
   if(!require(mclust,quietly=TRUE, warn.conflicts = FALSE)){
    stop("You need the 'mclust' package to fit latent cluster models.")
   }
-  el.hc <- hc(modelName="VII",data=matrix(vZ,ncol=dimSpace))
+  if(dimSpace > 1){
+   el.hc <- hc(modelName="VII",data=matrix(vZ,ncol=dimSpace))
+  }else{
+   el.hc <- hc(modelName="V",data=vZ)
+  }
   cl <- hclass(el.hc,ng)
-  el.me <- me(modelName="VII",data=matrix(vZ,ncol=dimSpace),z=unmap(cl))
+  if(dimSpace > 1){
+    el.me <- me(modelName="VII",data=matrix(vZ,ncol=dimSpace),z=unmap(cl))
+  }else{
+    el.me <- me(modelName="V",data=vZ,z=unmap(cl))
+  }
   if(any(is.na(el.me$mu)))
     {
+     if(dimSpace > 1){
       el.me <- mstep(modelName="VII",data=matrix(vZ,ncol=dimSpace),z=unmap(cl))
-      el.me$z <- unmap(cl)
+     }else{
+      el.me <- mstep(modelName="V",data=vZ,z=unmap(cl))
+     }
+     el.me$z <- unmap(cl)
     }
   mu <- t(el.me$mu)
-  Sigma <- el.me$sigma[1,1,]
+  if(dimSpace > 1){
+   Sigma <- el.me$sigma[1,1,]
+  }else{
+   Sigma <- el.me$sigma
+  }
   Ki <- map(el.me$z)
 #  cat("mu:\n")
 #  print(mu)
@@ -385,7 +401,7 @@ DistMatrix<-function(X)
 # MINUS log prob of network, with Z in vector form, 
 # With Z[1]=alpha and the rest as Z[1,1], Z[1,2], Z[2,1]..........
 # to be used in by optim or nlm
-mlpY<-function(abvZ, abz.list)
+mlpY.cluster<-function(abvZ, abz.list)
 {
   dp <- abz.list$dp
   dimSpace <- abz.list$dimSpace
@@ -428,7 +444,7 @@ mlpY<-function(abvZ, abz.list)
   sum( Y*eta - log( 1+exp(eta) ) )
 }
 
-mlpY.grad<-function(abvZ, abz.list)
+mlpY.cluster.grad<-function(abvZ, abz.list)
 {   
 
   dp <- abz.list$dp
@@ -493,7 +509,7 @@ mlpY.grad<-function(abvZ, abz.list)
   Dllik
 }
 
-mlpYmdsZ<-function(abvZ,abz.list)
+mlpY.clustermdsZ<-function(abvZ,abz.list)
 {   
   dp <- abz.list$dp
   dimSpace <- abz.list$dimSpace
@@ -531,7 +547,7 @@ mlpYmdsZ<-function(abvZ,abz.list)
   sum( Y*eta - log( 1+exp(eta) ) )
 }
 
-mlpYmdsZ.grad<-function(abvZ,abz.list)
+mlpY.clustermdsZ.grad<-function(abvZ,abz.list)
 {   
   dp <- abz.list$dp
   dimSpace <- abz.list$dimSpace
@@ -578,7 +594,7 @@ mlpYmdsZ.grad<-function(abvZ,abz.list)
   Dllik
 }
 
-mlpYnull<-function(abvZ,Y,dp,X,nnodes,k=2)
+mlpY.clusternull<-function(abvZ,Y,dp,X,nnodes,k=2)
 {   
   # extract parameters
   if(dp>0)
@@ -610,7 +626,7 @@ mlpYnull<-function(abvZ,Y,dp,X,nnodes,k=2)
   -(  sum( Y*eta - log( 1+exp(eta) ) ) + dim(Y)[1]*log(2)  )
 }
 
-mlpY0<-function(abvZ,abz.list)
+mlpY.cluster0<-function(abvZ,abz.list)
 {   
   dp <- abz.list$dp
   dimSpace <- abz.list$dimSpace
@@ -643,7 +659,7 @@ mlpY0<-function(abvZ,abz.list)
   sum( Y*eta - log( 1+exp(eta) ) )
 }
 
-mlpY0.grad<-function(abvZ, abz.list)
+mlpY.cluster0.grad<-function(abvZ, abz.list)
 {   
   dp <- abz.list$dp
   dimSpace <- abz.list$dimSpace
@@ -684,31 +700,3 @@ mlpY0.grad<-function(abvZ, abz.list)
   aaa <- as.vector(aaa %*% Deta)
   aaa
 }
-
-##############################################################################
-##############################################################################
-#  Gives the negative distance between nodes
-## This uses the distance formula and fancy tricks
-## for dim k: d[i,j] <- sqrt( (x1i-x2j)^2 + ..... + (xki-xkj)^2 ) 
-## ==> 
-##  d[i,j]^2 = x1i^2 + x2j^2 +...+ x1k^2 + x2k^2 - 2*x1i*x1j -...- 2*x1k*x2k
-## that is what the matrix manipulations below do.
-lpz.dist<-function(Z)
-{
-  # the diagonals of this will be the sum of square of all the cordinates
-  # for each node.  We want to add all these together for each point.
-  ZtZ<-Z%*%t(Z)
-  mg<-as.matrix(diag(ZtZ))%*%rep(1,length(Z[,1])) 
-
-  # adding together all of the squared distances of each pair
-  mg<-mg+t(mg)
-   
-  # This takes the square root of the the squares minus 2 times coords
-  d<-sqrt((mg-2*ZtZ))
-  #returns the negative distance
-  -d             
-}
-
-###############################################################################
-
-

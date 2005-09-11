@@ -135,8 +135,10 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
       form <- formula(form)
       yij <- yij[row(yij) != col(yij)]
       glm.out <- glm(form,family="binomial")
+      aaa <- t(v$Z[1,,])
+      if(dim(v$Z)[2]==1){aaa <- matrix(aaa,ncol=1)}
       statsmatrix <- cbind(v$mcmc.loglikelihood[1:nrow(v$Beta)],
-                           v$Beta, t(v$Z[1,,]))
+                           v$Beta, aaa)
       if(is.latent.cluster(m))
         colnames(statsmatrix) <- c("mcmc.loglikelihood", 
                                    m$coef.names,"beta1",

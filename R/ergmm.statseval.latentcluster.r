@@ -13,20 +13,21 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
    stop("You need the 'shapes' package to summarize the fit of latent cluster models.")
   }
 
+  drop <- dim(z$Z)[2]!=1
   Z.mean <- matrix(0,nrow=samplesize,ncol=ndim)
   for(i in 1:samplesize)
-    Z.mean[i,] <- apply(z$Z[,,i],2,mean)
+    Z.mean[i,] <- apply(z$Z[,,i,drop=drop],2,mean)
 
   Z.proc <- z$Z
   for(i in 1:samplesize)
-    Z.proc[,,i] <- Z.proc[,,i] - matrix(Z.mean[i,],Nnodes,ndim,byrow=TRUE)
+    Z.proc[,,i] <- Z.proc[,,i] - matrix(Z.mean[i,drop=drop],Nnodes,ndim,byrow=TRUE)
 
   Mu.proc <- array(0,c(ngroups,ndim,samplesize))
   for(i in 1:samplesize)
   {
-    temp <- procOPA(z$Z.mle,z$Z[,,i],FALSE,TRUE)
-    Z.proc[,,i] <- fcnt(z$Z[,,i]) %*% temp$R
-    Mu.proc[,,i] <- fcnt(matrix(z$mu[i,],ngroups,ndim,byrow=TRUE)) %*% temp$R
+    temp <- procOPA(z$Z.mle,z$Z[,,i,drop=drop],FALSE,TRUE)
+    Z.proc[,,i] <- fcnt(z$Z[,,i,drop=drop]) %*% temp$R
+    Mu.proc[,,i] <- fcnt(matrix(z$mu[i,drop=drop],ngroups,ndim,byrow=TRUE)) %*% temp$R
   }
 
   
@@ -63,7 +64,10 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
     }
     Z.pmode <- array(0, dim=c(Nnodes,ndim))
     for(k in 1:Nnodes){
-     Z.pmode[k,] <- pmode(t(Z.proc[k,,]))
+#    Z.pmode[k,] <- pmode(t(Z.proc[k,,]))
+     aaa <- t(Z.proc[k,,])
+     if(dim(Z.proc)[2]==1){aaa <- t(aaa)}
+     Z.pmode[k,] <- pmode(aaa)
     }
    }else{
     Z.pmode <- Z.pm
@@ -204,7 +208,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
     Z.sigma <- matrix(NA,ngroups,samplesize)
     for(loop in 1:samplesize)
     {
-      mu.1 <- apply(Z.proc[,,loop],2,function(x,ki)tapply(x,ki,mean),ki = Z.Ki[loop,])
+      mu.1 <- apply(Z.proc[,,loop,drop=drop],2,function(x,ki)tapply(x,ki,mean),ki = Z.Ki[loop,])
       mutab <- table(Z.Ki[loop,])
       mu.names <- as.numeric(names(mutab))
       n1 <- length(mutab)
@@ -264,7 +268,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
         {
           qig[i,g] <- 0
           for(k in 1:samplesize)
-            qig[i,g] <- qig[i,g] + 1/samplesize * prod(dnorm(Z.proc[i,,k],Mu.proc[vt[k,g],,k],z$Sigma[k,vt[k,g]]))
+            qig[i,g] <- qig[i,g] + 1/samplesize * prod(dnorm(Z.proc[i,,k,drop=drop],Mu.proc[vt[k,g],,k],z$Sigma[k,vt[k,g]]))
         }
       qig <- qig / apply(qig,1,sum)
 
@@ -283,7 +287,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
         {
           qig[i,g] <- 0
           for(k in 1:samplesize)
-            qig[i,g] <- qig[i,g] + 1/samplesize * prod(dnorm(Z.proc[i,,k],Mu.proc[vt[k,g],,k],z$Sigma[k,vt[k,g]]))
+            qig[i,g] <- qig[i,g] + 1/samplesize * prod(dnorm(Z.proc[i,,k,drop=drop],Mu.proc[vt[k,g],,k],z$Sigma[k,vt[k,g]]))
         }
     qig <- qig / apply(qig,1,sum)
   
@@ -310,7 +314,8 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
   Y.dist <- distmat[!diag(Nnodes)]
 
   abvZ <- c(0.36)
-  logit.fit <- optim(par=abvZ,fn=logit.negloglike,method="BFGS", hessian=TRUE,
+  logit.fit <- optim(par=abvZ,fn=logit.negloglike,method="BFGS", 
+                     hessian=TRUE,
                      control=list(maxit=200,trace=trace),
                      Y=Y,Y.dist=Y.dist)
 
@@ -319,15 +324,26 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
   Z.mkl.use <- l$Z.mkl
   
   temp <-   as.numeric(names(table(labs.use))[table(labs.use) < 3])
-  for(i in temp)
+  if(length(temp)>0){
+   for(i in temp)
     {
-      Z.mkl.use <- Z.mkl.use[!labs.use==i,]
+      if(drop){
+       Z.mkl.use <- Z.mkl.use[!labs.use==i,]
+      }else{
+       Z.mkl.use <- Z.mkl.use[!labs.use==i, drop=FALSE]
+      }
       labs.use <- labs.use[!labs.use==i]
     }
+  }
 
-
-  mbc.fit <- me(modelName="VII",Z.mkl.use,unmap(labs.use))
-  bicMBC <- bic("VII",mbc.fit$loglik,mbc.fit$n,mbc.fit$d,ngroups)
+browser()
+  if(dimSpace > 1){
+   mbc.fit <- me(modelName="VII",Z.mkl.use,unmap(labs.use))
+   bicMBC <- bic("VII",mbc.fit$loglik,mbc.fit$n,mbc.fit$d,ngroups)
+  }else{
+   mbc.fit <- me(modelName="V",Z.mkl.use,unmap(labs.use))
+   bicMBC <- bic("V",mbc.fit$loglik,mbc.fit$n,mbc.fit$d,ngroups)
+  }
 
   l$d.mbc <- (ngroups) * 4 - 1  #d
   l$ngroups <- ngroups  #G
@@ -345,7 +361,7 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
   Mu.new <- Mu.proc
   for(g in 1:ngroups)
     for(k in 1:samplesize)
-      Mu.new[g,,k] <- Mu.proc[vt[k,g],,k]
+      Mu.new[g,,k] <- Mu.proc[vt[k,g],,k,drop=drop]
   Sigma.new <- z$Sigma
   for(k in 1:samplesize)
     Sigma.new[k,] <- z$Sigma[k,vt[k,]]

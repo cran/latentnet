@@ -39,7 +39,9 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
     }
     Z.pmode <- array(0, dim=c(Nnodes,ndim))
     for(k in 1:Nnodes){
-     Z.pmode[k,] <- pmode(t(z$Z[k,,]))
+     aaa <- t(z$Z[k,,])
+     if(dim(z$Z)[2]==1){aaa <- t(aaa)}
+     Z.pmode[k,] <- pmode(aaa)
     }
    }else{
     Z.pmode <- Z.pm

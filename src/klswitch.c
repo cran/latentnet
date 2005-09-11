@@ -61,18 +61,12 @@ void klswitch(long p, long nnodes, long nsamp, long ngroups,
 	    jexp2 = Z[ARRAY(j,i,k,nnodes,p,nsamp)] - 
 	      mu[ARRAY(permute[MAT(loop,g,npermute)]-1, i ,k,ngroups,p,nsamp)];
 	    jexp1 += jexp2 * jexp2;
-	    /* 	    if(loop==0) */
-	    /* 	      Rprintf("jexp2 = %1.4f, jexp1 = %1.4f\n",jexp2,jexp1); */
 	  }
-	  jexp1 = jexp1 / (-2 * Sigma[k,permute[MAT(loop,g,npermute)]-1]);
+	  jexp1 = jexp1 / (-2 * Sigma[MAT(k,permute[MAT(loop,g,npermute)]-1,nsamp)]);
 	  probtemp = -0.5*(p) * 
-	    log(2 * M_PI * Sigma[k,permute[MAT(loop,g,npermute)]-1]) + jexp1;
-	  /* 	  if(loop==0) */
-	  /* 	    Rprintf("probtemp = %1.4f\n",probtemp); */
+	   log(2 * M_PI * Sigma[MAT(k,permute[MAT(loop,g,npermute)]-1,nsamp)]) + jexp1;
 	  prob = prob + exp(probtemp) * log(exp(probtemp) / qig[MAT(j,g,nnodes)]);
 	}/* end for gh in 0:ngroups */
-      /*       if(loop==0) */
-      /* 	Rprintf("prob = %1.4f    probmin = %1.4f\n",prob,probmin); */
       if(prob < probmin)
       {
 	probmin = prob;

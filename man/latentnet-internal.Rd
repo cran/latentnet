@@ -37,6 +37,13 @@
 \alias{mlpYmdsZ}
 \alias{mlpYmdsZ.grad}
 \alias{mlpYnull}
+\alias{mlpY.cluster}
+\alias{mlpY.cluster0}
+\alias{mlpY.cluster0.grad}
+\alias{mlpY.cluster.grad}
+\alias{mlpY.clustermdsZ}
+\alias{mlpY.clustermdsZ.grad}
+\alias{mlpY.clusternull}
 \alias{mvimode}
 \alias{ergmm.permutation}
 \alias{plot.mcmc.ergmm}
