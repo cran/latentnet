@@ -23,7 +23,7 @@ plot.ergmm(x, \dots, mle=FALSE, comp.mat = NULL,
   probabilities of cluster membership can be shown.  It also plots the
   posterior density of the nodes or a series of contour plots, one for
   each node. See \code{\link{ergmm}} for more information on how to fit these
-  models.
+  models. Some plotting options depend on the \code{KernSmooth} package.
 }
 \arguments{
   \item{x}{an R object of class \code{\link{ergmm}}.

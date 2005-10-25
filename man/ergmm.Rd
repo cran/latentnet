@@ -5,7 +5,7 @@
   \code{\link{ergmm}} is used to fit latent space and latent space cluster random network models, 
     as described in Hoff, Raftery and Handcock (2002) and 
     Handcock, Raftery and Tantrum (2005).
-  \code{\link{ergmm}} can produces likelihood-based inference. Approximate maximum likelihood estimators are computed, and Bayesian inference is implemented via a MCMC algorithm.
+  \code{\link{ergmm}} produces likelihood-based inference. Approximate maximum likelihood estimators are computed, and Bayesian inference is implemented via a MCMC algorithm.
 % \code{\link{ergmm}} can also be used to fit linear exponential random network models, in which
 % the probability of a given network, \eqn{g}, on a set of nodes is 
 % \eqn{\exp(\theta^{T}S(g))/c(\theta)}, where 
@@ -61,11 +61,12 @@ ergmm(formula, theta0=NULL,
   This is used in the MLE of positions only and not the MCMC
   log-likelihood. It can be interpreted as a surrogate for
   a prior distribution and expresses the belief that the latent distances are
-  not too large on the log-odds scale. The default value is
-  \code{latent.control=list(maxit=40,penalty.sigma=c(10,0.5))}.
+  not too large on the log-odds scale. 
+% The default value is
+% \code{latent.control=list(maxit=40,penalty.sigma=c(10,0.5))}.
   }
  \item{returnMCMCstats}{If this is \code{TRUE} the matrix of change 
-  statistics from the MCMC run is returned as component \code{$sample}.
+  statistics from the MCMC run is returned as component \code{sample}.
   This matrix is actually an object of class \code{mcmc} and can be 
   used directly in the \code{CODA} package to assess MCMC convergence.}
 %See \url{http://www.mrc-bsu.cam.ac.uk/bugs/classic/coda04/readme.shtml}.}
@@ -83,17 +84,17 @@ ergmm(formula, theta0=NULL,
 components and fits including a \code{latent} term  will have at least
 the components up to and including \code{network}.
 
- \item{Beta}{The \code{MCMCsamplesize}\eqn{\times p} matrix of coefficients for the model
-  parameters corresponding to each of the posterior samples. By default this is
-  the intercept only.}
  \item{coef}{The maximum likelihood estimate
   the \eqn{p} vector of coefficients for the model
   parameters (excluding the latent positions and cluster parameters). 
   By default this is just the intercept with \eqn{p=1}.}
  \item{coef.names}{A \eqn{p} vector of the coefficient names.}
+ \item{Beta}{The \code{MCMCsamplesize}\eqn{\times p} matrix of coefficients for the model
+  parameters corresponding to each of the posterior samples. By default this is
+  the intercept only.}
  \item{Z}{The \code{MCMCsamplesize}\eqn{\times k} matrix of (Procrustified)
   posterior positions, where \code{MCMCsamplesize} is the
-  sample size and \eqn{k} is the number of dimension of the space.}
+  sample size and \eqn{k} is the number of dimensions of the latent space.}
  \item{Z.mkl}{The \code{network.size(g)}\eqn{\times} \code{k} matrix of 
   minimum Kullback-Leibler positions for each of the nodes.}
  \item{Z.pmean}{The \code{network.size(g)}\eqn{\times} \code{k} matrix of 
@@ -109,26 +110,28 @@ the components up to and including \code{network}.
   where \code{MCMCsamplesize} is the
   sample size and \eqn{p} is the number of network covariates specified in the
   model via the \code{latentcov} terms (usually 0). The columns are:
-  "mcmc.loglikelihood", the log-likelihood value;
-  "density", the constant term in the latent model;
+  ``mcmc.loglikelihood", the log-likelihood value;
+  ``density", the constant term in the latent model;
   the \code{p} covariates;
-  "Z 1", "Z 2", ..., "Z k", the \code{k} dimensional
-   positions of the first node. The values are recorded for each sample drawn.}
+  ``Z 1", ``Z 2", ..., ``Z k", the \code{k} dimensional
+   positions of the first node. The values are recorded for each sample drawn.
+   This is primarily used for MCMC diagnostics to assess convergence.}
  \item{iterations}{The number of Newton-Raphson iterations required
   before convergence.}
  \item{interval}{The number of proposals between sampled statistics.}
 %\item{MCMCtheta}{The value of used to produce the Markov chain
 % Monte Carlo sample.  As long as the Markov chain mixes sufficiently
-% well, \code{$sample} is roughly a random sample from the distribution
+% well, \code{sample} is roughly a random sample from the distribution
 % of network statistics specified by the model with the parameter equal
-% to \code{$MCMCtheta}.  In the current version, if startatMPLE is 
-% \code{TRUE}, then \code{$MCMCtheta} equals the MPLE.}
+% to \code{MCMCtheta}.  In the current version, if startatMPLE is 
+% \code{TRUE}, then \code{MCMCtheta} equals the MPLE.}
  \item{null.deviance}{The deviance for the null model, comparable with
     \code{-2 loglikelihood}. The null model will include the 
     intercept if there is one in the model, but not the latent variables or latent
     clusters.}
  \item{mcmc.loglikelihood}{The log-likelihood values corresponding to each of the posterior samples.}
- \item{loglikelihood}{The log-likelihood for the MLE of positions}
+ \item{loglikelihood}{The log-likelihood for the MLE of positions (and based on
+the final fits to the other parameters).}
  \item{mle.lik}{The log-likelihood for the initial MLE fit of positions.}
 % The value is only approximate because it is based on the MCMC random sample.}
 %\item{gradient}{The value of the gradient vector of the approximated
@@ -149,7 +152,7 @@ the components up to and including \code{network}.
   package.} 
 %\item{newnetwork}{The network generated at the end of the MCMC sampling.}
  \item{network}{The modeled network as an \code{network} object.}
- \item{BIC}{A Bayesian Information Criterion for the model. See the reference
+ \item{BIC}{A Bayesian Information Criterion for the model. See the references
             for details.}
  \item{class}{The vector of posterior modal classes for each node.}
 %\item{d.mbc}{}

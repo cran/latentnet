@@ -59,7 +59,7 @@
 \alias{ergmm.labelswitch}
 \alias{ergmm.midarrow}
 \alias{ergmm.plinfo.latent}
-\alias{network.dyadcount}
+\alias{network.dyadcounts}
 \alias{robust.inverse}
 %
 % These need to be documented!

@@ -6,12 +6,13 @@
   function \code{\link{ergmm}}
   which is used to fit a latent position model to a 
   given network, \eqn{g}.
-  \code{\link{ergmm}} returns a Bayesian model fit based on a Monte Carlo scheme
+  \code{\link{ergmm}} returns a Bayesian model fit based on a 
+  Monte Carlo scheme.
   The default prior specifications are diffuse. An approximate MLE fit is
   also returned. 
 
   The \code{\link{ergmm}} specifies models via: \code{g ~ latent(<options>)}
-  where \code{g} is a \code{network} object
+  where \code{g} is a \code{network} object.
   For the list of possible \code{<options>}, see below.
   For the list of other model terms, see
   the manual pages for \code{terms.ergmm}.
@@ -35,7 +36,8 @@ passed it is used for each dimension.}
 constant is passed it is used for each dimension.}
 %\item{\dots}{Specific to the model term.}
 }
-\value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
+\value{\code{\link{ergmm}} returns an object of class \code{\link{ergmm}} that
+is a list.
 }
 \seealso{latentcluster, plot.ergmm, sna, network, terms.ergmm}
 \references{

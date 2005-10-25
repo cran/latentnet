@@ -358,7 +358,7 @@ Gptr DesignInitialize(double *heads, double *tails, Edge nedges) {
   mg.directed_flag=&directed_flag;
 
   if(nedges > 0){
-   mg.designempty = 0;
+   *mg.designempty = 0;
    for(i = nedges; i > 0; i--) {
     j = i * unif_rand();  /* shuffle edgelist to help bin. tree achieve best perf */
     h = (Vertex)heads[j];
@@ -373,7 +373,7 @@ Gptr DesignInitialize(double *heads, double *tails, Edge nedges) {
       AddEdgeToTrees(h,t,mg);
    }
   }else{
-   mg.designempty = 1;
+   *mg.designempty = 1;
   }
 
 #if 0

@@ -61,14 +61,14 @@ mvimode <- function(x, fix=NULL, maxit=10, theta0=NULL, simple=TRUE)
    fix <- rep(FALSE,ncol(x))
  }
  if(!require(locfit,quietly=TRUE, warn.conflicts = FALSE)){
-   stop("You need the 'locfit' package to fit latent models.")
+   stop("You need the 'locfit' package to fit latent cluster models.")
  }
 #tempout <- capture.output(
 # require(locfit, quietly = TRUE, warn.conflicts = FALSE)
 #                         )
- if(!require(mvtnorm,quietly=TRUE, warn.conflicts = FALSE)){
-   stop("You need the 'mvtnorm' package to fit latent cluster models.")
- }
+#if(!require(mvtnorm,quietly=TRUE, warn.conflicts = FALSE)){
+#  stop("You need the 'mvtnorm' package to fit latent cluster models.")
+#}
  ncolx <- ncol(x) - sum(fix)
  x <- x[,!fix]
  covar0 <- var(x)
@@ -135,7 +135,7 @@ mvimode <- function(x, fix=NULL, maxit=10, theta0=NULL, simple=TRUE)
 
 # Retrieve the number of free dyads (i.e., number of non-missing) of network x.
 #
-network.dyadcount<-function(x){
+network.dyadcounts<-function(x){
   if(!is.network(x))
     stop("network.dyadcount requires an argument of class network.")
 

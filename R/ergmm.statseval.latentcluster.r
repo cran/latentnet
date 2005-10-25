@@ -314,7 +314,9 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
                      control=list(maxit=200,trace=trace),
                      Y=Y,Y.dist=Y.dist)
 
-  bicLR <- -2 * logit.fit$value - 1 * log(Nnodes*(Nnodes-1))
+# Next original
+# bicLR <- -2 * logit.fit$value - 1 * log(Nnodes*(Nnodes-1))
+  bicLR <- -2 * logit.fit$value - 1 * log(sum(Y))
   labs.use <- labs
   Z.mkl.use <- l$Z.mkl
   

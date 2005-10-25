@@ -88,7 +88,8 @@ summary.ergmm <- function (object, ..., correlation=FALSE, covariance=FALSE)
     }
 
     nodes<- network.size(object$network)
-    dyads<- network.dyadcount(object$network)
+    dyads<- network.dyadcounts(object$network)
+    edges<- network.edgecount(object$network)
     if(!is.null(object$Z.mkl)){
       p <- ncol(object$Z.mkl)
     }else{
@@ -169,7 +170,8 @@ summary.ergmm <- function (object, ..., correlation=FALSE, covariance=FALSE)
    object$aic <- -2*object$mle.lik + 2*df
 # }
 # if(is.null(object$bic)){
-   object$bic <- -2*object$mle.lik + log(dyads)*df
+#  object$bic <- -2*object$mle.lik + log(dyads)*df
+   object$bic <- -2*object$mle.lik + log(edges)*df
 # }
   cat(paste("AIC:", format(object$aic, digits = 5), "  ", 
             "BIC:", format(object$bic, digits = 5), "\n", sep=" "))

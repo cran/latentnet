@@ -50,15 +50,15 @@ q to within an accuracy of +/- r with probability p is
 calculated. Separate calculations are performed for each
 variable within each chain.
 
-In fact, an \code{object} contains the matrix of
-statistics from the MCMC run as component \code{$sample}.
+In fact, \code{object} contains the matrix of
+statistics from the MCMC run as component \code{sample}.
 This matrix is actually an object of class \code{mcmc} and
 can be used directly in the \code{CODA} package to assess MCMC
 convergence. Hence MCMC diagnostic methods available
 in \code{coda} may be available directly. See the examples and
-%\url{http://www.mrc-bsu.cam.ac.uk/bugs/classic/coda04/readme.shtml}.
 the \code{coda} package.
 
+This function depends on the \code{coda} package.
 More information can be found by looking at the documentation of
 \code{\link{ergmm}}.
 }

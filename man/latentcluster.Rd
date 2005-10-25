@@ -4,9 +4,9 @@
 \description{
   \code{latentcluster()} is a term to the  %\code{\link{statnet}}
   function \code{\link{ergmm}}
-  to fit a latent position model to a 
+  to fit a latent position cluster model to a 
   given network, \eqn{g}.
-  \code{\link{ergmm}} returns a Bayesian model fit based on a Monte Carlo scheme
+  \code{\link{ergmm}} returns a Bayesian model fit based on a Monte Carlo scheme.
   The default prior specifications are diffuse. An approximate MLE fit is
   also returned. 
 
@@ -50,7 +50,8 @@ the cluster mean. If a constant is passed it is used for each dimension.}
 the cluster mean. If a constant is passed it is used for each dimension.}
 \item{\dots}{Specific to the model term.}
 }
-\value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
+\value{\code{\link{ergmm}} returns an object of class \code{\link{ergmm}} that
+is a list.
 }
 \seealso{latent, plot.ergmm, sna, network, terms.ergmm}
 \references{

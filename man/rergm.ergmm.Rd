@@ -23,9 +23,10 @@ rergm(object, \dots)
  \item{prob}{The probability of a link for Bernoulli networks.  Defaults
     to 0.5 if neither prob nor theta0 are given.}
  \item{theta0}{For Bernoulli networks this is the log-odds of a tie,
-    however it is only used if prob is not specified.  When given either
-    a formula or an object of class \code{ergmm}, theta0 are the parameters
-    from which the sample is drawn.}
+    however it is only used if prob is not specified.}
+%   When given either
+%   a formula or an object of class \code{ergmm}, theta0 are the parameters
+%   from which the sample is drawn.}
  \item{directed}{Whether the Bernoulli network should be directed or undirected.}
  \item{numedges}{If present, sample the network(s) conditional on this 
     number of edges (rather than independently with the 
@@ -40,7 +41,8 @@ rergm(object, \dots)
 \details{
   A sample of networks is randomly drawn from the specified model.  The
   model is either specified by the first argument of the function.  If
-  the first argument is a formula then this defines the model.
+  the first argument is a an \code{ergmm} object 
+  then this defines the model.
   If this is not given as the
   first argument then a Bernoulli network is generated with the probability
   of ties defined by \code{prob} or \code{theta0}.
