@@ -218,7 +218,7 @@
           }
       if (is.null(label)) 
         label <- 1:network.size(x$network)
-      if((!is.null(x$cluster)) & !pie)
+      if((!is.null(x$cluster) && x$cluster) & !pie)
         {
           points(z.pos,cex=vertex.cex,col=vertex.col,pch=vertex.pch)
           if(label.col=="black") label.col <- "white"

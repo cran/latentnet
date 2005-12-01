@@ -182,9 +182,14 @@ latent.wrapper <- function(theta0, trms, g, m, Clist, mClist,
 #     v$null.deviance <- v$glm$null.deviance
       v$null.deviance <- glm.out$null.deviance
 #     v$mle.lik <- -0.5*v$glm$deviance
-      if(is.null(v$cluster)){v$cluster <- FALSE} 
 #     Nullify some clustering stuff
       v$d.mbc <- NULL
-      v$bic <- NULL
+      if(!is.latent.cluster(m)){
+        v$cluster <- FALSE
+#       v$bic <- NULL
+#       v$aic <- NULL
+      }else{
+        v$cluster <- TRUE
+      }
       v
 }

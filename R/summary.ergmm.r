@@ -95,7 +95,7 @@ summary.ergmm <- function (object, ..., correlation=FALSE, covariance=FALSE)
     }else{
       p <- 0
     }
-    if(!is.null(object$cluster)){
+    if(!is.null(object$cluster) && object$cluster ){
       df <- length(object$coef) + object$ngroups*(p+2) - 1 # ng-1 + ng *p + ng
     }else{
       df <- length(object$coef) + (nodes - (p + 1)/2) * p
@@ -130,11 +130,13 @@ summary.ergmm <- function (object, ..., correlation=FALSE, covariance=FALSE)
   } 
   
   cat("\n")
-  if(any(is.na(object$mc.se)) & !all(object$theta1$independent)){
-   if(is.na(object$samplesize) & !all(object$theta1$independent)){
-    warning("\n  The standard errors are based on naive pseudolikelihood and are suspect.\n")
-   }else{
-    warning("\n  The standard errors are suspect due to possible poor convergence.\n")
+  if(!is.null(object$mc.se)){
+   if(any(is.na(object$mc.se)) & !all(object$theta1$independent)){
+    if(is.na(object$samplesize) & !all(object$theta1$independent)){
+     warning("\n  The standard errors are based on naive pseudolikelihood and are suspect.\n")
+    }else{
+     warning("\n  The standard errors are suspect due to possible poor convergence.\n")
+    }
    }
   }
 # if(is.na(object$samplesize)){
@@ -166,13 +168,13 @@ summary.ergmm <- function (object, ..., correlation=FALSE, covariance=FALSE)
                 digits = 5)," degrees of freedom\n"), 
             1, paste, collapse = " "),"\n")
   }
-# if(is.null(object$aic)){
-   object$aic <- -2*object$mle.lik + 2*df
-# }
-# if(is.null(object$bic)){
+  if(is.null(object$aic)){
+   object$aic <- 2*object$mle.lik - 2*df
+  }
+  if(is.null(object$bic)){
 #  object$bic <- -2*object$mle.lik + log(dyads)*df
-   object$bic <- -2*object$mle.lik + log(edges)*df
-# }
+   object$bic <- 2*object$mle.lik - log(edges)*df
+  }
   cat(paste("AIC:", format(object$aic, digits = 5), "  ", 
             "BIC:", format(object$bic, digits = 5), "\n", sep=" "))
   
