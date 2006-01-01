@@ -18,9 +18,9 @@
 .conflicts.OK <- "0.7-0"
 
 .First.lib <- function(lib, pkg){
-    if(substr(as.character(Sys.Date()),start=1,stop=4) > "2005"){
-     stop('Your version of the "latentnet" package is out-of-date.\nGo to http://www.csde.washington.edu/statnet for an update.')
-    }
+#   if(substr(as.character(Sys.Date()),start=1,stop=4) > "2005"){
+#    stop('Your version of the "latentnet" package is out-of-date.\nGo to http://www.csde.washington.edu/statnet for an update.')
+#   }
     library.dynam("latentnet", pkg, lib)
     if(R.version$major=="1"){
      ehelp <- help(package="latentnet")$info[[2]][[2]]
