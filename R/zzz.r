@@ -44,5 +44,6 @@
 "                    Peter Hoff, University of Washington\n",sep=""))
     cat('See http://www.csde.washington.edu/statnet\n')
     cat('Type help(package="latentnet") to get started.\n')
+    cat('To cite, see citation("latentnet")\n')
     require(network, quietly=TRUE)
 }
