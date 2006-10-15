@@ -81,7 +81,7 @@ ergmm.statseval.latent1cluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 #
 #  Calculate the correct MLE
 #
-   Y <- sociomatrix(z$newnetwork)
+   Y <- as.sociomatrix(z$newnetwork)
    reach <- ergmm.geodesicmatrix(z$newnetwork)!=Inf
    nnodes <- dim(z$Z)[1]
    dp <- length(X)
@@ -309,7 +309,7 @@ ergmm.statseval.latent1cluster <- function (z, Clist, m, MCMCsamplesize, burnin,
     }
 
   distmat <- as.matrix(dist(l$Z.mkl))
-  Y <- sociomatrix(z$newnetwork)[!diag(Nnodes)]
+  Y <- as.sociomatrix(z$newnetwork)[!diag(Nnodes)]
   Y.dist <- distmat[!diag(Nnodes)]
 
   abvZ <- c(0.36)

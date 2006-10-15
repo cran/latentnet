@@ -5,7 +5,7 @@ ergmm.latentplot <- function(gY, dimSpace=2, theta0=NULL,
                         penalty.sigma=c(10,0.5), maxit=200, trace=0,
                         nsubsample=100, verbose=TRUE)
 {
-   Y <- sociomatrix(gY)
+   Y <- as.sociomatrix(gY)
    directed <- is.directed(gY)
 #  Ydesign <- get.network.attribute(gY,"design")
 #  if(!is.null(Ydesign)){

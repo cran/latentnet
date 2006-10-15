@@ -285,7 +285,7 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
   }else{
     el.me <- me(modelName="V",data=vZ,z=unmap(cl))
   }
-  if(any(is.na(el.me$mu)))
+  if(any(is.na(el.me$parameters$mean)))
     {
      if(dimSpace > 1){
       el.me <- mstep(modelName="VII",data=matrix(vZ,ncol=dimSpace),z=unmap(cl))
@@ -294,11 +294,11 @@ ergmm.latentcluster <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL, ng = 1
      }
      el.me$z <- unmap(cl)
     }
-  mu <- t(el.me$mu)
+  mu <- t(el.me$parameters$mean)
   if(dimSpace > 1){
-   Sigma <- el.me$sigma[1,1,]
+   Sigma <- el.me$parameters$variance$sigma[1,1,]
   }else{
-   Sigma <- el.me$sigma
+   Sigma <- el.me$parameters$variance$sigma
   }
   Ki <- map(el.me$z)
 #  cat("mu:\n")

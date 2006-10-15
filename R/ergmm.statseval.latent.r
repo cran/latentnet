@@ -59,7 +59,7 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
 #
 #  Calculate the correct MLE
 #
-   Y <- sociomatrix(z$newnetwork)
+   Y <- as.sociomatrix(z$newnetwork)
    reach <- ergmm.geodesicmatrix(z$newnetwork)!=Inf
    nnodes <- dim(z$Z)[1]
    dp <- length(X)

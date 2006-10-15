@@ -15,7 +15,7 @@
 #
 ######################################################################
 
-.conflicts.OK <- "0.7-0"
+.conflicts.OK <- "0.7-4"
 
 .First.lib <- function(lib, pkg){
 #   if(substr(as.character(Sys.Date()),start=1,stop=4) > "2005"){

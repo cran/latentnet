@@ -30,23 +30,23 @@ is.latent.cluster<-function(x){
   out
 }
 
-sociomatrix<-function(object, matrix.type="adjacency", attrname=NULL)
-{
-  if(class(object)=="network.series") {
-    object <- object$networks[[1]]
-  }
-  if(is.network(object)){
-    x <- as.matrix.network(object,matrix.type=matrix.type, attrname=attrname)
-    xnames <- network.vertex.names(object)
-    dimnames(x) <- list(xnames,xnames)
-    if(is.bipartite(object)){
-     nevents <- is.bipartite(object)
-     nactors <- network.size(object) - nevents
-     x <- x[1:nactors, (1:nevents)+nactors]
-    }
-    x
-  }
-}
+#sociomatrix<-function(object, matrix.type="adjacency", attrname=NULL)
+#{
+#  if(class(object)=="network.series") {
+#    object <- object$networks[[1]]
+#  }
+#  if(is.network(object)){
+#    x <- as.matrix.network(object,matrix.type=matrix.type, attrname=attrname)
+#    xnames <- network.vertex.names(object)
+#    dimnames(x) <- list(xnames,xnames)
+#    if(is.bipartite(object)){
+#     nevents <- is.bipartite(object)
+#     nactors <- network.size(object) - nevents
+#     x <- x[1:nactors, (1:nevents)+nactors]
+#    }
+#    x
+#  }
+#}
 
 mvimode <- function(x, fix=NULL, maxit=10, theta0=NULL, simple=TRUE)
 {

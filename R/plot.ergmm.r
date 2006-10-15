@@ -40,9 +40,9 @@
   }
 
   if(is.null(x$newnetwork)){
-   newnetwork <- sociomatrix(x$network)
+   newnetwork <- as.sociomatrix(x$network)
   }else{
-   newnetwork <- sociomatrix(x$newnetwork)
+   newnetwork <- as.sociomatrix(x$newnetwork)
   }
 
   if (!is.latent(x)) {

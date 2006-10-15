@@ -60,7 +60,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
                         MLEonly=FALSE,
                         verbose=FALSE, ...)
 {
-   Y <- sociomatrix(gY)
+   Y <- as.sociomatrix(gY)
 #  Ydesign <- get.network.attribute(gY,"design")
 #  if(!is.null(Ydesign)){
 #    Ydesign <- sociomatrix(Ydesign)
@@ -651,7 +651,7 @@ lpz.dist<-function(Z)
   mg<-mg+t(mg)
    
   # This takes the square root of the the squares minus 2 times coords
-  d<-sqrt((mg-2*ZtZ))
+  d<-sqrt(abs(mg-2*ZtZ))
   #returns the negative distance
   -d             
 }
