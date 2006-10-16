@@ -1,6 +1,7 @@
 #define __MODEL_C__
 
 #include <string.h>
+#include <R_ext/Rdynload.h>
 
 #include "model.h"
 /*  option_list is the master list of option names and corresponding 

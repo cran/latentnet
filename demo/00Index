@@ -1,3 +1,4 @@
 plot			Plot Sampson's Monks network
 latent			Fitting latent position model to Sampson's data
 latentcluster		Fitting latent cluster models to Sampson's data
+gof			Goodness-of-fit via posterior predictive checks

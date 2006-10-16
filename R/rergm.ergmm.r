@@ -26,7 +26,7 @@ rergm.ergmm <- function(object,mkl=TRUE,n=1,...)
   return(out.list)
 }
 
-rergm.ergmm.latent.sociomatrix <- function(object, ..., mkl=TRUE,which)
+rergm.ergmm.latent.sociomatrix <- function(object, ..., mkl=TRUE,which=1)
 {
   if(is.null(object$newnetwork)){
     newnetwork <- object$network
