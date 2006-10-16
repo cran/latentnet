@@ -39,7 +39,7 @@
   This function produces a plot of the summary measures.
 }
 \value{none}
-\seealso{ergm, network, simulate.ergmm, summary.ergmm}
+\seealso{ergm, network, rergm.ergmm, summary.ergmm}
 \examples{
 \dontrun{
 #

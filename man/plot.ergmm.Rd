@@ -2,7 +2,7 @@
 \alias{plot.ergmm}
 \title{Plotting Method for class ERGMM}
 \usage{
-plot.ergmm(x, \dots, mle=FALSE, comp.mat = NULL,
+\method{plot}{ergmm}(x, \dots, mle=FALSE, comp.mat = NULL,
           label = NULL, label.col = "black",
           xlab, ylab, main, label.cex = 0.8, edge.lwd = 1,
           edge.col=1, al = 0.1,
