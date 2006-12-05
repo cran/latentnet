@@ -162,8 +162,9 @@ ergmm.statseval.latent <- function (z, Clist, m, MCMCsamplesize, burnin,
 # Z.mle <- z$Z.mle
 # Z.mle <- (mean(z$Alpha)/z$alpha.mle)*(z$Z.mle)
 #
-  bicLR <- 2 * l$loglikelihood - 1 * log(sum(Y))
-  aicLR <- 2 * l$loglikelihood - 1 * 2
+  dlogit <- dp
+  bicLR <- 2 * l$loglikelihood - dlogit * log(sum(Y))
+  aicLR <- 2 * l$loglikelihood - dlogit * 2
 #
   l$aic <- aicLR  #AIC
   l$BIC <- bicLR  #BIC

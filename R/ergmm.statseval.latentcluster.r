@@ -316,8 +316,9 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 
 # Next original
 # bicLR <- -2 * logit.fit$value - 1 * log(Nnodes*(Nnodes-1))
-  bicLR <- -2 * logit.fit$value - 1 * log(sum(Y))
-  aicLR <- -2 * logit.fit$value - 1 * 2
+  dlogit <- dp
+  bicLR <- -2 * logit.fit$value - dlogit * log(sum(Y))
+  aicLR <- -2 * logit.fit$value - dlogit * 2
   labs.use <- labs
   Z.mkl.use <- l$Z.mkl
   
@@ -328,20 +329,29 @@ ergmm.statseval.latentcluster <- function (z, Clist, m, MCMCsamplesize, burnin,
       labs.use <- labs.use[!labs.use==i]
     }
 
-
   mbc.fit <- me(modelName="VII",Z.mkl.use,unmap(labs.use))
   bicMBC <- bic("VII",mbc.fit$loglik,mbc.fit$n,mbc.fit$d,ngroups)
 
   l$d.mbc <- (ngroups) * 4 - 1  #d
   l$ngroups <- ngroups  #G
-  l$logl.lr <- logit.fit$value  #2llr
-  l$logl.mbc <- mbc.fit$loglik  #2llmbc
+  l$logl.lr <- -logit.fit$value  #lllr
+  l$logl.mbc <- mbc.fit$loglik  #llmbc
   aicMBC <- 2*l$logl.mbc - l$d.mbc*2
 
   l$aic <- aicMBC + aicLR  #AIC
   l$BIC <- bicMBC + bicLR  #BIC
   l$bic <- l$BIC
-  l$logl <- logit.fit$value + 2*mbc.fit$loglik  #llik
+  l$logl <- -logit.fit$value + 2*mbc.fit$loglik  #llik
+
+#
+# Two-stage MLE
+#
+# mbc.fit.to.mle <- me(modelName="VII",Z.mkl.use,unmap(labs.use))
+# bicMBC.to.mle <- bic("VII",mbc.fit.to.mle$loglik,mbc.fit.to.mle$n,mbc.fit.to.mle$d,ngroups)
+# l$logl.mbc <- mbc.fit.to.mle$loglik  #llmbc
+# aicMBC.to.mle <- 2*l$logl.mbc.to.mle - l$d.mbc*2
+# l$mle2.aic <- aicMBC.to.mle + aicLR  #AIC
+# l$mle2.BIC <- bicMBC.to.mle + bicLR  #BIC
 
   l$class <- labs
   l$Ki <- Z.Ki

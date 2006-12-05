@@ -10,7 +10,7 @@
   is the normalizing constant for the distribution.  The \code{ergm}
   function can return either a maximum pseudo-likelihood estimate or
   an approximate MLE based on a Monte Carlo scheme.
-  For details, see \url{http://www.csde.washington.edu/statnet}.
+  For details, see \url{http://www.csde.washington.edu/statnet/latentnet}.
 
   The package \code{\link{latentnet}} adds latent variable models 
   to the traditional 

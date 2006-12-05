@@ -318,7 +318,11 @@ ergmm.statseval.latent1cluster <- function (z, Clist, m, MCMCsamplesize, burnin,
                      control=list(maxit=200,trace=trace),
                      Y=Y,Y.dist=Y.dist)
 
-  bicLR <- -2 * logit.fit$value - 1 * log(Nnodes*(Nnodes-1))
+# Next original
+# bicLR <- -2 * logit.fit$value - 1 * log(Nnodes*(Nnodes-1))
+  dlogit <- dp
+  bicLR <- -2 * logit.fit$value - dlogit * log(sum(Y))
+  aicLR <- -2 * logit.fit$value - dlogit * 2
   labs.use <- labs
   Z.mkl.use <- l$Z.mkl
   
@@ -336,12 +340,14 @@ ergmm.statseval.latent1cluster <- function (z, Clist, m, MCMCsamplesize, burnin,
 
   l$d.mbc <- (ngroups) * 4 - 1  #d
   l$ngroups <- ngroups  #G
-  l$logl.lr <- logit.fit$value  #2llr
-  l$logl.mbc <- mbc.fit$loglik  #2llmbc
+  l$logl.lr <- -logit.fit$value  #lllr
+  l$logl.mbc <- mbc.fit$loglik  #llmbc
+  aicMBC <- 2*l$logl.mbc - l$d.mbc*2
 
+  l$aic <- aicMBC + aicLR  #AIC
   l$BIC <- bicMBC + bicLR  #BIC
   l$bic <- l$BIC
-  l$logl <- logit.fit$value + 2*mbc.fit$loglik  #llik
+  l$logl <- -logit.fit$value + 2*mbc.fit$loglik  #llik
 
   l$class <- labs
   l$Ki <- Z.Ki

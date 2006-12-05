@@ -152,8 +152,12 @@ the final fits to the other parameters).}
   package.} 
 %\item{newnetwork}{The network generated at the end of the MCMC sampling.}
  \item{network}{The modeled network as an \code{network} object.}
- \item{BIC}{A Bayesian Information Criterion for the model. See the references
-            for details.}
+ \item{BIC}{A Bayesian Information Criterion approximation for the model. 
+            This is the approximation based on the fully 
+            Bayesian estimation method in Section 3.2 of
+            Handcock, Raftery and Tantrum (2005).  
+            The formula for the approximation is given at the end of Section 4 in that paper.
+            See the references for details.}
  \item{class}{The vector of posterior modal classes for each node.}
 %\item{d.mbc}{}
  \item{Ki}{The \code{MCMCsamplesize}\eqn{\times}\code{network.size(g)}
@@ -201,7 +205,7 @@ the model.}
 }
 \examples{
 #
-# See http://www.csde.washington.edu/statnet
+# See http://www.csde.washington.edu/statnet/latentnet
 # for more examples
 #
 # For an explanation and examples of creating 'network' objects
