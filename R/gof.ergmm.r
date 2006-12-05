@@ -116,11 +116,20 @@ gof.ergmm <- function (object, ..., nsim=100,
   }
 
   if ('triadcensus' %in% all.gof.vars) {
-    obs.triadcensus <- SimCond$summary.triadcensus[,"mean"]
-   sim.triadcensus <- array(0,dim=c(nsim,16))
-   dimnames(sim.triadcensus) <- list(paste(c(1:nsim)),
-    c("003","012", "102", "021D", "021U", "021C", "111D", "111U", "030T",
-      "030C", "201", "120D", "120U", "120C", "210", "300"))
+   if(is.directed(nw)){
+    triadcensus <- 0:15
+    namestriadcensus <- c("003","012", "102", "021D", "021U", "021C",
+      "111D", "111U", "030T",
+      "030C", "201", "120D", "120U", "120C", "210", "300")
+    triadcensus.formula <- "~ triadcensus(0:15)"
+   }else{
+    triadcensus <- 0:3
+    namestriadcensus <- c("0","1","2", "3")
+    triadcensus.formula <- "~ triadcensus(0:3)"
+   }
+   obs.triadcensus <- summary(as.formula(paste('nw',triadcensus.formula,sep="")), drop=FALSE)
+   sim.triadcensus <- array(0,dim=c(nsim,length(triadcensus)))
+   dimnames(sim.triadcensus) <- list(paste(c(1:nsim)), namestriadcensus)
   }
  
   # Simulate an exponential family random graph model
@@ -176,7 +185,7 @@ gof.ergmm <- function (object, ..., nsim=100,
     }
     if ('triadcensus' %in% all.gof.vars) {
      gi <- SimNetworkSeriesObj$networks[[i]]
-     sim.triadcensus[i,] <- summary(as.formula('gi ~ triadcensus(1:16)'), drop=FALSE)
+     sim.triadcensus[i,] <- summary(as.formula(paste('gi',triadcensus.formula,sep="")), drop=FALSE)
     }
   }
 
@@ -200,7 +209,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.dist, 2,max), pmin(1,2*pmin(pval.dist,pval.dist.top)))
   dimnames(pval.dist)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.dist <- obs.dist/sum(obs.dist)
-  psim.dist <- sweep(sim.dist,2,apply(sim.dist,1,sum),"/")
+  psim.dist <- sweep(sim.dist,1,apply(sim.dist,1,sum),"/")
   bds.dist <- apply(psim.dist,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -214,7 +223,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.ideg, 2,max), pmin(1,2*pmin(pval.ideg,pval.ideg.top)))
   dimnames(pval.ideg)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.ideg <- obs.ideg/sum(obs.ideg)
-  psim.ideg <- sweep(sim.ideg,2,apply(sim.ideg,1,sum),"/")
+  psim.ideg <- sweep(sim.ideg,1,apply(sim.ideg,1,sum),"/")
   bds.ideg <- apply(psim.ideg,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -225,7 +234,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.odeg, 2,max), pmin(1,2*pmin(pval.odeg,pval.odeg.top)))
   dimnames(pval.odeg)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.odeg <- obs.odeg/sum(obs.odeg)
-  psim.odeg <- sweep(sim.odeg,2,apply(sim.odeg,1,sum),"/")
+  psim.odeg <- sweep(sim.odeg,1,apply(sim.odeg,1,sum),"/")
   bds.odeg <- apply(psim.odeg,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -236,7 +245,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.deg, 2,max), pmin(1,2*pmin(pval.deg,pval.deg.top)))
   dimnames(pval.deg)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.deg <- obs.deg/sum(obs.deg)
-  psim.deg <- sweep(sim.deg,2,apply(sim.deg,1,sum),"/")
+  psim.deg <- sweep(sim.deg,1,apply(sim.deg,1,sum),"/")
   bds.deg <- apply(psim.deg,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -250,7 +259,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.espart, 2,max), pmin(1,2*pmin(pval.espart,pval.espart.top)))
   dimnames(pval.espart)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.espart <- obs.espart/sum(obs.espart)
-  psim.espart <- sweep(sim.espart,2,apply(sim.espart,1,sum),"/")
+  psim.espart <- sweep(sim.espart,1,apply(sim.espart,1,sum),"/")
   bds.espart <- apply(psim.espart,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -264,7 +273,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.dspart, 2,max), pmin(1,2*pmin(pval.dspart,pval.dspart.top)))
   dimnames(pval.dspart)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.dspart <- obs.dspart/sum(obs.dspart)
-  psim.dspart <- sweep(sim.dspart,2,apply(sim.dspart,1,sum),"/")
+  psim.dspart <- sweep(sim.dspart,1,apply(sim.dspart,1,sum),"/")
   bds.dspart <- apply(psim.dspart,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -278,7 +287,7 @@ gof.ergmm <- function (object, ..., nsim=100,
                 apply(sim.triadcensus, 2,max), pmin(1,2*pmin(pval.triadcensus,pval.triadcensus.top)))
   dimnames(pval.triadcensus)[[2]] <- c("obs","min","mean","max","MC p-value")
   pobs.triadcensus <- obs.triadcensus/sum(obs.triadcensus)
-  psim.triadcensus <- sweep(sim.triadcensus,2,apply(sim.triadcensus,1,sum),"/")
+  psim.triadcensus <- sweep(sim.triadcensus,1,apply(sim.triadcensus,1,sum),"/")
   bds.triadcensus <- apply(psim.triadcensus,2,quantile,probs=c(0.025,0.975))
  }
 
@@ -864,7 +873,6 @@ plot.gofobject <- function(x, ...,
 
   if ('triadcensus' == statname) {
 
-    triadcensus <- c(1:16)
     if (plotodds) {
         odds <- x$psim.triadcensus
         odds[odds==0] <- NA
@@ -897,9 +905,8 @@ plot.gofobject <- function(x, ...,
         mininf <- min(min(out),min(out.obs),min(out.bds))
         maxinf <- max(max(out),max(out.obs),max(out.bds))
     }
-    pnames <- c("003","012", "102", "021D", "021U", "021C", "111D",
-                "111U", "030T",
-                "030C", "201", "120D", "120U", "120C", "210", "300")
+    triadcensus <- dimnames(x$sim.triadcensus)[[2]] 
+    pnames <- dimnames(x$sim.triadcensus)[[2]] 
     ymin <- min(min(out,na.rm=TRUE),min(out.obs,na.rm=TRUE))
     ymax <- max(max(out,na.rm=TRUE),max(out.obs,na.rm=TRUE))
 

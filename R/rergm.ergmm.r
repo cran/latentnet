@@ -2,17 +2,20 @@ rergm.ergmm <- function(object,mkl=TRUE,n=1,...)
 {
   out.list <- list()
   theta0 <- object$beta.mkl
+  directed <- is.directed(object$network)
   if(mkl)
     {
       for(i in 1:n)
-        out.list[[i]] <- network(rergm.ergmm.latent.sociomatrix(object,mkl=mkl))
+        out.list[[i]] <- network(rergm.ergmm.latent.sociomatrix(object,mkl=mkl),
+                                 directed=directed)
     }
   else
     {
       if(n > object$samplesize)
         n <- object$samplesize
       for(i in 1:n)
-        out.list[[i]] <- network(rergm.ergmm.latent.sociomatrix(object,mkl=mkl,which=i))
+        out.list[[i]] <- network(rergm.ergmm.latent.sociomatrix(object,mkl=mkl,which=i),
+                                 directed=directed)
     }
 
   if(n>1)

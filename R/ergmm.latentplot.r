@@ -128,7 +128,7 @@ ergmm.latentplot <- function(gY, dimSpace=2, theta0=NULL,
    }
    storage.mode(b.delta) <- "double"
 #
-   n.edges <- gY$gal$mnext-1 
+   n.edges <-  network.edgecount(gY)
    edgelist <- as.matrix.network(gY, matrix.type="edgelist") - 1
    heads<-edgelist[,1]  # C indexes starting at 0
    tails<-edgelist[,2]

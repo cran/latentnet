@@ -236,7 +236,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
 #
    edgelist <- as.matrix.network(gY, matrix.type="edgelist") - 1
 #
-   n.edges <- gY$gal$mnext-1 
+   n.edges <- network.edgecount(gY)
    heads<-edgelist[,1]  # C indexes starting at 0
    tails<-edgelist[,2]
    if(directed){
