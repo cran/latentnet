@@ -8,7 +8,7 @@
   \code{\link{ergmm}} produces likelihood-based inference. Approximate maximum likelihood estimators are computed, and Bayesian inference is implemented via a MCMC algorithm.
 % \code{\link{ergmm}} can also be used to fit linear exponential random network models, in which
 % the probability of a given network, \eqn{g}, on a set of nodes is 
-% \eqn{\exp(\theta^{T}S(g))/c(\theta)}, where 
+% \eqn{\exp(\theta{\cdot}S(g))/c(\theta)}, where 
 % \eqn{S(g)} is a vector of network statistics,
 % \eqn{\theta} is a parameter vector of the same length and \eqn{c(\theta)} is the
 % normalizing constant for the distribution.
@@ -22,8 +22,8 @@ ergmm(formula, theta0=NULL,
 }
 \arguments{
  \item{formula}{An \R formula object, of the form
-    \code{g ~ <term 1> + <term 2> ...},
-  where \code{g} is a network object or a matrix that can be coerced to a
+    \code{y ~ <term 1> + <term 2> ...},
+  where \code{y} is a network object or a matrix that can be coerced to a
   network object, and \code{<term 1>}, \code{<term 2>}, etc, are each 
   terms chosen from the list given below.
   To create a network object in \R, use the \code{network} function.

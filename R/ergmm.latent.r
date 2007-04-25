@@ -66,7 +66,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
 #    Ydesign <- sociomatrix(Ydesign)
 #  }
    directed <- is.directed(gY)
-   efit <- network.layout.fruchtermanreingold(Y, NULL)
+   efit <- network.layout.fg(gY, NULL)
    D <- as.matrix(dist(efit))
 #
 #  Make the maximum distance close to the rest
@@ -77,6 +77,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
    if(dimSpace>0){
     cat("Calling MDS\n")
     Z <- cmdscale(D,dimSpace)
+    rm(D)
     vZ <- as.vector(Z)
     Z <- matrix(vZ,nrow=g)
     ## Center the positions around the origin
@@ -91,8 +92,10 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
                    method="BFGS", 
                    control=list(fnscale=-1, maxit=maxit,trace=trace),
                    abz.list=abz.list)
+    rm(abz.list)
    }else{
     abvZ.mds <- list(par=rep(0,length=p))
+    rm(D)
    }
    if(verbose){trace <- 4}else{trace <- 0}
    if(!is.null(theta0) && length(theta0)==p){
@@ -149,6 +152,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
     abz.list <- list(Y=Y,dp=p,X=X,nnodes=g,dimSpace=dimSpace,
                      penalty.factor=penalty.factor,reach=reach,
                      directed=directed)
+    rm(Y)
     cat("Calling MLE fit\n")
 
     MLE.fit <- try(
@@ -157,6 +161,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
                  control=list(fnscale=-1, maxit=maxit,trace=trace),
                  abz.list=abz.list)
                  )
+    rm(abz.list)
     if(inherits(MLE.fit,"try-error")){
      warning("MLE could not be found.")
      MLE.like <- abvZ.mds$value
@@ -187,6 +192,7 @@ ergmm.latent <- function(gY, dimSpace=2, p=0, X=NULL, theta0=NULL,
                     control=list(fnscale=-1, maxit=maxit,trace=trace),
                     abz.list=abz.list)
     abvZ <- c(abvZ.0$par, abvZ.0$value)
+    rm(Y,abz.list)
    }
    # assign the mle values to proper spot 
    beta.mle <- as.vector(abvZ[1:p],mode="numeric")
@@ -337,13 +343,14 @@ mlpY<-function(abvZ, abz.list)
   }
   diagYnr <- diagY & !abz.list$reach
   diagY <- diagY & abz.list$reach
-  Y <- abz.list$Y[diagY]
+  abz.list$Y <- abz.list$Y[diagY]
   logexpeta <- log( 1+exp(eta) )
   logexpeta[is.na(logexpeta)] <- eta
   eta <- eta[diagY]
 # print(c(sum(Y*eta), sum(- logexpeta[diagY]), - 0.5*sum(logexpeta[diagYnr])))
 #
-  loglik <- sum( Y*eta - logexpeta[diagY] )
+  loglik <- sum( abz.list$Y*eta - logexpeta[diagY] )
+  rm(diagY, eta)
   loglik <- loglik - penalty.factor[2]*sum(logexpeta[diagYnr])
 #
 # Note this uses a penalized distance that
@@ -470,11 +477,12 @@ mlpYmdsZ<-function(abvZ,abz.list)
    diagY <- row(eta) < col(eta)
   }
   diagY <- diagY & abz.list$reach
-  Y <- abz.list$Y[diagY]
+  abz.list$Y <- abz.list$Y[diagY]
   eta <- eta[diagY]
+  rm(diagY)
   logexpeta <- log( 1+exp(eta) )
   logexpeta[is.na(logexpeta)] <- eta
-  loglik <- sum( Y*eta - logexpeta )
+  loglik <- sum( abz.list$Y*eta - logexpeta )
   loglik
 }
 
@@ -583,11 +591,11 @@ mlpY0<-function(abvZ,abz.list)
    diagY <- row(eta)< col(eta)
   }
   diagY <- diagY & abz.list$reach
-  Y <- abz.list$Y[diagY]
+  abz.list$Y <- abz.list$Y[diagY]
   eta <- eta[diagY]
   logexpeta <- log( 1+exp(eta) )
   logexpeta[is.na(logexpeta)] <- eta
-  sum( Y*eta - logexpeta )
+  sum( abz.list$Y*eta - logexpeta )
 }
 
 mlpY0.grad<-function(abvZ, abz.list)
@@ -648,12 +656,11 @@ lpz.dist<-function(Z)
   mg<-as.matrix(diag(ZtZ))%*%rep(1,dim(Z)[1]) 
 
   # adding together all of the squared distances of each pair
-  mg<-mg+t(mg)
+# mg<-mg+t(mg)
    
   # This takes the square root of the the squares minus 2 times coords
-  d<-sqrt(abs(mg-2*ZtZ))
   #returns the negative distance
-  -d             
+  -sqrt(abs(mg+t(mg)-2*ZtZ))
 }
 
 ###############################################################################

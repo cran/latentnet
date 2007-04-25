@@ -10,8 +10,8 @@
   The default prior specifications are diffuse. An approximate MLE fit is
   also returned. 
 
-  The \code{\link{ergmm}} specifies models via: \code{g ~ latentcluster(<options>)}
-  where \code{g} is a \code{network} object
+  The \code{\link{ergmm}} specifies models via: \code{y ~ latentcluster(<options>)}
+  where \code{y} is a \code{network} object
   For the list of possible \code{<options>}, see below.
   For the list of other model terms, see
   the manual pages for \code{terms.ergmm}.

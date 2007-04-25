@@ -3,9 +3,9 @@
 \title{Terms used in Latent position and cluster models for networks}
 \description{
   By way of context, the package \code{statnet} is used to fit linear exponential random network
-  models, in which the probability of a given network, \eqn{g},
-  on a set of nodes is \eqn{\exp(\theta^{T}S(g))/c(\theta)},
-  where \eqn{S(g)} is a vector of network statistics, \eqn{\theta}
+  models, in which the probability of a given network, \eqn{y},
+  on a set of nodes is \eqn{\exp(\theta{\cdot}g(y))/c(\theta)},
+  where \eqn{g(y)} is a vector of network statistics, \eqn{\theta}
   is a parameter vector of the same length and \eqn{c(\theta)}
   is the normalizing constant for the distribution.  The \code{ergm}
   function can return either a maximum pseudo-likelihood estimate or
@@ -16,8 +16,8 @@
   to the traditional exponential random network models. These 
   latent models are fit using the \code{\link{ergmm}} function.
 
-  The \code{\link{ergmm}} specifies models via: \code{g ~ <model terms>}
-  where \code{g} is a \code{network} object.
+  The \code{\link{ergmm}} specifies models via: \code{y ~ <model terms>}
+  where \code{y} is a \code{network} object.
 
   This page describes the possible \code{<model terms>}.
 }
@@ -30,8 +30,8 @@
 %}
 %\arguments{
 % \item{formula}{An \R formula object, of the form 
-%    \code{g ~ <term 1> + <term 2> ...},
-%  where \code{g} is a network object or a matrix that can be coerced to a graph
+%    \code{y ~ <term 1> + <term 2> ...},
+%  where \code{y} is a network object or a matrix that can be coerced to a graph
 %  object, and \code{<term 1>}, \code{<term 2>}, etc, are each terms chosen 
 %  from the list given below.
 %  To create a network object in \R, use the \code{network()} function,
@@ -43,8 +43,8 @@ ergmm(formula, \dots)
 }
 \section{Arguments to ergmm}{
  \item{formula}{An \R formula object, of the form 
-    \code{g ~ <term 1> + <term 2> ...},
-  where \code{g} is a network object or a matrix that can be coerced to a graph
+    \code{y ~ <term 1> + <term 2> ...},
+  where \code{y} is a network object or a matrix that can be coerced to a graph
   object, and \code{<term 1>}, \code{<term 2>}, etc, are each terms chosen 
   from the list given below.
   To create a network object in \R, use the \code{network()} function,
