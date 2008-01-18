@@ -14,5 +14,10 @@ ergmm.permutation <- function(n)
         temp2 <- rbind(temp2,cbind(temp[,1:i],n,temp[,(i+1):(n-1)]))
     }
   }
+  colnames(temp2)<-1:n
   return(temp2)
+}
+nearest.perm<-function(K.ref,K){
+  perms<-ergmm.permutation(max(c(K.ref,K)))
+  as.numeric(perms[which.min(apply(perms[,K],1,function(K.perm)sum(K.perm!=K.ref))),K])
 }

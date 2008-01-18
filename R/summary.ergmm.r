@@ -1,198 +1,172 @@
-summary.ergmm <- function (object, ..., correlation=FALSE, covariance=FALSE)
+summary.ergmm <- function (object, point.est=c("pmean","mkl"), quantiles=c(.025,.975),se=TRUE,...)
 {
-  if(any(is.na(object$coef)) & !is.null(object$mplefit)){
-     object$coef[is.na(object$coef)] <-
-     object$mplefit$coef[is.na(object$coef)]
-  }
-  if(is.null(object$hessian) && is.null(object$covar)){
-   return()
-  }
-  if(is.null(object$covar)){
-   asycov <- try(robust.inverse(-object$hessian), silent=TRUE)
-   if(inherits(asycov,"try-error")){
-    asycov <- diag(1/diag(-object$hessian))
-   }
-  }else{
-   asycov <- object$covar
-  }
-  rownames(asycov) <- names(object$coef)
-  colnames(asycov) <- rownames(asycov)
+  extraneous.argcheck(...)
+  ## Just for convenience.
+  samples<-object$samples
+  model<-object$model
+  control<-object$control
+  d<-model$d
+  p<-model$p
+  G<-model$G
+  n<-network.size(model$Yg)
+  samplesize<-control$samplesize
   
-  asyse <- diag(asycov)
-  asyse[asyse<0] <- NA
-  asyse <- sqrt(asyse)
-  if(any(is.na(asyse)) & !is.null(object$mplefit)){
-   if(is.null(object$mplefit$covar)){
-    mpleasycov <- try(robust.inverse(-object$mplefit$hessian), silent=TRUE)
-    if(inherits(mpleasycov,"try-error")){
-     mpleasycov <- diag(1/diag(-object$mplefit$hessian))
+
+  summ<-list(ergmm=object,model=model)
+
+  ## Compute the two-stage MLE point estimates.
+  if("mle" %in% point.est){
+    if(is.null(object$mle$cov)){
+      if(se){
+        ## Refit the MLE (mostly for the Hessian)
+        mle<-find.mle(model,object$mle,control=control,hessian=TRUE)
+      }
+      else mle<-object$mle
+
+      if(d>0) mle$Z<-scale(mle$Z,scale=FALSE)
+      if(p>0){
+        if(se){
+          beta.hess<-mle$hessian[1:p,1:p]
+          
+          beta.cov <- try(robust.inverse(-beta.hess), silent=TRUE)
+          if(inherits(beta.cov,"try-error")){
+            warning("Coefficient Hessian appears to be singular. Using a less accurate estimate.")
+            beta.cov <- diag(1/diag(-beta.hess))
+          }
+        
+        colnames(beta.cov) <- rownames(beta.cov) <- model$coef.names
+        
+        mle$cov<-beta.cov
+        mle$cor<-cov2cor(beta.cov)
+        
+        z.values<-mle$beta/sqrt(diag(mle$cov))
+        coef.table<-data.frame(mle$beta,sqrt(diag(mle$cov)),
+                               z.values,pnorm(abs(z.values),0,1,lower.tail=FALSE),
+                             row.names=model$coef.names)
+        }
+        else coef.table<-data.frame(mle$beta,
+                                    row.names=model$coef.names)
+        colnames(coef.table)<-c("Estimate",if(se) "Std. Error",if(se) "z value",if(se) "Pr(>|z|)")
+        mle$coef.table<-coef.table
+      }
+      mle$llk.bic<- -2*mle$llk + (p+n*d )*log(sum(network.size(model$Yg)))
+      if(G>0){
+        mle<-c(mle,find.clusters(G,mle$Z))
+        mle$mbc.bic<- -bic(if(d==1) "V" else "VII",mle$mbc.llk,n,d,G)
+        mle$bic<-mle$llk.bic+mle$mbc.bic
+      }
+      else mle$bic<-mle$llk.bic
+
+      object$mle<-mle
     }
-   }else{
-    mpleasycov <- object$mplefit$covar
-   }
-   asyse[is.na(asyse)] <- sqrt(diag(mpleasycov))[is.na(asyse)]
+    summ$mle<-object$mle
   }
-  asyse <- matrix(asyse, ncol=length(asyse))
-  colnames(asyse) <- colnames(asycov)
+
+  ## Compute the posterior mean point estimates.
+  if("pmean" %in% point.est){
+    if(is.null(object$pmean)){
+      pmean<-list()
+      for(name in names(samples)){
+        if(is.null(samples[[name]])) next
+        name.dim<-length(dim(samples[[name]]))
+        pmean[[name]]<-{
+          if(name.dim<2) mean(samples[[name]])
+          else if(name.dim==2) apply(samples[[name]],2,mean)
+          else if(name.dim==3) apply(samples[[name]],2:3,mean)
+        }
+      }
+      if(G>0){
+        pmean$Z.pZK<-t(apply(samples$Z.K,2,tabulate,G))/samplesize
+        pmean$Z.K<-apply(pmean$Z.pZK,1,which.max)
+      }
+    
+      beta.cov<-cov(samples$beta)
+      colnames(beta.cov) <- rownames(beta.cov) <- model$coef.names
+      
+      pmean$cov<-beta.cov
+      pmean$cor<-cov2cor(beta.cov)
+      
+      beta.q0<-apply(samples$beta,2,function(x) mean(x<=0))
+      
+      coef.table<-data.frame(pmean$beta,
+                           t(apply(samples$beta,2,function(x)quantile(x,quantiles))),
+                           beta.q0,
+                           row.names=model$coef.names)
+      colnames(coef.table)<-c("Estimate",paste(quantiles*100,"%",sep=""),"Quantile of 0")
+      pmean$coef.table<-coef.table
+      object$pmean<-pmean
+    }
+    summ$pmean<-object$pmean
+  }
+  ## Compute the MKL point estimates.
+  if("mkl" %in% point.est){
+    mkl<-summ$mkl<-object$mkl
+    coef.table<-data.frame(mkl$beta,
+                           row.names=model$coef.names)
+    colnames(coef.table)<-c("Estimate")
+    summ$mkl$coef.table<-coef.table
+  }
+
+  if("pmode" %in% point.est){
+    summ$pmode<-object$pmode
+  }
+
+  class(summ)<-'summary.ergmm'
+  summ
+}
+
+print.summary.ergmm<-function(x,...){
+  ## For convenience
+  model<-x$model
+  control<-x$control
   
-#
-# Strip bipartite term
-#
-
-  if(is.bipartite(object$network) & !is.na(object$samplesize)){
-    locbipartite <- match("bipartite", names(object$coef))
-    asyse <- asyse[-locbipartite]
-    asycov <- asycov[-locbipartite, -locbipartite]
-    object$coef <- object$coef[-locbipartite]
-    object$mcmc.se <- object$mcmc.se[-locbipartite]
-    object$formula <- update(object$formula, ~ . - bipartite)
-  }
-
   cat("\n==========================\n")
   cat("Summary of model fit\n")
   cat("==========================\n\n")
-  
+
   cat("Formula:   ")
-  print(object$formula)
+  print(model$formula)
+  cat("Attribute: ")
+  if(is.null(model$response)) cat("edges") else cat(model$response)
   cat("\n")
+  cat("Model:    ",model$family,"\n")
   
-#  cat("Estimate of network statistics for g:\n\n")
-  {
-#    print(object)
-
-    digits = max(3, getOption("digits") - 3)
-    cat ("Newton-Raphson iterations: ", object$iterations, "\n")
-#
-#   MSH changed to make clearer
-#   original <- format(object$MCMCtheta, digits = digits)
-    original <- format(object$theta.original, digits = digits)
-    if(is.na(object$samplesize) & !all(object$theta1$independent)){
-      cat ("\nPseudolikelihood Results:\n")
-    }else{
-      cat ("MCMC sample of size", object$samplesize, "\n")
-      cat ("\nMonte Carlo MLE Results:\n")
-    }
-    
-    if(!is.null(object$re)){ 
-     if(!is.matrix(object$re)){
-       cat ("\n Activity random effects:\n  Variances:\n")
-       print(object$re)
-     }else{
-      cat ("\nSender and Receiver random effects:\n  Covariances:\n")
-      print(object$re)       
-      corr <- object$re[1,2]/sqrt(object$re[1,1]*object$re[2,2])
-      corr <- max(min(1,corr),-1)
-      cat (paste("\n  Correlation between sender and receiver:  ",
-          round(corr,5)),"\n\n")
-     }
-    }
-
-    nodes<- network.size(object$network)
-    dyads<- network.dyadcounts(object$network)
-    edges<- network.edgecount(object$network)
-    if(!is.null(object$Z.mkl)){
-      p <- ncol(object$Z.mkl)
-    }else{
-      p <- 0
-    }
-    if(!is.null(object$cluster) && object$cluster ){
-      df <- length(object$coef) + object$ngroups*(p+2) - 1 # ng-1 + ng *p + ng
-    }else{
-      df <- length(object$coef) + (nodes - (p + 1)/2) * p
-    }
-    rdf <- dyads - df
-#   rdf <- dyads - length(object$coef)
-    tval <- object$coef / asyse
-    pval <- 2 * pt(q=abs(tval), df=rdf, lower.tail=FALSE)
-    values <- format(object$coef,digits=digits)
-    names <- names(values)
-    names(values) <- NULL
-    casyse<-format(asyse, digits=digits)
-    cpval<-format(pval, digits=digits)
-    cmc.se <- format(object$mc.se,digits=digits)
-
-    count <- 1
-    templist <- NULL
-    while (count <= length(names))
-      {
-       templist <- append(templist,c(values[count],
-            casyse[count],cpval[count],cmc.se[count]))
-       count <- count+1
-      }
-
-    tempmatrix <- matrix(templist, ncol=4,byrow=TRUE)
-    tempmatrix[,c(1:2,4)] <- format(tempmatrix[,c(1:2,4)], digits=digits, 
-                                    print.gap=2)
-    tempmatrix[,3] <- format.pval(as.numeric(tempmatrix[,3]), digits = 3, eps=1e-4)
-    colnames(tempmatrix) <- c("estimate","s.e.","p-value","MCMC s.e.")
-    rownames(tempmatrix) <- names
-    print(tempmatrix, quote=FALSE)
-  } 
+  digits = max(3, getOption("digits") - 3)
   
-  cat("\n")
-  if(!is.null(object$mc.se)){
-   if(any(is.na(object$mc.se)) & !all(object$theta1$independent)){
-    if(is.na(object$samplesize) & !all(object$theta1$independent)){
-     warning("\n  The standard errors are based on naive pseudolikelihood and are suspect.\n")
-    }else{
-     warning("\n  The standard errors are suspect due to possible poor convergence.\n")
-    }
-   }
+  cat ("MCMC sample of size ", control$samplesize, ", samples are ",
+       control$interval," iterations apart, after burnin of ",control$burnin, " iterations.\n",sep="")
+       
+  if(!is.null(x$pmean)){
+    cat("Covariate coefficients posterior means:\n")
+    print(x$pmean$coef.table)
+    cat("\n")
   }
-# if(is.na(object$samplesize)){
-#   cat("Log Pseudo-likelihood: ",   object$mle.lik)
-#   cat("\n    Pseudo-deviance:    ",-2*object$mle.lik,"on", rdf,"residual df.\n\n")
-# }else{
-#   cat("Log likelihood: ",object$mle.lik)
-#   cat("\n    Deviance:    ",-2*object$mle.lik,"on", rdf, "residual df.\n\n")
-# }
 
-  if(is.na(object$samplesize) & !all(object$theta1$independent)){
-    cat(apply(cbind(paste(c("     Null","Residual","        "),
-                          "Pseudo-deviance:"), 
-            format(c(object$null.deviance,
-                     -2*object$mle.lik, 
-                     object$null.deviance+2*object$mle.lik),
-                digits = 5), " on",
-            format(c(dyads, rdf, df),
-                digits = 5)," degrees of freedom\n"), 
-            1, paste, collapse = " "),"\n")
-  }else{
-    cat(apply(cbind(paste(c("     Null","Residual","        "), 
-                          "Deviance:"),
-            format(c(object$null.deviance,
-                     -2*object$mle.lik, 
-                     object$null.deviance+2*object$mle.lik),
-                digits = 5), " on",
-            format(c(dyads, rdf, df),
-                digits = 5)," degrees of freedom\n"), 
-            1, paste, collapse = " "),"\n")
-  }
-  if(is.null(object$aic)){
-   object$aic <- 2*object$mle.lik - 2*df
-  }
-  if(is.null(object$bic)){
-#  object$bic <- -2*object$mle.lik + log(dyads)*df
-   object$bic <- 2*object$mle.lik - log(edges)*df
-  }
-  cat(paste("AIC:", format(object$aic, digits = 5), "  ", 
-            "BIC:", format(object$bic, digits = 5), "\n", sep=" "))
-  
-  if (covariance == TRUE)
-    {
-      cat("Asymptotic covariance matrix:\n")
-      print(asycov)
-    }
-  
-#  cat("\nAsymptotic standard error vector:\n")
-#  print(asyse)
+  if(!is.null(x$mle)){
+    cat("Covariate coefficients MLE:\n")
+    print(x$mle$coef.table)
+    cat("\n")
 
-  if (correlation == TRUE)
-    {
-      cat("\nAsymptotic correlation matrix:\n")
-#     asycor <- diag(1/asyse) %*% asycov %*% diag(1/asyse)
-      asycor <- asycov / crossprod(asyse)
-      dimnames(asycor) <- dimnames(asycov)
-      print(asycor)
+    cat("Overall BIC:       ", x$mle$bic,"\n")
+    if(model$G>0){
+      cat("Likelihood BIC:    ", x$mle$llk.bic,"\n")
+      cat("Clustering BIC:    ", x$mle$mbc.bic,"\n")
     }
+    cat("\n")
+  }
+  if(!is.null(x$pmean)){
+    cat("Covariate coefficients posterior mean:\n")
+    print(x$pmean$coef.table)
+    cat("\n\n")
+  }
+  if(!is.null(x$mkl)){
+    cat("Covariate coefficients MKL:\n")
+    print(x$mkl$coef.table)
+    cat("\n\n")
+  }
+  if(!is.null(x$pmode)){
+    cat("Covariate coefficients posterior mode:\n")
+    print(x$pmode$coef.table)
+    cat("\n\n")
+  }
 }

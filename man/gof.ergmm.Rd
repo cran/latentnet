@@ -1,41 +1,40 @@
-\name{gof.ergmm}
+\name{gof}
 \alias{gof.ergmm}
 \alias{gof.default}
+\alias{gof.formula}
+\alias{gof.ergmm}
 \alias{gof}
-\title{Conduct Goodness-of-Fit Diagnostics on a Latent Position or Latent Cluster Position Model}
+\title{Conduct Goodness-of-Fit Diagnostics on a Exponential Family
+  Random Graph Mixed Model Fit}
 \description{
-  \code{\link{gof}} computes and plots posterior predictive checks for various
-  networks statistics (e.g., geodesic
-  distance, degree, and reachability) to
-  diagnose the goodness-of-fit of  Latent Position or Latent Cluster Position
-  models.  See \code{\link{ergmm}} for more information on these models.
+  \code{\link{gof}} calculates \eqn{p}-values for geodesic
+  distance, degree, and reachability summaries to
+  diagnose the goodness-of-fit of exponential family random graph
+  mixed models.  See \code{\link{ergmm}} for more information on these models.
 }
 \usage{
-\method{gof}{default}(object,\dots)
 \method{gof}{ergmm}(object, \dots,
          nsim=100,
-         GOF=~degree+espartners+distance,
+         GOF=~idegree+odegree+distance,
          verbose=FALSE)
 }
 \arguments{
- \item{object}{an ergmm object. 
-   See documentation for \code{\link{ergmm}}.}
-  \item{nsim}{The number of posterior draws to use for the posterior predictive
-   checks.
-   This is the size of the sample of networks to be randomly drawn
-   from the posterior distribution specified by the 
-   object.
-   }
+  \item{object}{an \code{\link[=ergmm.object]{ergmm}} object (returned by
+    \code{\link{ergmm}}).}
+  \item{nsim}{The number of simulations to use for the MCMC \eqn{p}-values.
+    This is the size of the sample of graphs to be randomly drawn
+    from the distribution specified by the object on the set of all graphs.
+  }
   \item{GOF}{formula; an \R formula object, of the form
-   \code{~ <model terms>} specifying the
-   statistics to use to diagnosis the goodness-of-fit of the model. 
-   They do not need to be in the model formula specified in
-   \code{formula}, and typically are not.
-   Examples are the degree distribution ("degree"), 
-   minimum geodesic distances ("distance"), and shared partner distributions
-   ("espartners" and "dspartners").
-   For the details on the possible
-   \code{<model terms>}, see \code{\link[statnet]{ergm-terms}}.}
+    \code{~ <model terms>} specifying the
+    statistics to use to diagnosis the goodness-of-fit of the model. 
+    They do not need to be in the model formula specified in
+    \code{formula}, and typically are not.
+    Examples are the degree distribution ("degree"), 
+    minimum geodesic distances ("dist"), and shared partner distributions
+    ("espartners" and "dspartners").
+    For the details on the possible
+    \code{<model terms>}, see \code{\link[ergm]{ergm-terms}}.}
   \item{verbose}{Provide verbose information on the progress of the
     simulation.}
   \item{\dots}{Additional arguments, to be passed to lower-level functions
@@ -43,78 +42,46 @@
 }
 
 \details{
-  A sample of graphs is randomly drawn from the posterior
-  of the specified model.
-  The first argument is 
-  the output of a call to \code{\link{ergmm}} and the model
-  used for that call is the one evalauted.
+  A sample of graphs is randomly drawn from the posterior of the
+  \code{\link{ergmm}}.
 
   A plot of the summary measures is plotted.
+  More information can be found by looking at the documentation of
+  \code{\link[ergm]{ergm}}.
 }
-\value{\code{\link{gof}}, \code{\link{gof.ergmm}}, and \code{\link[statnet]{gof.formula}}
-         return an object of class \code{gofobject}.
-       This is a list of the tables of statistics and posterior
-       ``\eqn{p}-values".
-       This is typically plotted using \code{\link{plot.gofobject}}.
-      }
+\value{\code{\link{gof}} and \code{\link{gof.ergmm}}
+  return an object of class \code{gofobject}.
+  This is a list of the tables of statistics and \eqn{p}-values.
+  This is typically plotted using \code{\link[ergmm]{plot.gofobject}}.
+}
 
-}
-\seealso{ergmm, network, rergm, summary.ergmm, plot.gofobject}
+\seealso{ergmm,ergm, network, simulate.ergmm, summary.ergmm, plot.gofobject}
 \examples{
-\dontrun{
-#
-# Using Sampson's Monk data, lets fit a 
-# simple latent position model
 #
 data(sampson)
 #
-# Get the group labels
+# test the gof.ergm function
 #
-group <- get.vertex.attribute(samplike,"group")
-samp.labs <- substr(group,1,1)
+samplike.fit <- ergmm(samplike ~ latent(d=2,G=3))
+samplike.fit
+summary(samplike.fit)
+
 #
-# Fit the two-dimensional latent social space model 
+# Plot the probabilities first
 #
-# This may take a few minutes ...
+monks.gof <- gof(samplike.fit)
+monks.gof
 #
-samp.fit <- ergmm(samplike ~ latent(k=2), burnin=10000,
-                  MCMCsamplesize=2000, interval=30)
-#
-# Posterior Predictive Checks
-gofsamplike <- gof.ergmm(samp.fit, GOF=~idegree + distance)
-gofsamplike
-#
-# Place both on the same page
+# Place all three on the same page
 # with nice margins
 #
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 par(oma=c(0.5,2,1,0.5))
 #
-plot(gofsamplike)
+plot(monks.gof)
 #
 # And now the odds 
 #
-plot(gofsamplike, plotodds=TRUE)
-#
-# Using Sampson's Monk data, lets 
-# fit the two-dimensional clustered latent social space model 
-#
-# The ngroups parameter fits 3 groups
-#
-# This may take a few minutes ...
-#
-samp.fit <- ergmm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
-                  MCMCsamplesize=2000, interval=30)
-#
-# Posterior Predictive Checks
-gofsamplike <- gof.ergmm(samp.fit, GOF=~idegree + distance)
-gofsamplike
-#
-plot(gofsamplike)
-#
-# And now the odds 
-#
-plot(gofsamplike, plotodds=TRUE)
-}
+plot(monks.gof, plotlogodds=TRUE)
 }
 \keyword{models}

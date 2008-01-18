@@ -1,0 +1,481 @@
+not.given<-function(name,theta,given){
+  is.null(given[[name]]) && !is.null(theta[[name]])
+}
+
+PRIOR_NAMES<-list(Z=c("Z.var"))
+
+lp.works<-function(name,theta,given){
+  not.given(name, theta, given) && all(PRIOR_NAMES[[name]]%in%names(merge.lists(theta,given)))
+}
+
+
+getYm<-function(Yg,response=NULL){
+  if(is.null(response)){
+    return(as.matrix.network(Yg, matrix.type="adjacency"))
+  }else{
+    if(is.matrix(response)) return(response)
+    else return(as.matrix.network(Yg, response, matrix.type="adjacency"))
+  }
+}
+  
+
+ergmm.eta<-function(model,theta){
+  n<-network.size(model$Yg)
+  dir<-is.directed(model$Yg)
+
+  eta<-matrix(0,n,n)
+  
+  if(!is.null(theta$Z))
+    eta<-eta-as.matrix(dist(theta$Z))
+
+  if(!is.null(theta$beta))
+    for(k in 1:length(theta$beta))
+      eta<-eta+theta$beta[k]*model$X[[k]]
+
+  return(eta)
+}
+
+ergmm.EY<-function(model,theta,NA.unobserved=TRUE){
+  eta<-ergmm.eta(model,theta)
+  if(NA.unobserved) eta[!observed.dyads(model$Yg)]<-NA
+  EY.fs[[model$familyID]](eta,fam.par=model$fam.par)
+}
+
+ergmm.loglike<-function(model,theta,given=ergmm.par.blank(),up.to.const=FALSE){
+  theta<-merge.lists(theta,given)
+  Yg<-model$Yg
+  Ym<-model$Ym
+  n<-network.size(Yg)
+  eta<-ergmm.eta(model,theta)
+  obs<-observed.dyads(Yg)
+  lpY<-if(up.to.const) lpYc.fs[[model$familyID]](Ym[obs],eta[obs],model$fam.par) else lpY.fs[[model$familyID]](Ym[obs],eta[obs],model$fam.par)
+  return(sum(lpY))
+}
+
+ergmm.loglike.grad<-function(model,theta,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  n<-network.size(model$Yg)
+  obs<-observed.dyads(model$Yg)
+  eta<-ergmm.eta(model,theta)
+  
+  dlpY.deta <- dlpY.deta.fs[[model$familyID]](model$Ym,eta,model$fam.par)
+
+  grad<-list()
+  
+  if(!is.null(theta$beta)) grad$beta <- sapply(1:length(theta$beta),function(k) sum(dlpY.deta*model$X[[k]]*obs))
+
+  if(not.given("Z",theta,given)){
+    d<-model$d
+    Z.invdist<- -as.matrix(dist(theta$Z))
+    Z.invdist[Z.invdist==0]<-Inf
+    Z.invdist<-1/Z.invdist
+
+    grad$Z<-matrix(0,n,d)
+    for(k in 1:d){
+      Z.k.d<-with(theta,sapply(1:n,function(i) sapply(1:n, function(j) Z[j,k]-Z[i,k]))*Z.invdist)
+      for(i in 1:n)
+        for(j in 1:n)
+          grad$Z[i,k]<-grad$Z[i,k]+(Z.k.d[i,j]*dlpY.deta[i,j]*obs[i,j]-
+                                    Z.k.d[j,i]*dlpY.deta[j,i]*obs[j,i])
+    }
+  }
+
+  grad
+}
+  
+ergmm.loglike.C<-function(model,theta){
+  Y <- model$Ym
+  n <- network.size(model$Yg)
+
+  ## Figure out the design matrix.
+  observed<-observed.dyads(model$Yg)
+
+  if((observed==(diag(n)==0) && is.directed(model$Yg)) ||
+     (observed==lower.tri(diag(n)) && !is.directed(model$Yg)))
+    observed<-NULL
+  
+  ## Sanity checks: the following block of code checks that all dimensionalities and
+  ## dimensions are correct, and those optional parameters that are required by the presence
+  ## of other optional parameters are present.
+  
+  for(i in 1:model$p)
+    if(!all(dim(model$X[[i]])==c(n,n))) stop("Incorrect size for covariate matrices.")
+
+  if(!is.null(theta$Z)){
+    if(!all(dim(theta$Z)==c(n,model$d))) stop("Incorrect size for the latent positions.")
+  }  
+  if(length(theta$beta)!=model$p) stop("Incorrect length for the beta vector.")
+
+  ## End Sanity checks.
+  
+  ret <- .C("ERGMM_lp_Y_wrapper",
+            n=as.integer(n), p=as.integer(model$p),
+            d=as.integer(model$d),
+            
+            dir=as.integer(is.directed(model$Yg)),
+            viY=as.integer(Y),
+            vdY=as.double(Y),
+            family=as.integer(model$familyID),iconsts=as.integer(model$iconsts),dconsts=as.integer(model$dconsts),
+            
+            vX=as.double(unlist(model$X)),
+            
+            Z=as.double(theta$Z),
+            
+            beta=as.double(theta$beta),
+
+            observed=as.integer(observed),
+
+            llk=double(1),
+            PACKAGE="latentnet")
+  
+
+  ret$llk
+}
+
+observed.dyads<-function(Yg){
+  observed.dyads<-get.network.attribute(Yg,"design")
+  if(is.null(observed.dyads))
+    observed.dyads<-matrix(TRUE,network.size(Yg),network.size(Yg))
+  else
+    observed.dyads<-as.matrix.network(observed.dyads,matrix.type="adjacency")==0
+      
+  if(!is.directed(Yg)) observed.dyads[upper.tri(observed.dyads)]<-FALSE
+
+  if(!has.loops(Yg)) diag(observed.dyads)<-FALSE
+  
+  observed.dyads
+}
+
+pack.optim<-function(theta,fit.vars=NULL){
+  if(is.null(fit.vars))
+    return(c(theta$beta,theta$Z,
+             theta$Z.var,theta$Z.mean))
+  else
+    return(c(if(fit.vars$beta)theta$beta,
+             if(fit.vars$Z)theta$Z,
+             
+             if(fit.vars$Z.var)theta$Z.var,
+             if(fit.vars$Z.mean)theta$Z.mean))
+}
+
+reg.fit.vars<-function(fit.vars){
+  for(name in ERGMM.PAR_VAR_NAMES)
+    if(!(name %in% names(fit.vars)))fit.vars[[name]]<-FALSE
+  fit.vars
+}
+
+inv.fit.vars<-function(fit.vars){
+  for(name in ERGMM.PAR_VAR_NAMES)
+    if(name %in% names(fit.vars))
+      fit.vars[[name]]<-!fit.vars[[name]]
+  fit.vars
+}
+
+FIT_ALL<-list(beta=TRUE,Z=TRUE,
+              Z.var=TRUE,Z.mean=TRUE)
+
+FIT_MLE<-list(beta=TRUE,Z=TRUE)
+
+unpack.optim<-function(v,fit.vars,model){
+  p<-model$p
+  n<-network.size(model$Yg)
+  G<-model$G
+  d<-model$d
+  v.must.be<-with(fit.vars,
+                  beta*p +
+                  Z*n*d +
+                  Z.var*(d>0)*max(1,G) +
+                  Z.mean*G*d)
+  if(length(v)!=v.must.be){
+    stop(paste("Input vector wrong length: ", length(v),
+               " but should be ",v.must.be,".",
+               sep=""))
+  }
+  pos<-0
+  ret<-list()
+  if(fit.vars$beta && p>0){
+    ret$beta<-v[pos+1:p]
+    pos<-pos+p
+  }
+
+  if(fit.vars$Z && d>0){
+    ret$Z<-matrix(v[pos+1:(n*d)],nrow=n,ncol=d)
+    pos<-pos+n*d
+  }
+
+  if(fit.vars$Z.var && d>0){
+    ret$Z.var<-v[pos+1:max(1,G)]
+    pos<-pos+max(1,G)
+  }
+  
+  if(fit.vars$Z.mean && d>0 && G>0){
+    ret$Z.mean<-matrix(v[pos+1:(G*d)],nrow=G,ncol=d)
+    pos<-pos+G*d
+  }
+  
+  class(ret)<-"ergmm.par"
+  
+  ret
+}
+
+mk.lp.optim.fs<-function(fit.vars,model,prior,given=ergmm.par.blank(),opt=c("lpY","lpZ","lpBeta","lpLV")){
+  fit.vars<-reg.fit.vars(fit.vars)
+  return(list(
+              f=function(v){
+                theta<-unpack.optim(v,fit.vars,model)
+                ergmm.lp(model,theta,prior=prior,given=given,
+                         opt=opt,
+                         up.to.const=TRUE)
+              },
+              grad.f=function(v){
+                theta<-unpack.optim(v,fit.vars,model)
+                # note that ergmm.lp.grad doesn't take the up.to.const parameter
+                gr<-ergmm.lp.grad(model,theta,prior=prior,given=given,
+                                  opt=opt)
+                pack.optim(gr,fit.vars)
+              }
+              )
+         )
+}
+
+find.mle<-function(model,start,given=ergmm.par.blank(),control,
+                     hessian=FALSE,mllk=TRUE){
+  fit.vars<-list()
+  for(name in ERGMM.PAR_LLK_NAMES)
+    fit.vars[[name]]<-not.given(name,start,given)
+  mpe<-find.mpe(model,start,given=given,control=control,
+                hessian=hessian,mlp=mllk,opt="lpY",fit.vars=fit.vars)
+  if(mllk) mpe$llk<-mpe$mlp
+  mpe
+}
+
+
+
+find.mpe<-function(model,start,given=ergmm.par.blank(),prior=list(),control,fit.vars=NULL,opt=c("lpY","lpZ","lpBeta","lpLV"),
+                   hessian=FALSE,mlp=TRUE){
+  if(is.null(fit.vars)){
+    fit.vars<-list()
+    for(name in names(start))
+      fit.vars[[name]]<-not.given(name,start,given)
+  }else{
+    fit.vars<-reg.fit.vars(fit.vars)
+    for(name in names(fit.vars))
+      if(!not.given(name,start,given)) fit.vars[[name]]<-FALSE
+    
+  }
+  
+  fit.vars<-reg.fit.vars(fit.vars)
+
+  control$fnscale=-1
+  control$maxit<-control$mle.maxit
+  control$trace<-max(0,control$verbose-2)
+  
+  optim.fs<-mk.lp.optim.fs(fit.vars,model,prior=prior,given=given,opt=opt)
+  
+  start.vals<-pack.optim(start,fit.vars)
+
+  p<-model$p
+  n<-network.size(model$Yg)
+  G<-model$G
+  d<-model$d
+  
+  vmpe <- ##try(
+              optim(par=start.vals,fn=optim.fs$f,gr=optim.fs$grad.f,
+                    method="L-BFGS-B",
+                    lower=pack.optim(list(
+                      beta=rep(-Inf,p),
+                      Z=rep(-Inf,n*d),
+                      Z.var=rep(sqrt(.Machine$double.eps),(d>0)*max(G,1)),
+                      Z.mean=rep(-Inf,d*G)),
+                      fit.vars=fit.vars),
+                    control=control,hessian=hessian)
+            ##  )
+
+  if(inherits(vmpe,"try-error")) return(NULL)
+  mpe<-unpack.optim(vmpe$par,fit.vars,model)
+
+  mpe<-merge.lists(mpe,given)
+  mpe$Z.K<-merge.lists(start,given)$Z.K
+  mpe$Z.pK<-if(!is.null(mpe$Z.K)) tabulate(mpe$Z.K)/n
+  
+  if(mlp)
+    mpe$mlp<-ergmm.lp(model,mpe,prior=prior,given=given,opt=opt)
+  
+  if(hessian) mpe$hessian<-vmpe$hessian
+  class(mpe)<-"ergmm.par"
+  mpe
+}
+
+ergmm.lp<-function(model,theta,prior,given=ergmm.par.blank(),opt=c("lpY","lpZ","lpBeta","lpLV"),up.to.const=FALSE){
+
+  lpY<-if("lpY" %in% opt) ergmm.loglike(model,theta,
+                                        given=given,up.to.const=up.to.const) else 0
+  
+  lpZ<-if("lpZ" %in% opt) ergmm.lpZ(theta,given=given) else 0
+  lpBeta<-if("lpBeta" %in% opt) ergmm.lpBeta(theta,prior,given=given) else 0
+  
+  lpLV<-if("lpLV" %in% opt) ergmm.lpLV(theta,prior,given=given) else 0
+  
+  lpAll<-lpY+lpZ+lpBeta+lpLV
+                                                      
+  return(lpAll)
+}
+
+merge.lists<-function(...){
+  out<-list()
+  for(l in list(...)){
+    for(name in names(l))
+      out[[name]]<-l[[name]]
+    if(class(l)!="list")
+      class(out)<-class(l)
+  }
+
+  out
+}
+
+sum.lists<-function(...){
+  out<-list()
+  for(l in list(...)){
+    for(name in names(l)){
+      if(name %in% names(out))
+        out[[name]]<-out[[name]]+l[[name]]
+      else
+        out[[name]]<-l[[name]]
+    }
+  }
+  class(out)<-class(list(l))
+  out
+}
+
+zero.list<-function(x){
+  out<-x
+  for(name in names(x)){
+    d<-dim(x[[name]])
+    if(is.null(d)) out[[name]]<-rep(0,length(x[[name]]))
+    else out[[name]]<-array(0,dim=d)
+  }
+}
+
+filter.list<-function(x,y){
+  out<-x
+  for(name in names(y)){
+    if(!isTRUE(y)) out[[name]]<-NULL
+  }
+  out
+}
+
+
+cmp.lists<-function(x,y){
+  out<-list()
+  for(name in names(x))
+    if(name %in% names(y))
+      out[[name]]<-mean(abs(x[[name]]-y[[name]]))/mean(abs(x[[name]]))
+  out
+}
+
+ergmm.lp.grad<-function(model,theta,prior,given=ergmm.par.blank(),opt=c("lpY","lpZ","lpBeta","lpLV")){
+  
+  grad<-sum.lists(if("lpY" %in% opt) if(not.given("beta",theta,given)||
+                                        not.given("Z",theta,given)) ergmm.loglike.grad(model,theta,given=given),
+                  if("lpZ" %in% opt) ergmm.lpZ.grad(theta,given=given),
+                  if("lpBeta" %in% opt) ergmm.lpBeta.grad(theta,prior,given=given),
+                  if("lpLV" %in% opt) ergmm.lpLV.grad(theta,prior,given=given))
+  
+  grad
+}
+
+ergmm.lp.grad.approx<-function(which.vars,model,theta,prior,delta,given=ergmm.par.blank(),opt=c("lpY","lpZ","lpBeta","lpLV")){
+  which.vars$Z.K<-FALSE
+  which.vars<-reg.fit.vars(which.vars)
+
+  v<-pack.optim(theta,which.vars)
+  dlpdv<-numeric(length(v))
+  
+  for(i in 1:length(v)){
+    v.m<-v.p<-v
+    v.m[i]<-v.m[i]-delta
+    theta.m<-merge.lists(theta,unpack.optim(v.m,which.vars,model))
+    lp.m<-ergmm.lp(model,theta.m,prior,given=given,opt=opt)
+
+    
+    v.p[i]<-v.p[i]+delta
+    theta.p<-merge.lists(theta,unpack.optim(v.p,which.vars,model))
+    lp.p<-ergmm.lp(model,theta.p,prior,given=given,opt=opt)
+
+    dlpdv[i]<-(lp.p-lp.m)/(2*delta)
+  }
+  
+  return(unpack.optim(dlpdv,which.vars,model))
+}
+
+ergmm.lpZ<-function(theta,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  if(lp.works("Z",theta,given)){
+    n<-dim(theta$Z)[1]
+    d<-dim(theta$Z)[2]
+    if(is.null(theta$Z.K)){
+      if(!is.null(theta$Z.mean)) stop("Given cluster means without cluster assignments!")
+      theta$Z.K<-rep(1,n)
+      theta$Z.mean<-matrix(0,nrow=1,ncol=d)
+    }
+    sum(dnorm(theta$Z,theta$Z.mean[theta$Z.K,],matrix(sqrt(theta$Z.var[theta$Z.K]),nrow=n,ncol=d,byrow=FALSE),TRUE))
+  }
+  else 0
+}
+
+ergmm.lpZ.grad<-function(theta,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  deriv<-list()
+  if(lp.works("Z",theta,given)){
+    n<-dim(theta$Z)[1]
+    d<-dim(theta$Z)[2]
+    G<-if(is.null(theta$Z.K)) 0 else dim(theta$Z.mean)[1]
+
+    if(is.null(theta$Z.K)){
+      if(!is.null(theta$Z.mean)) stop("Given cluster means without cluster assignments!")
+      theta$Z.K<-rep(1,n)
+      theta$Z.mean<-matrix(0,nrow=1,ncol=d)
+    }
+    
+    Z.dev<-(theta$Z-theta$Z.mean[theta$Z.K,])/matrix(theta$Z.var[theta$Z.K],nrow=n,ncol=d,byrow=FALSE)
+    deriv$Z<--Z.dev
+    if(not.given("Z.var",theta,given)) deriv$Z.var<-sapply(1:max(G,1),
+                                                           function(g)
+                                                           (sum(Z.dev[theta$Z.K==g,,drop=FALSE]^2)-d*sum(theta$Z.K==g)/theta$Z.var[g])/2)
+    
+    if(not.given("Z.mean",theta,given) && G) deriv$Z.mean<-t(sapply(1:G,function(g) apply(Z.dev[theta$Z.K==g,,drop=FALSE],2,sum)))
+  }
+  deriv
+}
+
+ergmm.lpBeta<-function(theta,prior,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  return({if(not.given("beta",theta,given)) sum(dnorm(theta$beta,prior$beta.mean,sqrt(prior$beta.var),TRUE)) else 0})
+}
+
+ergmm.lpBeta.grad<-function(theta,prior,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  deriv<-list()
+  if(not.given("beta",theta,given)) deriv$beta<--(theta$beta-prior$beta.mean)/prior$beta.var
+
+  deriv
+}
+
+dsclinvchisq<-function(x,df,scale=1,log=FALSE){
+  if(log) dchisq(df*scale/x,df,log=TRUE)+log(df)+log(scale)-2*log(x)
+  else dchisq(df*scale/x,df,log=FALSE)*df*scale/x/x
+}
+
+ergmm.lpLV<-function(theta,prior,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  ({if(not.given("Z.var",theta,given)) sum(dsclinvchisq(theta$Z.var,prior$Z.var.df,prior$Z.var,log=TRUE)) else 0}+
+   {if(not.given("Z.mean",theta,given)) sum(dnorm(theta$Z.mean,0,sqrt(prior$Z.mean.var),log=TRUE)) else 0})
+}
+
+ergmm.lpLV.grad<-function(theta,prior,given=ergmm.par.blank()){
+  theta<-merge.lists(theta,given)
+  deriv<-list()
+  if(not.given("Z.var",theta,given)) deriv$Z.var<-prior$Z.var.df*prior$Z.var/theta$Z.var^2/2-(prior$Z.var.df/2+1)/theta$Z.var
+  if(not.given("Z.mean",theta,given)) deriv$Z.mean<--theta$Z.mean/prior$Z.mean.var
+  deriv
+}

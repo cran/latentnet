@@ -1,243 +1,359 @@
-"plot.ergmm" <- function (x, ..., mle=FALSE, comp.mat = NULL,
-            label = NULL, label.col = "black",
-            xlab, ylab, main, label.cex = 0.8, edge.lwd = 1,
-            edge.col=1, al = 0.1,
-            contours=0, density=FALSE, only.subdens = FALSE, 
-            drawarrows=FALSE,
-            contour.color=1, plotgraph=FALSE, pie = FALSE, piesize=0.07,
-            vertex.col=1,vertex.pch=19,vertex.cex=2,
-            mycol=c("black","red","green","blue","cyan",
-              "magenta","orange","yellow","purple"),
-            mypch=15:19,mycex=2:10)
+"plot.ergmm" <- function (x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex.cex)),
+                          what="mkl",
+                          main = NULL, xlab=NULL, ylab=NULL, xlim=NULL,ylim=NULL,
+                          object.scale=formals(plot.network.default)$object.scale,
+                          pad=formals(plot.network.default)$pad,
+                          cluster.col=c("red","green","blue","cyan","magenta","orange","yellow","purple"),
+                          vertex.col=NULL, print.formula=TRUE,
+                          edge.col=8,
+                          pie = FALSE,
+                          labels=FALSE,
+                          plot.means=TRUE,plot.vars=TRUE,
+                          suppress.axes=FALSE,
+                          jitter1D=1,curve1D=TRUE,suppress.center=FALSE,
+                          density.par=list())
 {
-  if(!missing(vertex.col) && length(vertex.col)==1 && is.character(vertex.col)){
-    trycol <- as.numeric(as.factor(unlist(get.vertex.attribute(x$network,vertex.col))))
-    if(!all(is.na(trycol))){
-      vertex.col <- mycol[trycol]
-    }
-  }
-  if((length(vertex.col)==1) && (vertex.col==1)) vertex.col <- mycol[x$class]
 
-  if(!missing(label) && length(label)==1 && is.character(label)){
-    trycol <- unlist(get.vertex.attribute(x$network,label))
-    if(!all(is.na(trycol))){
-      label <- trycol
-    }
-  }
-  
-  if(!missing(vertex.pch) && length(vertex.pch)==1 && is.character(vertex.pch)){
-    trycol <- as.numeric(as.factor(unlist(get.vertex.attribute(x$network,vertex.pch))))
-    if(!all(is.na(trycol))){
-      vertex.pch <- mypch[trycol]
-    }
-  }
-  
-  if(!missing(vertex.cex) && length(vertex.cex)==1 && is.character(vertex.cex)){
-    trycol <- as.numeric(as.factor(unlist(get.vertex.attribute(x$network,vertex.cex))))
-    if(!all(is.na(trycol))){
-      vertex.cex <- mycex[trycol]
-    }
-  }
+  ## For convenience...
+  Yg<-x$model$Yg
+  distances<-NULL
+  n<-network.size(Yg)
+  d<-x$model$d
+  G<-x$model$G
+  if(G<1) pie<-FALSE
 
-  if(is.null(x$newnetwork)){
-   newnetwork <- as.sociomatrix(x$network)
-  }else{
-   newnetwork <- as.sociomatrix(x$newnetwork)
-  }
-
-  if (!is.latent(x)) {
-#
-#   So regular (non-latent) call
-#
-    if(is.null(x$mcmc.loglikelihood))
-      cat("No plotting method available for non-latent models with no mcmc.loglikelihood\n")
-    else
-      plot(x$mcmc.loglikelihood[, 1], type = "l",
-           main = "MCMC log Likelihood Values", 
-           xlab = "sample", ylab = "log likelihood",...)
-  }
-  else {
-#
-# So latent call
-#
-    if (missing(xlab)) 
+  ## Set default axis labels.
+  if(d==1){
+    if (is.null(xlab)) 
       xlab <- ""
-    if (missing(ylab)) 
+    if (is.null(ylab)) 
       ylab <- ""
-    if(mle)
-      {
-        z.pos <- x$Z.mle
-        if (missing(main)) 
-          main <- paste("MLEs of Latent Positions of", 
-                        deparse(substitute(x)))
-      }
-    else
-      {
-        z.pos <- x$Z.mkl
-        if (missing(main)) 
-          main <- paste("KL Latent Positions of", 
-                        deparse(substitute(x)))
-      }
-    if(density[1])
-    {
-#
-#   Plot densities
-#
-      if(!require(KernSmooth,quietly=TRUE)){
-       stop("The 'density' option requires the 'KernSmooth' package.")
-      }
-      if(density[1]>1)
-      {
-#
-#   Plot 2-dimensional densities
-#
-        if(length(density)>1)
-          opar <- par(mfrow=c(density[1],density[2]),mar=c(2.5,2.5,1,1))
-        else
-          opar <- par(mfrow=c(density,density),mar=c(2.5,2.5,1,1))
-      }
-      if(!only.subdens)
-      {
-        Z.use <- cbind(as.vector(x$Z[,1,]),as.vector(x$Z[,2,]))
-        plot(Z.use,type='n',xlab=xlab,ylab=ylab,xlim=range(Z.use),
-             ylim=range(Z.use), ...)
-        title(main=paste("Posterior density of",main), cex.main=0.7, ...)
-        temp <- bkde2D(Z.use,0.2,c(201,201))
-        image(temp$x1,temp$x2,temp$fhat,col=grey(seq(1,0,length=255)),add=TRUE)
-        if(drawarrows)
-          for (i in 1:network.size(x$network))
-            for (j in 1:network.size(x$network))
-              if (newnetwork[i,j])
-                ergmm.midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
-                         y1 = z.pos[j, 2], length = 0.1,col="yellow")
+  }else if(d==2){    
+    if (is.null(xlab)) 
+      xlab <- expression(Z[1])
+    if (is.null(ylab)) 
+      ylab <- expression(Z[2])
+  }else if(d>2){
+    if (is.null(xlab)) 
+      xlab <- "First principal component of Z"
+    if (is.null(ylab)) 
+      ylab <- "Second principal component of Z"
+  }
+
+  ## Find the requested plotting coordinates.
+  ## Some "requests" require a substantially different code path, unfortunately.
+  if(class(what)=="ergmm.par"){
+    summ<-what
+    Z.pos <- summ$Z
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    Z.pZK<-summ$Z.pZK
+    if (is.null(main)) 
+      main <- paste(deparse(substitute(what))," Latent Positions of ", 
+                    deparse(substitute(x)),sep="")
+
+  }else if(what=="start" || what=="burnin.start"){
+    summ<-x$start
+    Z.pos <- summ$Z
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    if(pie) stop("Cannot make pie charts with the specified parameter type.")
+    if (is.null(main)) 
+      main <- paste("Initial Latent Positions of ", 
+                    deparse(substitute(x)),sep="")
+
+  }else if(what=="sampling.start"){
+    summ<-x$sampling.start
+    Z.pos <- summ$Z
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    if(pie) stop("Cannot make pie charts with the specified parameter type.")
+    if (is.null(main)) 
+      main <- paste("Post-Burn-In Latent Positions of ", 
+                    deparse(substitute(x)),sep="")
+
+  }else if(what=="mle"){
+    summ<-summary(x,point.est=c("mle"),se=FALSE)
+    Z.pos <- summ$mle$Z
+    summ<-summ$mle
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    plot.means<-plot.vars<-FALSE
+    if(pie) stop("Cannot make pie charts with the specified parameter type.")
+    if (is.null(main)) 
+      main <- paste("Multistage MLEs of Latent Positions of", 
+                    deparse(substitute(x)))
+
+  }else if(what=="pmean"){
+    summ<-summary(x,point.est=c("pmean"))
+    Z.pos <- summ$pmean$Z
+    summ<-summ$pmean
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    Z.pZK<-summ$Z.pZK
+    if (is.null(main)) 
+      main <- paste("Posterior Mean Positions of", 
+                    deparse(substitute(x)))
+
+  }else if(what=="mkl"){
+    summ<-summary(x,point.est=c("pmean","mkl"))
+    Z.pos <- summ$mkl$Z
+    if(!is.null(x$mkl$mbc)){
+      Z.mean<-summ$mkl$mbc$Z.mean
+      Z.var<-summ$mkl$mbc$Z.var
+    }else{
+      if(!is.null(summ$pmean$Z.mean)) Z.mean<-summ$pmean$Z.mean
+      else plot.means<-FALSE
+      Z.var<-summ$pmean$Z.var
+    }
+    Z.K<-summ$pmean$Z.K
+    Z.pZK<-summ$pmean$Z.pZK
+    summ<-summ$mkl
+    if (is.null(main)) 
+      main <- paste("MKL Latent Positions of", 
+                    deparse(substitute(x)))
+
+  }else if(what=="pmode"){
+    summ<-summary(x,point.est=c("pmode"))
+    Z.pos <- summ$pmode$Z
+    summ<-summ$pmode
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    if(pie) stop("Cannot make pie charts with the specified parameter type.")
+    if (is.null(main)) 
+      main <- paste("Posterior Mode Latent Positions of", 
+                    deparse(substitute(x)))
+
+  }else if(what=="cloud"){
+    summ<-summary(x,point.est=c("pmean","mkl"))
+    Z.pos <- summ$mkl$Z
+    if(d!=2) stop("Cloud plots are only available for 2D latent space models.")
+    
+    if(!is.null(x$mkl$mbc)){
+      Z.mean<-summ$mkl$mbc$Z.mean
+      Z.var<-summ$mkl$mbc$Z.var
+    }else{
+      if(!is.null(summ$pmean$Z.mean)) Z.mean<-summ$pmean$Z.mean
+      else plot.means<-FALSE
+      Z.var<-summ$pmean$Z.var
+    }
+    Z.K<-summ$pmean$Z.K
+    Z.pZK<-summ$pmean$Z.pZK
+    summ<-summ$mkl
+    if (is.null(main)) 
+      main <- paste("MKL Latent Positions of", 
+                    deparse(substitute(x)))
+    plot(matrix(c(x$samples$Z),ncol=2),pch=".")
+    points(Z.pos,col=cluster.col[Z.K])
+    points(Z.mean,col=cluster.col)
+    
+    return(invisible(NULL))
+
+  }else if(what=="density"){
+    if(is.null(density.par$totaldens)) density.par$totaldens <- TRUE
+    if(is.null(density.par$subdens)) density.par$subdens <- TRUE
+    if(is.null(density.par$mfrow)){
+      wanted<-density.par$totaldens+density.par$subdens*G
+      density.par$mfrow<-rep(min(ceiling(sqrt(wanted)),4),2)
+    }
+    
+    summ<-summary(x,point.est=c("pmean","mkl"))
+    Z.pos <- summ$mkl$Z
+    if(d!=2) stop("Density plots are only available for 2D latent space models.")
+
+    if(!require(KernSmooth,quietly=TRUE)){
+      stop("The 'density' option requires the 'KernSmooth' package.")
+    }
+
+    old.par<-par(mfrow=density.par$mfrow,mar=c(2.5,2.5,1,1))
+
+    Z.all<-matrix(c(aperm(x$samples$Z,c(2,1,3))),ncol=2)
+
+    if(density.par$totaldens){
+      plot(Z.all,type='n',xlab=xlab,ylab=ylab,...)
+      title(main=paste("Posterior density of",deparse(substitute(x))), cex.main=0.7, ...)
+      Z.bkde <- bkde2D(Z.all,0.2,c(201,201))
+      image(Z.bkde$x1,Z.bkde$x2,Z.bkde$fhat,col=grey(seq(1,0,length=255)),add=TRUE)
+      box()
+    }
+    
+    if(G>1 && density.par$subdens){
+      Z.K.all <- c(t(x$samples$Z.K))
+      for(i in 1:G){
+        plot(Z.all,main=paste("Class",i),type="n",...)
+        Z.bkde <- bkde2D(Z.all[Z.K.all==i,],0.2,c(101,101))
+        col<-c(col2rgb(cluster.col[i])/255)
+        image(Z.bkde$x1,Z.bkde$x2,Z.bkde$fhat,add=TRUE,
+              col=rgb(seq(1,col[1],length=255),
+                seq(1,col[2],length=255),
+                seq(1,col[3],length=255)))
+        contour(Z.bkde$x1,Z.bkde$x2,Z.bkde$fhat,add=TRUE, nlevels=4,
+                drawlabels=FALSE,
+                col="white")
         box()
       }
-
-      if(density[1]>1)
-      {
-        Z.Ki.v <- as.vector(t(x$Ki))
-        Z.proc.mean <- cbind(as.vector(x$Z[,1,]),as.vector(x$Z[,2,]))
-        for(i in 1:x$ngroups)
-          {
-            plot(Z.proc.mean,
-                 xlim=range(Z.proc.mean),ylim=range(Z.proc.mean),
-                 main=paste("Class",i),
-                 type='n', ...)
-            temp <- bkde2D(Z.proc.mean[Z.Ki.v==i,],0.2,c(101,101))
-            use.col <- as.vector(col2rgb(mycol[i])/255)
-            image(temp$x1,temp$x2,temp$fhat,add=TRUE,
-                  col=rgb(seq(1,use.col[1],length=255),
-                    seq(1,use.col[2],length=255),
-                    seq(1,use.col[3],length=255)))
-            contour(temp$x1,temp$x2,temp$fhat,add=TRUE, nlevels=4,
-                    drawlabels=FALSE,
-                  col="white")
-            box()
-          }
-        if(plotgraph)
-          plot(x,label=label)
-        par(opar)
-      }
     }
-    else if(contours>0)
-    {
-#do a contours x contours array of contour plots of posterior densities
-      opar <- par(mfrow=c(contours,contours),mar=c(0,0,1,0), omi=c(.5,.5,1,.5),
-                  mgp=c(1.5,.25,0))
-      temp.x.pos <- range(x$Z[,1,])
-      temp.y.pos <- range(x$Z[,2,])
-      if(!require(KernSmooth,quietly=TRUE)){
-       stop("The 'contours' option requires the 'KernSmooth' package.")
-      }
-      for(k in 1:nrow(x$Z.mle)){
-        plot(x=x$Z[k,1,],y=x$Z[k,2,],
-             xlab="",ylab="",type="n", asp=1,
-             xlim=temp.x.pos,ylim=temp.y.pos,
-             xaxt='n',yaxt='n')
-#             main=paste(flo.names[k],sum(flo[k,])),xaxt='n',yaxt='n')
-        if((k-(contours^2)*trunc((k-1)/(contours^2)))/contours>(contours-1))
-          axis(side=1)
-        if(nrow(x$Z.mle)- k < contours)
-          axis(side=1)
-        if(contours*trunc(k/contours)+1==k){
-          axis(side=2)
-        }
-        est <- bkde2D(x=t(x$Z[k,,]), bandwidth=c(0.2,0.2))
-        est$fhat <- est$fhat/max(est$fhat,na.rm=TRUE)
-        contour(est$x1, est$x2, est$fhat, add=TRUE, nlevels=5,
-                drawlabels=FALSE,col=contour.color)
-        for (i in 1:network.size(x$network))
-          for (j in 1:network.size(x$network))
-            if (newnetwork[i,j])
-            {
-              ergmm.midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
-                       y1 = z.pos[j, 2], length = al/10,lwd=edge.lwd,col=edge.col)
-            }
-        if(!is.null(label) && length(label)==1 && is.character(label)){
-          trycol <- unlist(get.vertex.attribute(x,label))
-          if(!any(is.na(trycol))){
-            label <- trycol
-          }
-        }
-        if(is.null(label) | length(label)==1){
-          label <- 1:network.size(x$network)
-        }
-        text(z.pos[, 1], z.pos[, 2], label, col = label.col, cex = label.cex)
-      }
-      par(opar)
-    }
-    else
-    {
-#
-#    If not densities or contours then
-#    just plot the points with their MKL classes
-#
-      if (!is.null(comp.mat)) {
-        procr <- function(Z, Zo) {
-          A <- t(Z) %*% Zo %*% t(Zo) %*% Z
-          A.eig <- eigen(A, symmetric = TRUE)
-          A.sqrt <- A.eig$vec %*% diag(1/sqrt(A.eig$val)) %*% 
-            t(A.eig$vec)
-          Z %*% A.sqrt %*% t(Z) %*% Zo
-        }
-        z.pos <- procr(z.pos, comp.mat)
-      }
-      plot(z.pos, xlab = xlab, ylab = ylab,
-           type = "n", asp = 1, main = main, ...)
-      aaa <- x$formula   
-      xformula <- paste(aaa[2],aaa[1],aaa[-c(1:2)],collapse=" ")
-      title(main = xformula, line = 1, cex.main = 0.7)
-      for (i in 1:network.size(x$network))
-        for (j in 1:network.size(x$network))
-          if (newnetwork[i,j])
-          {
-            ergmm.midarrow(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
-                     y1 = z.pos[j, 2], length = al,lwd=edge.lwd,col=edge.col)
-#           segments(x0 = z.pos[i, 1], y0 = z.pos[i, 2], x1 = z.pos[j,1],
-#                    y1 = z.pos[j, 2], length = al,lwd=edge.lwd,col=edge.col)
-          }
-      if (is.null(label)) 
-        label <- 1:network.size(x$network)
-      if((!is.null(x$cluster) && x$cluster) & !pie)
-        {
-          points(z.pos,cex=vertex.cex,col=vertex.col,pch=vertex.pch)
-          if(label.col=="black") label.col <- "white"
-        }
-      else if(!pie)
-        {
-          points(z.pos,pch=vertex.pch,cex=vertex.cex,col=vertex.col)
-#         if(label.col=="black") label.col <- "white"
-        }
+    
+    par(old.par)
 
-      if(pie)
-        for(i in 1:nrow(x$Z.mkl))
-        {
-          ergmm.drawpie(z.pos[i,],piesize,x$qig[i,],n=50,cols=mycol)
-          text(z.pos[, 1], z.pos[, 2], label, col = "white", cex = label.cex)
-        }
-      else      
-        text(z.pos[, 1], z.pos[, 2], label, col = label.col, cex = label.cex)
+    return(invisible(NULL))
+    
+  }else if(is.numeric(what) && round(what)==what){
+    summ<-x$samples[[what]]
+    Z.pos <- summ$Z
+    Z.mean<-summ$Z.mean
+    Z.var<-summ$Z.var
+    Z.K<-summ$Z.K
+    if(pie) stop("Cannot make pie charts with the specified parameter type.")
+    if (is.null(main)) 
+      main <- paste("Iteration #",what," Latent Positions of ", 
+                    deparse(substitute(x)),sep="")
+  }else stop("Invalid latent space position estimate type.")
+
+  ## Transform coordinates for dimensions other than 2.
+  if(d==1){    
+    Z.pos<-coords.1D(Z.pos,curve1D,jitter1D)
+    if(curve1D){
+      distances<-as.matrix(dist(Z.pos))
+      distances<-distances/max(distances)
+    }
+  } else if(d>2){ ## I.e. high latent dimension.
+    ## Plot the first two principal components.
+    prc<-prcomp(Z.pos)
+    Z.pos<-predict(prc,Z.pos)[,1:2]
+  }
+
+  ## Set default vertex color.
+  if(is.null(vertex.col)){
+    if(is.latent.cluster(x) && !pie)
+      vertex.col <- cluster.col[Z.K]
+    else vertex.col<-cluster.col[1]
+  }
+  else if(length(vertex.col)==1 && is.character(vertex.col)){
+    trycol <- as.numeric(as.factor(unlist(get.vertex.attribute(Yg,vertex.col))))
+    if(!all(is.na(trycol))){
+      vertex.col <- cluster.col[trycol]
     }
   }
-  invisible(NULL)
+
+  ## Find the bounds of the plotting region.
+  xylim<-ergmm.plotting.region(Z.pos,if(plot.means) Z.mean,if(plot.vars) Z.var,!suppress.center,pad)
+  if(is.null(xlim)) xlim<-xylim$xlim else xylim$xlim<-xlim
+  if(is.null(ylim)) ylim<-xylim$ylim else xylim$ylim<-ylim
+    
+  ## Go forth, and plot the network.
+  old.warn<-options()$warn
+  options(warn=-1)
+  
+  plot.network(Yg,coord=Z.pos,
+               main=main,
+               vertex.col=if(is.null(vertex.col)) 0 else vertex.col,
+               vertex.cex=vertex.cex,
+               xlab=xlab,
+               ylab=ylab,
+               xlim=xlim,
+               ylim=ylim,
+               object.scale=object.scale,
+               pad=pad,
+               suppress.axes=suppress.axes,
+               vertex.sides=16*sqrt(vertex.cex),
+               jitter=FALSE,
+               usecurve=curve1D,
+               edge.curve=distances,
+               displaylabels=labels&&!(x$model$d==1 && curve1D==TRUE),
+               tick=!(x$model$d==1 && curve1D==TRUE),
+               edge.col=edge.col,
+               ...)
+  
+  options(warn=old.warn)
+  
+  ## For 1D plots, only plot horizontal axis ticks.
+  if(x$model$d==1 && curve1D==TRUE) {
+    axis(1)
+  }
+
+  ## Add the model formula as a subtitle.
+  if(print.formula){
+    fmla <- x$model$formula   
+    xformula <- paste(fmla[2],fmla[1],fmla[-c(1:2)],collapse=" ")
+    if(!is.null(x$model$response)) xformula<-paste(xformula,"   (",x$model$response,")",sep="")
+    title(main = xformula, line = 1, cex.main = 0.7)
+  }
+
+  ## Plot pie charts.
+  if(pie){
+    piesize<-rep(ergmm.plotting.vertex.radius(vertex.cex,xylim,object.scale),length=n)
+    pie.order<-order(piesize,decreasing=TRUE)
+    for(i in 1:n){
+      ergmm.drawpie(Z.pos[pie.order[i],],piesize[pie.order[i]],Z.pZK[pie.order[i],],n=50,cols=cluster.col)
+    }
+  }
+
+  ## Mark the center.
+  if(!suppress.center)
+    points(cbind(0,0),pch="+")
+  Z.mean<-if(G>0)Z.mean else cbind(0,0)
+  if(x$model$d==1)
+    Z.mean<-coords.1D(Z.mean,curve1D,jitter1D)
+  else if(x$model$d>2){
+    Z.mean<-predict(prc,Z.mean)
+  }
+
+  ## Mark the cluster means.
+  if(plot.means)
+    points(Z.mean,pch="+",col=cluster.col)
+
+  ## Plot the cluster standard deviations.
+  if(plot.vars)
+      symbols(Z.mean,circles=sqrt(Z.var),fg=cluster.col,inches=FALSE,add=TRUE,asp=1)
+  
+  invisible(Z.pos)
+}
+
+coords.1D<-function(Z,curve1D,jitter1D){
+  if(curve1D){
+    Z.pos<-cbind(Z,rep(0,length(Z)))
+  }else{
+    jitter<-rnorm(length(Z),0,jitter1D*sd(Z)/sqrt(length(Z)))
+    Z.pos<-cbind(Z,Z)+cbind(jitter,-jitter)
+  }
+  Z.pos
+}
+
+ergmm.plotting.region<-function(Z.pos,Z.mean,Z.var,include.center,pad){
+  xylim<-t(apply(rbind(Z.pos+pad,Z.pos-pad,
+                       Z.mean+pad,Z.mean-pad,
+                       if(!is.null(Z.mean) && !is.null(Z.var)) Z.mean+sqrt(Z.var)+pad,
+                       if(!is.null(Z.mean) && !is.null(Z.var)) Z.mean-sqrt(Z.var)-pad,
+                       if(include.center) 0+pad,
+                       if(include.center) 0-pad,
+                       if(is.null(Z.mean) && length(Z.var)==1) matrix(sqrt(Z.var)+pad,ncol=2,byrow=FALSE),
+                       if(is.null(Z.mean) && length(Z.var)==1) matrix(-sqrt(Z.var)-pad,ncol=2,byrow=FALSE)
+                       ),2,range))
+  xlim<-xylim[1,]
+  ylim<-xylim[2,]
+
+  ### Shamelessly stolen from Carter's plot.network.default code.
+  xrng<-diff(xlim)          #Force scale to be symmetric
+  yrng<-diff(ylim)
+  xctr<-(xlim[2]+xlim[1])/2 #Get center of plotting region
+  yctr<-(ylim[2]+ylim[1])/2
+  if(xrng<yrng)
+    xlim<-c(xctr-yrng/2,xctr+yrng/2)
+  else
+    ylim<-c(yctr-xrng/2,yctr+xrng/2)
+  ### End stolen part
+  
+  list(xlim=xlim,ylim=ylim)
+}
+
+ergmm.plotting.vertex.radius<-function(vertex.cex,xylim,object.scale){
+  baserad<-min(diff(xylim$xlim),diff(xylim$ylim))*object.scale
+  vertex.cex*baserad
 }

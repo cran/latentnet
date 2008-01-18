@@ -1,16 +1,15 @@
 Package: latentnet
-Version: 0.7-17
-Date: April 25, 2007
+Version: 2.0
+Date: 2008-01-18
 Title:  Latent position and cluster models for statistical networks
-Author: Mark S. Handcock <handcock@stat.washington.edu>, 
-        Jeremy Tantrum <Jeremy.Tantrum@microsoft.com>,
-        Susan Shortreed <susanms@stat.washington.edu>, and
-        Peter Hoff <hoff@stat.washington.edu>.
-Maintainer: Mark S. Handcock <handcock@stat.washington.edu>
-Description: Latent position and cluster models for statistical networks. 
- This package is part of the "statnet" suite of packages.
-Depends: network, locfit, mvtnorm, mclust, shapes, KernSmooth
-Suggests: coda
-License: GPL version 2 (June, 1991)
-URL: http://csde.washington.edu/statnet/latentnet
-Packaged: Fri Apr 27 20:04:45 2007; handcock
+Author: Pavel N. Krivitsky <pavel@stat.washington.edu>,
+        Mark S. Handcock <handcock@stat.washington.edu>, 
+        based on original code from "latentnetHRT",
+        and code from other packages of `statnet' project
+Maintainer: Pavel N. Krivitsky <pavel@stat.washington.edu>
+Description: A package to fit and simulate latent position and cluster models for statistical networks. 
+Depends: network, abind, shapes, tools
+Suggests: coda, mclust, KernSmooth, snowFT, ergm
+License: GPL-3, with Section 7 attribution requirements (see LICENSE)
+URL: http://statnetproject.org
+Packaged: Sat Jan 19 13:49:19 2008; pavel

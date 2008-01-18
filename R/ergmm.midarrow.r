@@ -42,4 +42,5 @@ ergmm.drawpie <- function(center,radius,probs,n=50,cols=1:length(probs),...)
     yc <- center[2] + c(sin(t2p), 0) * radius
     polygon(xc, yc, border = FALSE, col = cols[i])
   }
+  ergmm.drawcircle(center=center,radius=radius,col=1)
 }

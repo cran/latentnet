@@ -1,147 +1,146 @@
 \name{terms.ergmm}
 \alias{terms.ergmm}
-\title{Terms used in Latent position and cluster models for networks}
+\alias{ergmm.terms}
+\title{Model Terms for Latent Space Random Graph Model}
 \description{
-  By way of context, the package \code{statnet} is used to fit linear exponential random network
-  models, in which the probability of a given network, \eqn{y},
-  on a set of nodes is \eqn{\exp(\theta{\cdot}g(y))/c(\theta)},
-  where \eqn{g(y)} is a vector of network statistics, \eqn{\theta}
-  is a parameter vector of the same length and \eqn{c(\theta)}
-  is the normalizing constant for the distribution.  The \code{ergm}
-  function can return either a maximum pseudo-likelihood estimate or
-  an approximate MLE based on a Monte Carlo scheme.
-  For details, see \url{http://www.csde.washington.edu/statnet}.
-
-  The package \code{\link{latentnet}} adds latent variable models 
-  to the traditional exponential random network models. These 
-  latent models are fit using the \code{\link{ergmm}} function.
-
-  The \code{\link{ergmm}} specifies models via: \code{y ~ <model terms>}
-  where \code{y} is a \code{network} object.
-
-  This page describes the possible \code{<model terms>}.
+  Model terms that can be used in an \code{\link{ergmm}} formula.
 }
-%\usage{
-%ergmm(formula, theta0=NULL, 
-%     burnin=1000, MCMCsamplesize=1000, interval=10,
-%     latent.control=list(maxit=40,penalty.sigma=c(10,0.5),MLEonly=FALSE),
-%     returnMCMCstats=TRUE, randseed=NULL, 
-%     verbose=FALSE, \dots)
-%}
-%\arguments{
-% \item{formula}{An \R formula object, of the form 
-%    \code{y ~ <term 1> + <term 2> ...},
-%  where \code{y} is a network object or a matrix that can be coerced to a graph
-%  object, and \code{<term 1>}, \code{<term 2>}, etc, are each terms chosen 
-%  from the list given below.
-%  To create a network object in \R, use the \code{network()} function,
-%  then add nodal
-%  attributes to it using \code{set.vertex.attributes()} if necessary.}
-%}
-\section{The ergmm function}{
-ergmm(formula, \dots)
-}
-\section{Arguments to ergmm}{
- \item{formula}{An \R formula object, of the form 
-    \code{y ~ <term 1> + <term 2> ...},
-  where \code{y} is a network object or a matrix that can be coerced to a graph
-  object, and \code{<term 1>}, \code{<term 2>}, etc, are each terms chosen 
-  from the list given below.
-  To create a network object in \R, use the \code{network()} function,
-  then add nodal
-  attributes to it using \code{set.vertex.attributes()} if necessary.}
- \item{\dots}{Other optional arguments to be used by the \code{ergmm} function.}
-}
-
-\section{Possible terms to represent graph statistics}{
-  The \code{\link{latentnet}} package itself allows only three type of terms:
-  \code{\link{latent}}, \code{\link{latentcluster}} and \code{latentcov}.
-  The umbrella \code{ergm} package allows the user to explore a large number
-  of potential models for their network data in addition to these terms.  The
-  terms currently supported by the program,
-  and a brief description of each is given in the documentation
-  \code{terms.ergm} for the \code{ergm} package.
-  In the formula for the model, the model terms are various function-like
+\section{Model Terms}{
+  The \code{\link{latentnet}} package itself allows only
+  dyad-independent terms. In the formula for the model, the model terms are various function-like
   calls, some of which require arguments, separated by \code{+} signs.
-
-% Additional terms can be coded up by users via 
-% the \code{statnetuserterms} package.
-
-  The current options are:
- \item{\code{latent(k=2, \ldots)}}{\emph{Latent position model term.}
-  where \code{k} is the dimension of the latent space. For information on the
-  other arguments look for help on \code{\link{latent}}.
- }
- \item{\code{latentcluster(k=2, ngroups, \dots)}}{\emph{Latent position cluster model term.}
-  where \code{k} is the dimension of the latent space
-  and \code{ngroups} is the number of clusters in the latent space.
-  For information on the other arguments look for help on
-  \code{\link{latentcluster}}.
- }
- \item{\code{latentcov(cv, attrname=NULL)}}{\emph{Covariates for the latent model.}  \code{cv} is either a matrix of
-    covariates on each pair of vertices, or a network; 
-    if the latter, optional argument
-    \code{attrname} provides the name of the edge attribute to
-    use for edge values.  This option adds one statistic to the
-    model, representing the effect of the given covariate on
-    the appearance of edges.  \code{edgecov} can be called more
-    than once, to model the effects of multiple covariates.
- }
+  
+  \emph{Latent position and cluster terms}\cr
+  \describe{
+    \item{\code{latent(d, G=0, var.mul=1/8, var=NULL, var.df.mul=1, var.df=NULL,
+  mean.var.mul=1, mean.var=NULL, pK.mul=1, pK=NULL)}}{\emph{Latent position model term, with
+	optional clustering.}
+      Adds a term to the model equal to the negative Eucledean distance
+      \eqn{-||Z_i-Z_j||}{-dist(Z[i],Z[j])}, where \eqn{Z_i}{Z[i]} and \eqn{Z_j}{Z[j]}
+      are the positions of their respective actors in an unobserved social
+      space. These positions may optionally have a finite spherical
+      Gaussian mixture clustering structure.
+      The parameters are as follows:
+      \describe{
+	\item{\code{d}}{The dimension of the latent space.}
+	\item{\code{G}}{The number of groups (0 for no clustering).}
+	\item{\code{var.mul}}{In the absence of \code{var}, this
+	  argument will be used as a scaling factor for a
+	  function of average cluster size and latent space dimension to
+	  set \code{var}. To set it in the \code{prior} argument to \code{\link{ergmm}}, use \code{Z.var.mul}.}
+	\item{\code{var}}{If given, the scale
+	  parameter for the scale-inverse-chi-squared prior distribution of the within-cluster
+	  variance. To set it in the \code{prior} argument to \code{\link{ergmm}}, use
+	  \code{Z.var}.}
+	\item{\code{var.df.mul}}{In the absence of \code{var.df}, this
+	  argument is the multiplier for the square root of average
+	  cluster size, which serves in place of \code{var.df}. To set it in the \code{prior} argument to \code{\link{ergmm}}, use
+	  \code{Z.var.df.mul}.}
+	\item{\code{var.df}}{The degrees of freedom
+	  parameter for the scale-inverse-chi-squared prior distribution of the within-cluster
+	  variance. To set it in the \code{prior} argument to \code{\link{ergmm}}, use
+	  \code{Z.var.df}.}
+	\item{\code{mean.var.mul}}{In the absence of \code{mean.var},
+	  the multiplier for a function of number of vertices and latent space
+	  dimension to set \code{mean.var}. To set it in the
+	  \code{prior} argument to \code{\link{ergmm}}, use \code{Z.mean.var.mul}.}
+	\item{\code{mean.var}}{The variance of
+	  the spherical Gaussian prior distribution of the cluster means. To set it in the
+	  \code{prior} argument to \code{\link{ergmm}}, use
+	  \code{Z.mean.var}.}
+	\item{\code{pK.mul}}{In the absence of \code{pK}, this argument
+	  is the multiplier for the square root of the average cluster size,
+	  which is used as \code{pK}. To set it in
+	  the \code{prior} argument to \code{\link{ergmm}}, use \code{Z.pK}.}
+	\item{\code{pK}}{The parameter of the Dirichilet prior
+	  distribution of cluster assignment probabilities. To set it in
+	  the \code{prior} argument to \code{\link{ergmm}}, use \code{Z.pK}.}
+      }
+    }
+  }
+  
+  \emph{Fixed Effects}\cr
+  Each coefficient for a fixed effect covariate has a normal prior whose
+  mean and variance are set by the \code{mean} and \code{var} parameters
+  of the term. For those formula terms that add more than one covariate,
+  a vector can be given for mean and variance. If not, the vectors given
+  will be repeated until the needed length is reached.
+  \describe{
+    \item{\code{latentcov(x, attrname=NULL, mean=0, var=9)}}{\emph{Edge covariates for the
+	latent model.}
+      \code{x} is either a matrix of
+      covariates on each pair of vertices, a network, or an edge attribute on \code{g}; 
+      if the latter, optional argument
+      \code{attrname} provides the name of the edge attribute to
+      use for edge values. \code{latentcov} can be called more
+      than once, to model the effects of multiple covariates. Note that
+      some covariates can be more conveniently specified using the
+      following terms. 
+    }
+    \item{\code{absdiff(attrname, mean=0, var=9)}}{\emph{Absolute Difference.}
+      \code{attrname} is a character string giving the
+      name of an attribute in the network's vertex attribute list. This
+      term adds a covariate with the value
+      \code{abs(attrname(i)-attrname(j))} for all edges.   
+    }
+    \item{\code{nodematch(attrname, diff=FALSE, mean=0, var=9)}}{\emph{Uniform Homophily
+	and Differential Homophily.}  \code{attrname} is a
+      character string giving the name of an attribute in the
+      network's vertex attribute list.  When \code{diff=FALSE},
+      this term adds one covariate with the value
+      \code{attrname(i)==attrname(j)}.  When \code{diff=TRUE},
+      \eqn{p} covariates are added to the model, where \eqn{p} is the
+      number of unique values of the \code{attrname} attribute.
+      The \eqn{k}th such covariate has the value \code{attrname(i) == attrname(j) == value(k)}, where
+      \code{value(k)} is the \eqn{k}th smallest unique value of the
+      \code{attrname} attribute.
+    }
+    \item{\code{sendercov(attrname, force.factor=FALSE, mean=0, var=9)}}{\emph{Sender covariate effect.}
+      \code{attrname} is a character string giving the name of an
+      attribute in the network's vertex attribute list.
+      If the attribute is numeric, This term adds one covariate
+      to the model equaling \code{attrname(i)}. If the attribute is not
+      numeric or \code{force.factor==TRUE}, this term adds \eqn{p-1}
+      covariates to the model,
+      where \eqn{p} is the number of unique values of \code{attrname}.
+      The \eqn{k}th such covariate has the value \code{attrname(i) == value(k+1)}, where
+      \code{value(k)} is the \eqn{k}th smallest unique value of the
+      \code{attrname} attribute. This term only makes
+      sense if \code{g} is directed.}
+    \item{\code{receivercov(attrname, force.factor=FALSE, mean=0, var=9)}}{\emph{Receiver covariate effect.}
+      \code{attrname} is a character string giving the name of an
+      attribute in the network's vertex attribute list.
+      If the attribute is numeric, This term adds one covariate
+      to the model equaling \code{attrname(j)}. If the attribute is not
+      numeric or \code{force.factor==TRUE}, this term adds \eqn{p-1}
+      covariates to the model,
+      where \eqn{p} is the number of unique values of \code{attrname}.
+      The \eqn{k}th such covariate has the value \code{attrname(j) == value(k+1)}, where
+      \code{value(k)} is the \eqn{k}th smallest unique value of the
+      \code{attrname} attribute. This term only makes
+      sense if \code{g} is directed.}
+    \item{\code{socialitycov(attrname, force.factor=FALSE, mean=0, var=9)}}{\emph{Sociality covariate effect.}
+      \code{attrname} is a character string giving the name of an
+      attribute in the network's vertex attribute list.
+      If the attribute is numeric, This term adds one covariate
+      to the model equaling \code{attrname(i)+attrname(j)}. If the attribute is not
+      numeric or \code{force.factor==TRUE}, this term adds \eqn{p-1}
+      covariates to the model,
+      where \eqn{p} is the number of unique values of \code{attrname}.
+      The \eqn{k}th such covariate has the value \code{attrname(i) ==
+	value(k+1) + attrname(j) == value(k+1)}, where
+      \code{value(k)} is the \eqn{k}th smallest unique value of the
+      \code{attrname} attribute. This term makes sense whether or not
+      \code{g} is directed.}
+  }
 }
-
-%\value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
-%}
-\seealso{ergmm, latent, latentcluster, sna, network, set.vertex.attributes,
-         set.network.attributes, summary.ergm}
-\references{
- Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
- \emph{Latent space approaches to social network analysis.} 
- Journal of the American Statistical Association, Dec 2002, Vol.97, 
- Iss. 460;  pg. 1090-1098.
-
- Mark S. Handcock, Adrian E. Raftery and Jeremy Tantrum.
- \emph{Model-Based Clustering for Social Networks.} 
- Working Paper Number 46, Center for Statistics and the Social Sciences,
- University of Washington, April 2005.
+\author{Pavel N. Krivitsky \email{pavel@stat.washington.edu}}
+\seealso{
+  \code{\link{ergmm}}
 }
-\examples{
-%\dontshow{require(statnet)}
-\dontrun{
-#
-# Using Sampson's Monk data, lets fit a 
-# simple latent position model
-#
-data(sampson)
-#
-# Get the group labels
-samp.labs <- substr(get.vertex.attribute(samplike,"group"),1,1)
-#
-samp.fit <- ergmm(samplike ~ latent(k=2), burnin=10000,
-                 MCMCsamplesize=2000, interval=30)
-#
-# See if we have convergence in the MCMC
-mcmc.diagnostics(samp.fit)
-#
-# Plot the fit
-#
-plot(samp.fit,label=samp.labs, vertex.col="group")
-#
-# Using Sampson's Monk data, lets fit a latent clustering model
-#
-samp.fit <- ergmm(samplike ~ latentcluster(k=2, ngroups=3), burnin=10000,
-                 MCMCsamplesize=2000, interval=30)
-#
-# See if we have convergence in the MCMC
-mcmc.diagnostics(samp.fit)
-#
-# Lets look at the goodness of fit:
-#
-plot(samp.fit,label=samp.labs, vertex.col="group")
-plot(samp.fit,pie=TRUE,label=samp.labs)
-plot(samp.fit,density=c(2,2))
-plot(samp.fit,contours=5,contour.color="red")
-plot(samp.fit,density=TRUE,drawarrows=TRUE)
-ergmm.add.contours(samp.fit,nlevels=8,lwd=2)
-points(samp.fit$Z.mkl,pch=19,col=samp.fit$class)
-}}
 \keyword{graphs}
+\keyword{models}
+\keyword{regression}
+\keyword{nonlinear}
+\keyword{nonparametric}
+\keyword{cluster}

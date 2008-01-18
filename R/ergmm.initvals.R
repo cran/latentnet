@@ -1,0 +1,132 @@
+ergmm.initvals <- function(model,user.start,prior,control){
+  if(control$verbose) cat("Generating initial values for MCMC:\n")
+  need.to.fit<-list(beta=model$p>0 && is.null(user.start$beta), ## beta
+                    Z=model$d>0 && is.null(user.start$Z), ## Z
+                    Z.var=model$d>0 && is.null(user.start$Z.var),
+                    Z.mean=model$G>0 && is.null(user.start$Z.mean),
+                    Z.K=model$G>0 && is.null(user.start$Z.K),
+                    Z.pK=model$G>0 && is.null(user.start$pZ.K)
+                    )
+
+  Yg<- model$Yg
+  n <- network.size(Yg)
+  p <- model$p
+  d <- model$d
+  G <- model$G
+
+  Ym<-getYm(Yg,model$response)
+  
+  Ym01<-Ym>mean(Ym)
+  mode(Ym01)<-"numeric"
+  
+  pm<-user.start
+  
+  if(need.to.fit$Z){
+    if(control$verbose) cat("Computing geodesic distances... ")
+    D <- ergmm.geodesicmatrix(model)
+    D[is.infinite(D)]<-2*n
+    if(control$verbose) cat("Finished.\n")
+    if(control$verbose) cat("Computing MDS locations... ")
+    pm$Z <- cmdscale(D,model$d)
+    if(control$verbose) cat("Finished.\n")
+  }
+
+  if(control$verbose) cat("Computing other initial values... ")
+  
+  if("Z" %in% names(pm)) {
+    i.keep<-mahalanobis(pm$Z,0,cov(pm$Z))<20
+    pm$Z[!i.keep,]<-0
+  }
+
+  if(need.to.fit$Z.K){
+    mbc1<-find.clusters(G,pm$Z[i.keep,])
+    pm$Z.K<-integer(n)
+    pm$Z.K[i.keep]<-mbc1$Z.K
+    pm$Z.K[!i.keep]<-which.max(tabulate(mbc1$Z.K))
+  }
+  
+  if(need.to.fit$Z.pK){
+    pm$Z.pK<-tabulate(pm$Z.K)/n
+  }
+  
+  if(need.to.fit$Z.var){
+    if(!is.null(pm$Z.K)) pm$Z.var<-sapply(1:G,function(g) var(c(subset(pm$Z[i.keep,],pm$Z.K[i.keep]==g))))
+    else pm$Z.var<-var(c(pm$Z[i.keep,]))
+  }
+
+  if(need.to.fit$Z.mean){
+    pm$Z.mean<-t(sapply(1:G,function(g) apply(subset(pm$Z[i.keep,],pm$Z.K[i.keep]==g),2,mean)))
+  }
+
+  logit<-function(p) log(p/(1-p))
+  
+  if(need.to.fit$beta){
+    if(model$intercept)
+      pm$beta<-logit(mean(Ym01))+if(!is.null(pm$Z))mean(as.matrix(dist(pm$Z)))
+    pm$beta<-c(pm$beta,rep(0,p-model$intercept))
+  }
+
+  bayes.prop<-function(x) (sum(x)+1)/(length(x)+2)
+  
+  if(control$verbose) cat("Finished.\n")
+  
+  if(control$verbose) cat("Finding the conditional posterior mode... ")
+  for(i in 1:control$mle.maxit){
+    if(control$verbose>1) cat(i,"")
+    pm.old<-pm
+    pm<-find.mpe(model,pm,
+                 given=merge.lists(as.ergmm.par.list(list(Z.K=pm$Z.K)),user.start),
+                 prior=prior,control=control,fit.vars=need.to.fit)
+    if(is.null(pm)) stop("Problem fitting. Starting values may have to be supplied by the user.")
+    if(need.to.fit$Z.K)pm$Z.K<-find.clusters(G,pm$Z)$Z.K
+    if(isTRUE(all.equal(pm.old,pm))) break
+  }
+  if(control$verbose) cat("Finished.\n")
+
+  class(pm)<-"ergmm.par"
+  pm
+}
+
+find.clusters<-function(G,Z){
+  if(!require(mclust,quietly=TRUE, warn.conflicts = FALSE)){
+    stop("You need the 'mclust' package to fit latent cluster models.")
+  }
+  d<-dim(Z)[2]
+  
+  if(d > 1){
+   el.hc <- hc(modelName="VII",data=Z)
+  }else{
+   el.hc <- hc(modelName="V",data=Z)
+  }
+  cl <- hclass(el.hc,G)
+  if(d > 1){
+    el.me <- me(modelName="VII",data=Z,z=unmap(cl))
+  }else{
+    el.me <- me(modelName="V",data=Z,z=unmap(cl))
+  }
+  if(any(is.na(el.me$parameters$mean))){
+    if(d > 1){
+      el.me <- mstep(modelName="VII",data=Z,z=unmap(cl))
+    }else{
+      el.me <- mstep(modelName="V",data=Z,z=unmap(cl))
+    }
+    el.me$z <- unmap(cl)
+  }
+  Z.mean <- rbind(el.me$parameters$mean)
+  Z.mean <- t(Z.mean)
+  if(d > 1){
+   Z.var <- el.me$parameters$variance$sigmasq
+  }else{
+   Z.var <- el.me$parameters$variance$sigmasq
+  }
+  Z.K <- map(el.me$z)
+#  cat("Z.mean:\n")
+#  print(Z.mean)
+#  cat("Z.var:\n")
+#  print(Z.var)
+#  cat("Z.K:\n")
+#  print(Z.K)
+  Z.pK <- table(map(el.me$z))/sum(table(map(el.me$z)))
+
+  return(list(Z.mean=Z.mean,Z.var=Z.var,Z.K=Z.K,Z.pK=Z.pK,Z.pZK=el.me$z,mbc.llk=el.me$loglik))
+}
