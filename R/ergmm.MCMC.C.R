@@ -4,26 +4,23 @@
 ### part specific to interfacing with C from the rest of the program.
 ### It does NOT come up with initial values --- those must be passed to it.
 
-### If present, parameters 'samplesize' and 'interval' override those in 'control'.
+### If present, parameters 'sample.size' and 'interval' override those in 'control'.
 
 ### Also note that it does NOT perform the burnin. To perform the burnin,
-### pass samplesize=1 and interval=burnin, and then pass the last (and only) iteration
+### pass sample.size=1 and interval=burnin, and then pass the last (and only) iteration
 ### to the actual run.
 
 
-ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=NULL){
-  ## Note that passing NULL as a parameter will cause the corresponding parameter in
-  ## latent_MCMC_wrapper(...) to be set to NULL when NULL is coerced to double.
-  ## (as.double(NULL)==double(0))
-
-  Ym <-model$Ym
-  
+ergmm.MCMC.C<-function(model, start, prior, control, sample.size=NULL, interval=NULL){
+  Ym.noNA<- Ym <-model$Ym
+  Ym.noNA[is.na(Ym.noNA)]<-0
+    
   n<-network.size(model$Yg)
   d<-model$d
   G<-model$G
   p<-model$p
 
-  if(is.null(samplesize)) samplesize<-control$samplesize
+  if(is.null(sample.size)) sample.size<-control$sample.size
   if(is.null(interval)) interval<-control$interval
   
   if(length(prior$beta.mean)==1) prior$beta.mean<-rep(prior$beta.mean,p)
@@ -31,9 +28,9 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
 
   ## Figure out the design matrix.
   observed<-observed.dyads(model$Yg)
-
-  if((observed==(diag(n)==0) && is.directed(model$Yg)) ||
-     (observed==lower.tri(diag(n)) && !is.directed(model$Yg)))
+  
+  if((all(observed==(diag(n)==0)) && is.directed(model$Yg)) ||
+     (all(observed==lower.tri(diag(n))) && !is.directed(model$Yg)))
     observed<-NULL
 
   ## Sanity checks: the following block of code checks that all dimensionalities and
@@ -46,7 +43,6 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
   if(!is.null(start$Z)){
     if(!all(dim(start$Z)==c(n,d))) stop("Incorrect size for the starting latent positions.")
     if(is.null(control$Z.delta)) stop("Need Z-move proposal standard deviation (control$Z.delta).")
-    if(is.null(control$Z.scl.delta)) stop("Need Z-scale proposal standard deviation (control$Z.delta).")
     if(G > 0){
       if(length(start$Z.K)!=n) stop("Incorrect length for the vector of starting cluster assignments.")
       if(length(start$Z.pK)!=G) stop("Incorrect length for the vector of starting cluster probabilities.")
@@ -67,7 +63,7 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
 #  cat("Entering C routine... ")
   Cret <- .C("ERGMM_MCMC_wrapper",
              
-             samplesize=as.integer(samplesize),
+             sample.size=as.integer(sample.size),
              interval=as.integer(interval),
              
              n=as.integer(n),
@@ -76,18 +72,18 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
              G=as.integer(G), 
              
              dir=as.integer(is.directed(model$Yg)),
-             viY=as.integer(Ym),
-             vdY=as.double(Ym),
+             viY=as.integer(Ym.noNA),
+             vdY=as.double(Ym.noNA),
              family=as.integer(model$familyID),
              iconsts=as.integer(model$iconsts),
              dconsts=as.double(model$dconsts),
              
              vX=as.double(unlist(model$X)),  
              
-             llk.mcmc=double(samplesize+RESERVED),
-             lpZ.mcmc=if(!is.null(start$Z))double(samplesize+RESERVED) else double(0),
-             lpbeta.mcmc=if(p>0)double(samplesize+RESERVED) else double(0),
-             lpLV.mcmc=if(!is.null(start$Z))double(samplesize+RESERVED) else double(0),
+             llk.mcmc=double(sample.size+RESERVED),
+             lpZ.mcmc=if(!is.null(start$Z))double(sample.size+RESERVED) else double(0),
+             lpbeta.mcmc=if(p>0)double(sample.size+RESERVED) else double(0),
+             lpLV.mcmc=if(!is.null(start$Z))double(sample.size+RESERVED) else double(0),
              
              Z=as.double(start$Z),
              
@@ -101,30 +97,30 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
              prior.Z.pK=if(G > 0) as.double(prior$Z.pK) else double(0),
              prior.Z.var.df=as.double(prior$Z.var.df),
              
-             Z.mcmc = double((samplesize+RESERVED)*n*d),
-             Z.rate = if(d > 0) double((samplesize+RESERVED)) else double(0),
-             Z.rate.move.all = if(d > 0) double((samplesize+RESERVED)) else double(0),
+             Z.mcmc = double((sample.size+RESERVED)*n*d),
+             Z.rate = if(d > 0) double((sample.size+RESERVED)) else double(0),
              
-             K.mcmc = if(G > 0) integer(n*(samplesize+RESERVED)) else integer(0),
-             Z.pK.mcmc = double(G*(samplesize+RESERVED)),
-             mu.mcmc = double(d*G*(samplesize+RESERVED)),
-             Z.var.mcmc = double(max(G,d>0)*(samplesize+RESERVED)),
+             K.mcmc = if(G > 0) integer(n*(sample.size+RESERVED)) else integer(0),
+             Z.pK.mcmc = double(G*(sample.size+RESERVED)),
+             mu.mcmc = double(d*G*(sample.size+RESERVED)),
+             Z.var.mcmc = double(max(G,d>0)*(sample.size+RESERVED)),
              
              start.beta=as.double(start$beta),
              prior.beta.mean=as.double(prior$beta.mean),
              prior.beta.var=as.double(prior$beta.var),
-             beta.mcmc=double((samplesize+RESERVED)*p),
-             beta.rate=double((samplesize+RESERVED)),
-                          
+             beta.mcmc=double((sample.size+RESERVED)*p),
+             beta.rate=double((sample.size+RESERVED)),
+             
              observed=as.integer(observed),
 
-             deltas=with(control,as.numeric(c(Z.delta,Z.tr.delta,Z.scl.delta,
-               rep(beta.delta,length.out=p)))),
+             deltas=with(control,as.numeric(c(Z.delta,group.deltas))),
+
+             accept.all=control$accept.all,
              
              PACKAGE="latentnet")
 #  cat("Finished C routine.\n")
   
-  samples<-list(## MCMC Samples
+  sample<-list(## MCMC Sample
                 llk=Cret$llk.mcmc,
                 lpZ=Cret$lpZ.mcmc,
                 lpbeta=Cret$lpbeta.mcmc,
@@ -132,22 +128,22 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
                 beta=matrix(Cret$beta.mcmc,ncol=p),
                 beta.rate=Cret$beta.rate,
                 Z.K = if(G>0) matrix(Cret$K.mcmc,ncol=n),
-                Z.mean = if(G>0) array(Cret$mu.mcmc,dim=c((samplesize+RESERVED),G,d)),
+                Z.mean = if(G>0) array(Cret$mu.mcmc,dim=c((sample.size+RESERVED),G,d)),
                 Z.var = if(d>0) matrix(Cret$Z.var.mcmc,ncol=max(G,1)),
                 Z.pK = if(G>0) matrix(Cret$Z.pK.mcmc,ncol=G),
-                Z=if(d>0)array(Cret$Z.mcmc,dim=c((samplesize+RESERVED),n,d)),
-                Z.rate=if(d>0) Cret$Z.rate, Z.rate.move.all=if(d>0) Cret$Z.rate.move.all
+                Z=if(d>0)array(Cret$Z.mcmc,dim=c((sample.size+RESERVED),n,d)),
+                Z.rate=if(d>0) Cret$Z.rate
                 )
-  class(samples)<-"ergmm.par.list"
+  class(sample)<-"ergmm.par.list"
   
   
-  mcmc.mle<-samples[[1]]
-  mcmc.pmode<-samples[[2]]
-  samples<-del.iteration(samples,1:2)
+  mcmc.mle<-sample[[1]]
+  mcmc.pmode<-sample[[2]]
+  sample<-del.iteration(sample,1:2)
   
   
   ## Construct the list (of lists) for return.
-  out<-list(samples=samples,
+  out<-list(sample=sample,
             mcmc.mle=mcmc.mle,
             mcmc.pmode=mcmc.pmode)
 
@@ -156,12 +152,12 @@ ergmm.MCMC.C<-function(model, start, prior, control, samplesize=NULL, interval=N
 
 
 
-ergmm.MCMC.snowFT<-function(threads, reps, model.l, start.l, prior.l, control.l, samplesize.l=NULL, interval.l=NULL){
+ergmm.MCMC.snowFT<-function(threads, reps, model.l, start.l, prior.l, control.l, sample.size.l=NULL, interval.l=NULL){
   l.sizes<-c(length(model.l),
              length(start.l),
              length(prior.l),
              length(control.l),
-             length(samplesize.l),
+             length(sample.size.l),
              length(interval.l))
   l.sizes<-l.sizes[l.sizes>0]
   param.sets<-max(l.sizes)
@@ -175,23 +171,24 @@ ergmm.MCMC.snowFT<-function(threads, reps, model.l, start.l, prior.l, control.l,
                               start.l=start.l,
                               prior.l=prior.l,
                               control.l=control.l,
-                              samplesize.l=samplesize.l,
+                              sample.size.l=sample.size.l,
                               interval.l=interval.l)
   mcmc.mle<-mcmc.out.l[[which.max(sapply(1:length(mcmc.out.l),
                                          function(i) mcmc.out.l[[i]]$mcmc.mle$llk))]]$mcmc.mle
-  
-  result.list<-list(samples=list(),mcmc.mle=mcmc.mle)
-  for(i in 1:length(mcmc.out.l)) result.list$samples[[i]]<-mcmc.out.l[[i]]$samples
+  mcmc.pmode<-mcmc.out.l[[which.max(sapply(1:length(mcmc.out.l),
+                                         function(i) mcmc.out.l[[i]]$mcmc.pmode$llk))]]$mcmc.pmode
+  result.list<-list(sample=list(),mcmc.mle=mcmc.mle,mcmc.pmode=mcmc.pmode)
+  for(i in 1:length(mcmc.out.l)) result.list$sample[[i]]<-mcmc.out.l[[i]]$sample
   result.list
 }
 
-ergmm.MCMC.snowFT.slave<-function(i, lib, model.l, start.l, prior.l, control.l, samplesize.l=NULL, interval.l=NULL){
+ergmm.MCMC.snowFT.slave<-function(i, lib, model.l, start.l, prior.l, control.l, sample.size.l=NULL, interval.l=NULL){
   library(latentnet,lib=lib)
   ergmm.MCMC.C(model.l[[min(length(model.l),i)]],
                start.l[[min(length(start.l),i)]],
                prior.l[[min(length(prior.l),i)]],
                control.l[[min(length(control.l),i)]],
-               samplesize.l[[min(length(samplesize.l),i)]],
+               sample.size.l[[min(length(sample.size.l),i)]],
                interval.l[[min(length(interval.l),i)]])
 }
 

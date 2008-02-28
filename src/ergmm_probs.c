@@ -76,7 +76,7 @@ void ERGMM_lp_Y_wrapper(int *n, int *p, int *d,
 			   NULL, // lpedge
 			   0, // lpZ		  
 			   0, // lpLV
-			   0, // lpcoef
+			   0 // lpcoef
   };
 
   *llk = ERGMM_MCMC_lp_Y(&model,&params,FALSE);
@@ -89,7 +89,7 @@ void ERGMM_lp_Y_wrapper(int *n, int *p, int *d,
 
 }
 
-R_INLINE double ERGMM_MCMC_etaij(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par,unsigned int i,unsigned int j){
+/*R_INLINE*/ double ERGMM_MCMC_etaij(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par,unsigned int i,unsigned int j){
   double eta=0;
   unsigned int k;
   if(model->latent) eta-=dvector_dist(par->Z[i],par->Z[j],model->latent);
@@ -129,7 +129,7 @@ double ERGMM_MCMC_lp_Y(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par, unsigned in
 	}
   }
   
-  /* Do NOT add on log P(Z|means,vars,clusters) here.  This is a _log-likelihood_, so
+  /* Do NOT add on log P(Z|means,vars,clusters).  This is a _log-likelihood_, so
      it's log P(Y|everything else), not log P(Y,Z|everything else).*/
 
   if(!update_lpedge) return(llk);
@@ -199,7 +199,7 @@ double ERGMM_MCMC_lp_Y_diff(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur){
   }
 
   new->llk=old->llk+llk_diff;
-  /* Do NOT add on log P(Z|means,vars,clusters) here.
+  /* Do NOT add on log P(Z|means,vars,clusters).
      This is a _log-likelihood_, so it's log P(Y|everything else), not log P(Y,Z|everything else).*/
 
   return(llk_diff);
@@ -227,7 +227,7 @@ double ERGMM_MCMC_logp_Z_diff(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur
   double lpZ_diff=0;
   ERGMM_MCMC_Par *new=cur->prop,*old=cur->state;
 
-  if(cur->prop_Z==PROP_ALL){
+  if(cur->prop_Z==PROP_ALL || cur->prop_LV!=PROP_NONE){
     return(ERGMM_MCMC_logp_Z(model,new)-old->lpZ);
   }
   else if(cur->prop_Z==PROP_NONE){
@@ -248,8 +248,7 @@ double ERGMM_MCMC_logp_Z_diff(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur
   return(lpZ_diff);
 }
 
-
-/* logp_LV gives P(Z_mean,Z_var|priors)
+/* logp_latentvars gives P(Z_mean,Z_var|priors)
  * Note that it does NOT include probabilities involved in cluster assignments (might add later).
  */
 double ERGMM_MCMC_logp_LV(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par, ERGMM_MCMC_Priors *prior){
@@ -258,16 +257,19 @@ double ERGMM_MCMC_logp_LV(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par, ERGMM_MC
   if(model->clusters>0)
     for(i = 0; i < model->clusters; i++){
       for(j = 0; j < model->latent; j++)
-	par->lpLV += dnorm(par->Z_mean[i][j],0,sqrt(prior->Z_mean_var),1);
-      par->lpLV+=dsclinvchisq(par->Z_var[i],prior->Z_var_df,prior->Z_var,1);
+	par->lpLV += dnorm(par->Z_mean[i][j],0,sqrt(prior->Z_mean_var),TRUE);
+      par->lpLV+=dsclinvchisq(par->Z_var[i],prior->Z_var_df,prior->Z_var,TRUE);
     }
   else
-    par->lpLV =dsclinvchisq(par->Z_var[0],prior->Z_var_df,prior->Z_var,1);
+    par->lpLV =dsclinvchisq(par->Z_var[0],prior->Z_var_df,prior->Z_var,TRUE);
   return(par->lpLV);
 }
 
 double ERGMM_MCMC_logp_LV_diff(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, ERGMM_MCMC_Priors *prior){
-  if(cur->prop_LV==PROP_NONE) return(0);
+  if(cur->prop_LV==PROP_NONE){
+    cur->prop->lpLV=cur->state->lpLV;
+    return(0);
+  }
   return(ERGMM_MCMC_logp_LV(model,cur->prop,prior)-cur->state->lpLV);
 }
 
@@ -282,6 +284,9 @@ double ERGMM_MCMC_logp_coef(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par, ERGMM_
 }
 
 double ERGMM_MCMC_logp_coef_diff(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, ERGMM_MCMC_Priors *prior){
-  if(cur->prop_coef==PROP_NONE) return(0);
+  if(cur->prop_coef==PROP_NONE){
+    cur->prop->lpcoef=cur->state->lpcoef;
+    return(0);
+  }
   return(ERGMM_MCMC_logp_coef(model,cur->prop,prior)-cur->state->lpcoef);
 }

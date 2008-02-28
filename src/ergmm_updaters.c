@@ -17,17 +17,10 @@
 #define FALSE 0
 #define TRUE !0
 
-//#define VERBOSE 1
-//#define SUPER_VERBOSE 1
-//#define ALWAYS_RECOMPUTE_LLK 1
-
-
 /*
   Initiates a Metropolis-Hasting step, by signaling what is about to be proposed.
   *** It MUST be called BEFORE the proposals are made. ***
-  At the moment, it's not possible to propose LV without Z;
-  this may change in the future. Gibbs-updating is OK, as long as the affected
-  probabilities are updated.
+  Gibbs-updating is OK, as long as the affected probabilities are updated.
  */
 void ERGMM_MCMC_propose(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, unsigned int Z, unsigned int coef, unsigned int LV){
   // If the state has been Gibbs-updated, it means prop is inconsistent.
@@ -41,12 +34,11 @@ void ERGMM_MCMC_propose(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, unsi
     if(cur->prop_Z!=PROP_NONE && cur->prop_Z!=Z) cur->prop_Z=PROP_ALL;
     else cur->prop_Z=Z;
   }
-
+  
   if(coef!=PROP_NONE) cur->prop_coef=PROP_ALL;
 
   if(LV!=PROP_NONE && cur->state->Z){
     cur->prop_LV=PROP_ALL;
-    cur->prop_Z=PROP_ALL;
   }
 }
 
@@ -68,7 +60,7 @@ void ERGMM_MCMC_prop_end(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur,
   default:
     copy_dvector(new->Z[cur->prop_Z],old->Z[cur->prop_Z],model->latent); break;
   }
-  
+
   if(cur->prop_coef==PROP_ALL)
     copy_dvector(new->coef,old->coef,model->coef);
 
@@ -96,28 +88,29 @@ void ERGMM_MCMC_prop_end(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur,
     }
   }
 
-  // Finally, update probabilities and signal the end of proposal.
-  old->llk=new->llk;
-
   if(cur->prop_Z!=PROP_NONE){
+    old->llk=new->llk;
     old->lpZ=new->lpZ;
     cur->prop_Z=PROP_NONE;
   }
 
   if(cur->prop_coef!=PROP_NONE){
+    old->llk=new->llk;
     old->lpcoef=new->lpcoef;
     cur->prop_coef=PROP_NONE;
   }
 
   if(cur->prop_LV!=PROP_NONE){
     old->lpLV=new->lpLV;
+    // A jump in latent space variables can also affect the probability of Z.
+    old->lpZ=new->lpZ;
     cur->prop_LV=PROP_NONE;
   }
 }
 
 /* update Z one vertex at a time */
 unsigned int ERGMM_MCMC_Z_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
-	    ERGMM_MCMC_MCMCSettings *setting)
+			     ERGMM_MCMC_MCMCSettings *setting)
 {
   double lr;
   unsigned int iord, i, j, change=0;
@@ -137,9 +130,11 @@ unsigned int ERGMM_MCMC_Z_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, 
       }
     }
 
-    lr = ERGMM_MCMC_lp_Y_diff(model,cur)+ERGMM_MCMC_logp_Z_diff(model,cur);
-
-    if( runif(0.0,1.0) < exp(lr) ){
+    lr = (ERGMM_MCMC_lp_Y_diff(model,cur)
+	  +ERGMM_MCMC_logp_Z_diff(model,cur)
+	  );
+	  
+    if( setting->accept_all || runif(0.0,1.0) < exp(lr) ){
       change++;
       ERGMM_MCMC_accept(model,cur);
     }
@@ -151,56 +146,69 @@ unsigned int ERGMM_MCMC_Z_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, 
   return(change);
 }
 
-/* updates coef, scale of Z; also translates Z */
-unsigned int ERGMM_MCMC_coef_up_scl_tr_Z(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
-			     ERGMM_MCMC_MCMCSettings *setting){  
-  unsigned int i;
-  double lr, h, dens_change=0;
-  
+/* updates coef, scale of Z */
+unsigned int ERGMM_MCMC_coef_up_scl_Z(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
+						  ERGMM_MCMC_MCMCSettings *setting){
+  double acc_adjust=0;
   ERGMM_MCMC_Par *par=cur->prop;
   
   // Signal the proposal (of everything).
   ERGMM_MCMC_propose(model,cur,PROP_ALL,PROP_ALL,PROP_ALL);
 
+  for(unsigned int j=0; j<setting->group_prop_size; j++) 
+    cur->deltas[j] = 0;
+
+  for(unsigned int i=0; i<setting->group_prop_size; i++){
+    double delta = rnorm(0,1);
+    for(unsigned int j=0; j<setting->group_prop_size; j++){
+      cur->deltas[j] += setting->group_deltas[i][j]*delta;
+    }
+  }
+  
+  unsigned int prop_pos=0;
+  
+  // Propose coef.
+  for(unsigned int i=0;i< model->coef;i++){
+    par->coef[i] += cur->deltas[prop_pos++];
+  }
+
   if(model->latent){  
     // Propose to scale Z.
     // Note that log P(mu,sigma) is changed.
-    
-    h = rlnorm(0,setting->Z_scl_delta);
 
-    for(i=0;i<model->latent;i++)
-      cur->tr_by[i]=rnorm(0,setting->Z_tr_delta);
+    // Grab the scaling factor.
+    double logh=cur->deltas[prop_pos++];
 
-    dmatrix_scale_by(par->Z,model->verts,model->latent,h);
-    latentpos_translate(par->Z,model->verts,model->latent,cur->tr_by);
+    // Every scaling proposal has an accompanying adjustment for the log-probability
+    // ratios.
+    dmatrix_scale_by(par->Z,model->verts,model->latent,exp(logh));
+    acc_adjust+=model->verts*model->latent*logh;
+
     if(model->clusters){
-      dmatrix_scale_by(par->Z_mean,model->clusters,model->latent,h);
-      latentpos_translate(par->Z_mean,model->clusters,model->latent,cur->tr_by);
-      dvector_scale_by(par->Z_var,model->clusters,h*h);
-    }
-    else
-      dvector_scale_by(par->Z_var,1,h*h);
-  }
+      dmatrix_scale_by(par->Z_mean,model->clusters,model->latent,exp(logh));
+      acc_adjust+=model->clusters*model->latent*logh;
 
-  // Propose coef.
-  for(i=0;i< model->coef;i++){
-    h=rnorm(0.0,setting->coef_delta[i]);
-    par->coef[i] += h;
-    dens_change += setting->X_means[i]*h;
+      dvector_scale_by(par->Z_var,model->clusters,exp(2*logh));
+      acc_adjust+=model->clusters*2*logh;
+    }else{
+      dvector_scale_by(par->Z_var,1,exp(2*logh));
+      acc_adjust+=2*logh;
+    }
   }
-  //  dens_change=0;
 
   /* Calculate the log-likelihood-ratio.
      Note that even functions that don't make sense in context
      (e.g. logp_Z for a non-latent-space model) are safe to call and return 0). */
-  lr = (ERGMM_MCMC_lp_Y_diff(model,cur)
-	+ERGMM_MCMC_logp_coef_diff(model,cur,prior)
-	+ERGMM_MCMC_logp_Z_diff(model,cur)
-	+ERGMM_MCMC_logp_LV_diff(model,cur,prior));
-  
+
+  double lr = (+ERGMM_MCMC_lp_Y_diff(model,cur)
+	       +ERGMM_MCMC_logp_coef_diff(model,cur,prior)
+	       +ERGMM_MCMC_logp_Z_diff(model,cur)
+	       +ERGMM_MCMC_logp_LV_diff(model,cur,prior)
+	       +acc_adjust
+	       );
   
   /* accept or reject */
-  if( runif(0.0,1.0) < exp(lr) ){
+  if( setting->accept_all || runif(0.0,1.0) < exp(lr) ){
     ERGMM_MCMC_accept(model,cur);
     return(1);
   }
@@ -215,7 +223,7 @@ unsigned int ERGMM_MCMC_coef_up_scl_tr_Z(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Pr
 */
 
 void ERGMM_MCMC_CV_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur){
-  double S_hat, useSig,sum,temp;
+  double S_hat, useSig,temp;
   unsigned int i,j,loop1;
 
   ERGMM_MCMC_Par *par=cur->state;
@@ -225,7 +233,6 @@ void ERGMM_MCMC_CV_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_M
 
   // Reassign clusters.
   for(i=0;i<model->verts;i++){
-    sum = 0;
     for(j=0;j<model->clusters;j++){
       temp=dindnormmu(model->latent,par->Z[i],par->Z_mean[j],sqrt(par->Z_var[j]),FALSE);
       if(j>0)
@@ -235,9 +242,7 @@ void ERGMM_MCMC_CV_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_M
     }
     
     temp = runif(0.0,1.0);
-    j = 0;
-    while(cur->pK[j]/cur->pK[model->clusters-1] < temp)
-      j++;
+    for(j=0; cur->pK[j]/cur->pK[model->clusters-1] < temp; j++); // NOTE: this is not a bug; the for loop is there to find the right j!
     par->Z_K[i] = j + 1;
   }
 
@@ -273,7 +278,7 @@ void ERGMM_MCMC_CV_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_M
     
   }
 
-  //mvrnorm for mumat
+  // Z_mean
   for(i=0;i<model->clusters;i++){
     for(j=0;j<model->latent;j++)
       cur->Z_bar[i][j] = cur->n[i] * cur->Z_bar[i][j]/(cur->n[i]+ par->Z_var[i]/prior->Z_mean_var);

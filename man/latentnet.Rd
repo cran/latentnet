@@ -2,13 +2,13 @@
 \alias{latentnet}
 \title{Latent position and cluster models for networks}
 \description{
-  The package \code{latentnet} is used to fit latent cluster
+  The package \code{latentnet} is used to fit latent cluster 
   models, where the probability of a network \eqn{g},
   on a set of nodes is a product of dyad probabilities, each of which is
   a GLM with linear component
   \eqn{\eta_{i,j}=\sum_{k=1}^p \beta_k X_{i,j,k}+||Z_i-Z_j||},
   where \eqn{X} is an array of dyad covariates, \eqn{\beta} is a vector
-  of covariate coefficients, and \eqn{Z_i} is the latent space position of
+  of covariate coefficients and \eqn{Z_i} is the latent space position of
   node \eqn{i}.
 
   The \code{\link{ergmm}} specifies models via: \code{g ~ <model terms>}
@@ -35,7 +35,7 @@
 }
 \value{\code{\link{ergmm}} returns an object of class 'ergmm' that is a list.
 }
-\seealso{latent, latentcluster, sna, network, terms.ergmm}
+\seealso{\code{\link{ergmm}}, \link{terms.ergmm}}
 \references{
  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
  \emph{Latent space approaches to social network analysis}.
@@ -50,40 +50,6 @@
  Susan M. Shortreed, Mark S. Handcock, and Peter D. Hoff.
  \emph{Positional Estimation within the Latent Space Model for
    Networks}. Methodology, 2006, Vol. 2, Iss. 1; pg. 24-33.
-}
-\examples{
-#
-# Using Sampson's Monk data, lets fit a 
-# simple latent position model
-#
-data(sampson)
-#
-# Get the group labels
-samp.labs <- substr(get.vertex.attribute(samplike,"group"),1,1)
-#
-samp.fit <- ergmm(samplike ~ latent(d=2), control=ergmm.control(burnin=10000,
-                 samplesize=2000, interval=10))
-#
-# See if we have convergence in the MCMC
-mcmc.diagnostics(samp.fit)
-#
-# Plot the fit
-#
-plot(samp.fit,label=samp.labs, vertex.col="group")
-#
-# Using Sampson's Monk data, lets fit a latent clustering model
-samp.fit <- ergmm(samplike ~ latent(d=2, G=3), control=ergmm.control(burnin=10000, samplesize=2000, interval=10))
-# See if we have convergence in the MCMC
-mcmc.diagnostics(samp.fit)
-#
-# Lets look at the goodness of fit:
-#
-plot(samp.fit,label=samp.labs, vertex.col="group")
-plot(samp.fit,pie=TRUE,label=samp.labs)
-plot(samp.fit,density=c(2,2))
-plot(samp.fit,contours=5,contour.color="red")
-plot(samp.fit,density=TRUE,drawarrows=TRUE)
-plot(samp.fit,density=TRUE,drawarrows=TRUE,only.subdens=TRUE)
 }
 \keyword{graphs}
 \keyword{package}

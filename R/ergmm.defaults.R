@@ -3,35 +3,35 @@
 ## for glm.
 
 ## Variables affecting the sampling process but not the posterior distribution.
-ergmm.control<-function(samplesize=2000,
-                        burnin=1000,
+ergmm.control<-function(sample.size=4000,
+                        burnin=10000,
                         interval=10,
                         threads=1,
-                        mle.maxit=400,
-                        tune=FALSE,
-                        tuning.runs=100,
-                        tuning.runsize=8,
-                        Z.delta=0.4,
-                        Z.tr.delta=0.4,
-                        Z.scl.delta=0.02,
-                        beta.delta=0.4,
+                        mle.maxit=100,
+                        Z.delta=0.6,
+                        group.deltas=0.4,
+                        pilot.runs=4,
+                        pilot.factor=0.8,
+                        pilot.discard.first=0.5,
+                        target.acc.rate=0.234,
+                        backoff.threshold=0.05,
+                        backoff.factor=0.1,
+                        accept.all=FALSE,
                         store.burnin=FALSE){
-  list(samplesize=samplesize,
-       burnin=burnin,interval=interval,
-       threads=threads,
-       mle.maxit=mle.maxit,
-       tune=tune,
-       tuning.runs=tuning.runs,
-       tuning.runsize=tuning.runsize,
-       Z.delta=Z.delta,
-       Z.tr.delta=Z.tr.delta,
-       Z.scl.delta=Z.scl.delta,
-       beta.delta=beta.delta,
-       store.burnin=store.burnin)
+  control<-list()
+  for(arg in names(formals(sys.function())))
+    control[[arg]]<-get(arg)
+  control
+}
+
+ergmm.prior<-function(...,adjust.beta.var=TRUE){
+  prior<-list(...)
+  prior$adjust.beta.var<-adjust.beta.var
+  as.ergmm.par.list(prior)
 }
 
 ergmm.fit.deps<-list(pmode=character(0),
-                     mcmc=c("pmode"),
+                     mcmc=character(0),
                      mkl=c("mcmc"),
                      mkl.mbc=c("mkl"),
                      mle=c("pmode"),

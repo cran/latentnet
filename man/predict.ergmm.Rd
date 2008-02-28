@@ -20,12 +20,11 @@
   A sociomatrix of predicted values. Note that predictions are made for
   unobserved values (whether structural zeros or unobserved dyads).
 }
-\author{ Pavel N. Krivitsky \email{pavel@stat.washington.edu}}
 \seealso{ \code{\link[=ergmm.object]{ergmm}} }
 \examples{
 data(sampson)
-monks.fit<-ergmm(samplike~latent(d=2,G=3))
-heatmap(predict(monks.fit))
+monks.fit<-ergmm(samplike~latent(d=2,G=3),tofit="mcmc")
+heatmap(predict(monks.fit),Rowv=NA,Colv=NA)
 }
 \keyword{graphs}
 \keyword{models}

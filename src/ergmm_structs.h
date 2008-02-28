@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct {
   ERGMM_MCMC_Par *state,*prop;
-  double **Z_bar,*tr_by, *pK;
+  double **Z_bar,*deltas, *pK;
   unsigned int *n;
   unsigned int prop_Z, prop_coef, prop_LV, after_Gibbs;
   unsigned int *update_order;
@@ -31,9 +31,11 @@ typedef struct {
  * they affect the sampling, are not a part of the posterior distribution.
  */
 typedef struct {
-  double Z_delta, Z_tr_delta, Z_scl_delta, *coef_delta;
-  double *X_means;
+  double Z_delta;
+  double **group_deltas;
+  unsigned int group_prop_size;
   unsigned int sample_size, interval;
+  unsigned int accept_all; // debugging option: accept all MH proposals
 } ERGMM_MCMC_MCMCSettings;
 
 /* The structure to house the parameters of the prior distribution. 
@@ -42,9 +44,11 @@ typedef struct {
   double Z_mean_var, Z_var, Z_var_df, *coef_mean, *coef_var, Z_pK;
 } ERGMM_MCMC_Priors;
 
+/* The structure to house the MCMC draws.
+ */
 typedef struct {
   double *llk, *lpZ, *lpcoef, *lpLV;
-  double *Z, *Z_rate_move, *Z_rate_move_all, *coef, *coef_rate, *Z_mean, *Z_var, *Z_pK;
+  double *Z, *Z_rate_move, *coef, *coef_rate, *Z_mean, *Z_var, *Z_pK;
   int *Z_K;
 } ERGMM_MCMC_ROutput;
 

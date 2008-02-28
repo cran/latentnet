@@ -19,6 +19,7 @@
   distances<-NULL
   n<-network.size(Yg)
   d<-x$model$d
+  if(d==0) stop("Plotting non-latent-space models is not available.")
   G<-x$model$G
   if(G<1) pie<-FALSE
 
@@ -149,7 +150,7 @@
     if (is.null(main)) 
       main <- paste("MKL Latent Positions of", 
                     deparse(substitute(x)))
-    plot(matrix(c(x$samples$Z),ncol=2),pch=".")
+    plot(matrix(c(x$sample$Z),ncol=2),pch=".")
     points(Z.pos,col=cluster.col[Z.K])
     points(Z.mean,col=cluster.col)
     
@@ -173,7 +174,7 @@
 
     old.par<-par(mfrow=density.par$mfrow,mar=c(2.5,2.5,1,1))
 
-    Z.all<-matrix(c(aperm(x$samples$Z,c(2,1,3))),ncol=2)
+    Z.all<-matrix(c(aperm(x$sample$Z,c(2,1,3))),ncol=2)
 
     if(density.par$totaldens){
       plot(Z.all,type='n',xlab=xlab,ylab=ylab,...)
@@ -184,7 +185,7 @@
     }
     
     if(G>1 && density.par$subdens){
-      Z.K.all <- c(t(x$samples$Z.K))
+      Z.K.all <- c(t(x$sample$Z.K))
       for(i in 1:G){
         plot(Z.all,main=paste("Class",i),type="n",...)
         Z.bkde <- bkde2D(Z.all[Z.K.all==i,],0.2,c(101,101))
@@ -205,7 +206,7 @@
     return(invisible(NULL))
     
   }else if(is.numeric(what) && round(what)==what){
-    summ<-x$samples[[what]]
+    summ<-x$sample[[what]]
     Z.pos <- summ$Z
     Z.mean<-summ$Z.mean
     Z.var<-summ$Z.var
@@ -241,6 +242,9 @@
       vertex.col <- cluster.col[trycol]
     }
   }
+  vertex.col<-rep(vertex.col,length.out=n)
+
+  vertex.cex<-rep(vertex.cex,length.out=n)
 
   ## Find the bounds of the plotting region.
   xylim<-ergmm.plotting.region(Z.pos,if(plot.means) Z.mean,if(plot.vars) Z.var,!suppress.center,pad)
@@ -285,7 +289,7 @@
     if(!is.null(x$model$response)) xformula<-paste(xformula,"   (",x$model$response,")",sep="")
     title(main = xformula, line = 1, cex.main = 0.7)
   }
-
+  
   ## Plot pie charts.
   if(pie){
     piesize<-rep(ergmm.plotting.vertex.radius(vertex.cex,xylim,object.scale),length=n)
@@ -293,6 +297,12 @@
     for(i in 1:n){
       ergmm.drawpie(Z.pos[pie.order[i],],piesize[pie.order[i]],Z.pZK[pie.order[i],],n=50,cols=cluster.col)
     }
+  }
+
+  ## Mark the events with "bullets" (small circles).
+  if(is.bipartite(Yg)){
+    bip<-Yg %n% "bipartite"
+    points(Z.pos[-(1:bip),],pch=20,cex=vertex.cex[-(1:bip)],col=1)
   }
 
   ## Mark the center.

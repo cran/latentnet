@@ -1,15 +1,12 @@
-ergmm <- function(formula,response=NULL,family="Bernoulli.logit",fam.par=NULL,
+ergmm <- function(formula,response=NULL,family="Bernoulli",fam.par=NULL,
                   control=ergmm.control(),
                   user.start=ergmm.par.blank(),
-                  prior=ergmm.par.blank(),
-                  tofit=c("pmode","mcmc","mkl","mkl.mbc","mle","procrustes","klswitch"),
+                  prior=ergmm.prior(),
+                  tofit=c("mcmc","mkl","mkl.mbc","procrustes","klswitch"),
                   Z.ref=NULL,
                   Z.K.ref=NULL,
                   seed=NULL,
-                  orthogonalize=FALSE,
                   verbose=FALSE){
-  #    current.warn <- options()$warn
-  #    options(warn=0)
   
   control$verbose<-verbose
   control$tofit<-ergmm.tofit.resolve(tofit)
@@ -32,56 +29,78 @@ ergmm <- function(formula,response=NULL,family="Bernoulli.logit",fam.par=NULL,
     }
     stop("If an ergmm.model is specified in place of a formula, prior must also be specified")
   }else{
-    tmp <- ergmm.get.model(formula, response, family, fam.par, orthogonalize, prior)
+    tmp <- ergmm.get.model(formula, response, family, fam.par, prior)
     model<-tmp$model
     prior<-tmp$prior
   }
-  burnin.start<-ergmm.initvals(model,user.start,prior,control)
-  
-  if(control$tofit$mcmc){
-    if(control$burnin>0){
-      if(control$tune){
-        if(control$verbose) cat("Tuning parameters for burnin...\n")
-        tuning<-ergmm.tuner(model,burnin.start,prior,control)
-        if(control$verbose) cat("Finished.\n")
-        for(name in names(tuning)){
-          control[[name]]<-tuning[[name]]
-        }
-      }
 
-      if(control$verbose) cat("Burning in... ")
-      
-      if(control$threads<=1){
-        # Burn in one thread.
-        if(control$store.burnin){
-          burnin.samples<-ergmm.MCMC.C(model,burnin.start,prior,control,
-                                       samplesize=control$burnin/control$interval)$samples
-          sampling.start<-burnin.samples[[length(burnin.samples$llk)]]
-        }else sampling.start<-ergmm.MCMC.C(model,burnin.start,prior,control,
-                                           samplesize=1,interval=control$burnin)$samples[[1]]
-      }else{
-        burnin.samples<-ergmm.MCMC.snowFT(control$threads,control$threads,
-                                          model.l=list(model),
-                                          start.l=list(burnin.start),
-                                          prior.l=list(prior),
-                                          control.l=list(control),
-                                          samplesize.l=list(control$burnin/control$interval))$samples
-        sampling.start<-sapply(1:control$threads,
-                               function(thread) burnin.samples[[thread]][[length(burnin.samples[[thread]]$llk)]],
-                               simplify=FALSE)
+  burnin.start<-burnin.state<-ergmm.initvals(model,user.start,prior,control)
+  if(control$tofit$mcmc){
+    burnin.control<-get.init.deltas(model, control)
+    burnin.controls<-list()
+    burnin.samples<-list()
+
+    if(control$burnin>0){
+      burnin.runs<-max(control$pilot.runs,1)
+      burnin.size<-burnin.control$burnin/burnin.runs/burnin.control$interval
+
+      if(control$threads>1) burnin.state<-list(burnin.state)
+      if(burnin.control$verbose) cat("Burning in... ")
+      for(pilot.run in 1:control$pilot.runs){
+        if(burnin.control$verbose>1) cat(pilot.run,"")
+        ## Set up a loop such that if a pilot run is catastrophically
+        ## bad (only accepts a very tiny fraction of proposals), the
+        ## proposals are "backed off" and the pilot run is redone.
+        backoff<-TRUE
+        while(backoff){
+          burnin.controls[[length(burnin.controls)+1]]<-burnin.control
+        
+          if(burnin.control$threads<=1){
+            ## Burn in one thread.
+            burnin.sample<-ergmm.MCMC.C(model,burnin.state,prior,burnin.control,
+                                        sample.size=burnin.size)$sample
+            burnin.state<-burnin.sample[[burnin.size]]
+            if(control$store.burnin) burnin.samples[[pilot.run]]<-burnin.sample
+          }else{
+            ## Burn in multiple threads.
+            burnin.sample<-ergmm.MCMC.snowFT(burnin.control$threads,burnin.control$threads,
+                                             model.l=list(model),
+                                             start.l=burnin.state,
+                                             prior.l=list(prior),
+                                             control.l=list(burnin.control),
+                                             sample.size.l=list(burnin.size))$sample
+            burnin.state<-sapply(1:burnin.control$threads,
+                                 function(thread) burnin.sample[[thread]][[burnin.size]],
+                                 simplify=FALSE)
+            burnin.sample<-stack.ergmm.par.list.list(burnin.sample)
+            if(control$store.burnin) burnin.samples[[pilot.run]]<-burnin.sample
+            
+          }
+
+          backoff<-FALSE
+          if((model$d) && mean(burnin.sample$Z.rate)<burnin.control$backoff.threshold) {
+            burnin.control$Z.delta<-burnin.control$Z.delta*burnin.control$backoff.factor
+            backoff<-TRUE
+          }
+          if(mean(burnin.sample$beta.rate)<burnin.control$backoff.threshold) {
+            burnin.control$group.deltas<-burnin.control$group.deltas*burnin.control$backoff.factor
+            backoff<-TRUE
+          }
+          if(backoff){
+            backoff.str<-"Pilot run had catastrophically low acceptance rates, and will be redone with smaller proposal variances. If you see this message several times in a row, it may be due to an unknown bug or a posterior distribution the algorithm cannot properly explore. Either way, please report it."
+            if(burnin.control$verbose) cat(paste(backoff.str,"\n",sep=""))
+            else warning(backoff.str)
+          }
+        }
+        
+        if(control$pilot.runs) burnin.control<-get.sample.deltas(model, burnin.sample, burnin.control)
       }
-      
-      if(control$verbose) cat("Finished.\n")
-    }else sampling.start<-burnin.start
-    
-    if(control$tune){
-      if(control$verbose) cat("Tuning parameters for sampling run...\n ")
-      tuning<-ergmm.tuner(model,sampling.start,prior,control,control$burnin>0 && control$threads>1)
-      if(control$verbose) cat("Finished.\n")
-      for(name in names(tuning)){
-        control[[name]]<-tuning[[name]]
-      }
+      if(burnin.control$verbose) cat("Finished.\n")
     }
+    
+    sampling.start<-burnin.state
+    
+    control<-burnin.control
     
     if(control$verbose) cat("Starting sampling run... ")
     if(control$threads<=1)
@@ -92,8 +111,8 @@ ergmm <- function(formula,response=NULL,family="Bernoulli.logit",fam.par=NULL,
                                     start.l=if(control$burnin) sampling.start else list(sampling.start),
                                     prior.l=list(prior),
                                     control.l=list(control),
-                                    samplesize.l=list(ceiling(control$samplesize/control$threads)))
-      mcmc.out$samples <- stack.ergmm.par.list.list(mcmc.out$samples)
+                                    sample.size.l=list(ceiling(control$sample.size/control$threads)))
+      mcmc.out$sample <- stack.ergmm.par.list.list(mcmc.out$sample)
     }
     if(control$verbose) cat("Finished.\n")
   }
@@ -103,10 +122,12 @@ ergmm <- function(formula,response=NULL,family="Bernoulli.logit",fam.par=NULL,
                      Z.ref, Z.K.ref)
   
     if(control$tofit$mcmc){
-      v$burnin.start<-burnin.start
+      if(control$burnin){
+        v$burnin.start<-burnin.start
+        v$burnin.controls<-burnin.controls
+        if(control$store.burnin) v$burnin.samples<-burnin.samples
+      }
       v$sampling.start<-sampling.start
-      if(control$store.burnin)
-        v$burnin.samples<-burnin.samples
     }
   
   v$starting.seed<-start.seed

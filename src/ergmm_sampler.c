@@ -23,7 +23,7 @@
  * that would waste (really) enormous amounts of memory.
  */
 
-void ERGMM_MCMC_wrapper(int *samples_stored, 
+void ERGMM_MCMC_wrapper(int *sample_size, 
 			int *interval,
 			   
 			int *n, 
@@ -59,7 +59,6 @@ void ERGMM_MCMC_wrapper(int *samples_stored,
 
 			double *Z_mcmc,
 			double *Z_rate_move,
-			double *Z_rate_move_all,
 
 			int *Z_K_mcmc,
 			double *Z_pK_mcmc,
@@ -73,7 +72,8 @@ void ERGMM_MCMC_wrapper(int *samples_stored,
 			double *coef_rate, 
 			  
 			int *vobserved_ties,
-			double *deltas){
+			double *deltas,
+			int *accept_all){
   int i=0,j=0,k=0;
   double **Z_start = vZ_start ? Runpack_dmatrix(vZ_start,*n,*d, NULL) : NULL;
   double **Z_mean_start = vZ_mean_start ? Runpack_dmatrix(vZ_mean_start,*G,*d,NULL) : NULL;
@@ -81,6 +81,15 @@ void ERGMM_MCMC_wrapper(int *samples_stored,
   double **dY = vdY ? Runpack_dmatrix(vdY, *n, *n, NULL):NULL;
   unsigned int **observed_ties = vobserved_ties ? (unsigned int **) Runpack_imatrix(vobserved_ties,*n,*n,NULL) : NULL;
   double ***X = d3array(*p,*n,*n);
+
+  /* The joint proposal coefficient matrix is square with side
+     + covariate coefficients  : p
+     + latent space            : 1
+  */
+
+  unsigned int group_prop_size = *p + (*d ? 1 : 0);
+  double **group_deltas = Runpack_dmatrix(deltas+GROUP_DELTAS_START, group_prop_size, group_prop_size, NULL);
+
 
   // set up all of the covariate matrices if covariates are involed 
   // if p=0 (ie no covariates then these next two loops will do nothing)
@@ -98,7 +107,7 @@ void ERGMM_MCMC_wrapper(int *samples_stored,
   GetRNGstate();
  
 
-  ERGMM_MCMC_init(*samples_stored, *interval,
+  ERGMM_MCMC_init(*sample_size, *interval,
 
 		  *n,*p,
 		  d ? *d : 0,
@@ -116,15 +125,15 @@ void ERGMM_MCMC_wrapper(int *samples_stored,
 		  Z_mean_prior_var ? *Z_mean_prior_var : 0,
 		  Z_pK_prior ? *Z_pK_prior : 0,
 		  Z_var_prior_df ? *Z_var_prior_df : 0,
-		  Z_mcmc, Z_rate_move, Z_rate_move_all, Z_K_mcmc, Z_pK_mcmc, Z_mean_mcmc, Z_var_mcmc,
+		  Z_mcmc, Z_rate_move, Z_K_mcmc, Z_pK_mcmc, Z_mean_mcmc, Z_var_mcmc,
 
 		  coef_start,
 		  coef_mcmc, coef_rate,    
 		  coef_prior_mean, coef_var,
 
 		  observed_ties,
-		  deltas[0],deltas[1],deltas[2],
-		  deltas+COEF_DELTA_START);
+		  deltas[0],group_deltas,group_prop_size,
+		  *accept_all);
 
   PutRNGstate();
   P_free_all();
@@ -132,7 +141,7 @@ void ERGMM_MCMC_wrapper(int *samples_stored,
 }
 
 /* Initializes the MCMC sampler and allocates memory. */
-void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval, 
+void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval, 
 
 		     unsigned int n,
 		     unsigned int p, unsigned int d, unsigned int G,
@@ -149,7 +158,7 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 		     double *Z_pK_start, double **Z_mean_start, double *Z_var_start, unsigned int *Z_K_start,
 		     double Z_var_prior, double Z_mean_prior_var, double Z_pK_prior,
 		     double Z_var_prior_df,
-		     double *Z_mcmc, double *Z_rate_move, double *Z_rate_move_all, int *K_mcmc,
+		     double *Z_mcmc, double *Z_rate_move, int *K_mcmc,
 		     double *Z_pK_mcmc,
 		     double *Z_mean_mcmc, double *Z_var_mcmc,
 
@@ -158,12 +167,13 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 		     double *coef_prior_mean, double *coef_var, 
 
 		     unsigned int **observed_ties,
-
-		     double Z_delta, double Z_tr_delta, double Z_scl_delta,
-		     double *coef_delta)
+		     
+		     double Z_delta,
+		     double **group_deltas,
+		     unsigned int group_prop_size,
+		     unsigned int accept_all)
 {
-  unsigned int i,j,k,n_observed;
-  double X_sum;
+  unsigned int i;
 
   // Packing constants into structs.
   ERGMM_MCMC_Model model = {dir,
@@ -180,31 +190,15 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 			    d, // latent
 			    p, // coef
 			    G // clusters
-			    };
+  };
   ERGMM_MCMC_set_lp_Yconst[family](&model);
 
-  ERGMM_MCMC_MCMCSettings setting = {Z_delta,Z_tr_delta,Z_scl_delta,
-				     coef_delta,
-				     dvector(model.coef), // X_means
-				     samples_stored,interval};
-
-  for(k=0;k<model.coef;k++){
-    X_sum=0;
-    n_observed=0;
-    for(i=0;i<model.verts;i++){
-      if(model.dir)
-	for(j=0;j<model.verts;j++){
-	  n_observed+=IS_OBSERVABLE(model.observed_ties,i,j) ? 1:0;
-	  X_sum+=model.X[k][i][j]*IS_OBSERVABLE(model.observed_ties,i,j);
-	}
-      else
-	for(j=0;j<i;j++){
-	  n_observed+=IS_OBSERVABLE(model.observed_ties,i,j) ? 1:0;
-	  X_sum+=model.X[k][i][j]*IS_OBSERVABLE(model.observed_ties,i,j);
-	}
-    }
-    setting.X_means[k]=X_sum/n_observed;
-  }
+  ERGMM_MCMC_MCMCSettings setting = {Z_delta,
+				     group_deltas,
+				     group_prop_size,
+				     sample_size,interval,
+				     accept_all
+  };
 
   ERGMM_MCMC_Priors prior = {Z_mean_prior_var, // Z_mean_var
 			     Z_var_prior, // Z_var
@@ -223,7 +217,7 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 			  dmatrix(model.verts,model.verts), // lpedge
 			  0, // lpZ		  
 			  0, // lpLV
-			  0, // lpcoef
+			  0 // lpcoef
   };
 
   ERGMM_MCMC_Par prop = {model.latent ? dmatrix(model.verts,model.latent):NULL, // Z
@@ -242,7 +236,7 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
   ERGMM_MCMC_MCMCState start = {&state,
 				&prop,
 				model.clusters ? dmatrix(model.clusters,model.latent) : NULL, // Z_bar
-				model.latent ? dvector(model.latent) : NULL, // tr_by
+				setting.group_prop_size ? dvector(setting.group_prop_size) : NULL, // deltas
 				model.clusters ? dvector(model.clusters): NULL, // pK
 				model.clusters ? (unsigned int *) ivector(model.clusters) : NULL, // n
 				PROP_NONE, // prop_Z
@@ -253,7 +247,7 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
   };
   
   ERGMM_MCMC_ROutput outlists = {llk_mcmc, lpZ_mcmc, lpcoef_mcmc, lpLV_mcmc,
-				 Z_mcmc, Z_rate_move, Z_rate_move_all,
+				 Z_mcmc, Z_rate_move,
 				 coef_mcmc,coef_rate,
 				 Z_mean_mcmc,Z_var_mcmc,Z_pK_mcmc,
 				 K_mcmc};
@@ -281,7 +275,7 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
 		     ERGMM_MCMC_MCMCState *cur, ERGMM_MCMC_MCMCSettings *setting, ERGMM_MCMC_ROutput *outlists)
 {  
-  unsigned int n_accept_z=0, n_accept_transl_z=0, n_accept_b=0, pos=0;
+  unsigned int n_accept_z=0, n_accept_b=0, pos=0;
   unsigned int iter, total_iters = setting->sample_size*setting->interval;
 
   /* Note that indexing here starts with 1.
@@ -290,15 +284,12 @@ void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
   for(iter=1;iter<=total_iters;iter++){
 
     R_CheckUserInterrupt(); // So that CTRL-C can interrupt the run.
-
-    n_accept_z += ERGMM_MCMC_Z_up(model, prior, cur, setting); 
+    if(model->latent)
+      n_accept_z += ERGMM_MCMC_Z_up(model, prior, cur, setting);
 
     if(model->latent){
-
-      //n_accept_transl_z += translate_Z(model,prior,cur,setting);
-
-      // Update cluster parameters (they are separated from data by Z, so plain Gibbs).
-      // Note that they are also updated in coef_up_scl_tr_Z.
+      // Update cluster parameters (they are separated from data by Z, so full conditional sampling).
+      // Note that they are also updated in coef_up_scl_Z.
       if(model->clusters>0)
 	ERGMM_MCMC_CV_up(model,prior,cur);
       else
@@ -308,10 +299,9 @@ void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
     /* Update coef given this new value of Z and conditioned on everything else.
        Also propose to scale Z.
     */
-    
-    if( ERGMM_MCMC_coef_up_scl_tr_Z(model,prior,cur,setting) ){
+    if( ERGMM_MCMC_coef_up_scl_Z(model,prior,cur,setting) ){
       n_accept_b++;
-    }  
+    }
 
     // If we have a new MLE (actually, the highest likelihood encountered to date), store it.
     if( cur->state->llk > GET_DEFAULT(outlists->llk,0,0) ) ERGMM_MCMC_store_iteration(0,model,cur->state,setting,outlists);
@@ -332,14 +322,12 @@ void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
 
       // Acceptance rates.
       outlists->coef_rate[pos] = (double) ((double)n_accept_b)/((double)setting->interval);
-      if(model->latent){
+      if(outlists->Z_rate_move){
 	outlists->Z_rate_move[pos] = (double) ((double)n_accept_z)/((double)setting->interval*model->verts); 
-	outlists->Z_rate_move_all[pos] = (double) ((double)n_accept_transl_z)/((double)setting->interval); 
       }
 
       n_accept_z=0; 
       n_accept_b=0; 
-      n_accept_transl_z=0;
     }
 
   } // end main MCMC loop
@@ -385,6 +373,7 @@ void ERGMM_MCMC_store_iteration(unsigned int pos, ERGMM_MCMC_Model *model, ERGMM
     }
     else
       outlists->Z_var[pos]=par->Z_var[0];
-  }      
+  }
+
 }
 

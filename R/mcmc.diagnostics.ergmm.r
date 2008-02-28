@@ -12,6 +12,9 @@ mcmc.diagnostics.ergmm <- function(x,which.diags=c("cor","acf","trace","raftery"
                                    which.vars=NULL,
                                    vertex.i=c(1),...){
   extraneous.argcheck(...)
+  
+  if(is.null(x$sample)) stop("MCMC was not run for this ERGMM fit.")
+
   x <- as.mcmc.list.ergmm(x,burnin,which.vars,vertex.i)
   oldask=par("ask")
   on.exit(par(ask=oldask))
@@ -21,6 +24,11 @@ mcmc.diagnostics.ergmm <- function(x,which.diags=c("cor","acf","trace","raftery"
     x.ac<-autocorr(x,lag=0:1)
     for(chain in seq(along=x.ac)){
       cat(paste("Chain",chain,"\n"))
+      didnt.mix<-colnames(x.ac[[chain]][2,,])[which(is.nan(diag(x.ac[[chain]][2,,])))]
+      if(any(is.nan(diag(x.ac[[chain]][2,,]))))
+        cat(paste("WARNING: Variables",
+                  paste(didnt.mix,collapse=", "),
+                  "did not mix AT ALL. MCMC should be rerun with different proposal parameters!\n"))
       for(i in 1:2){
         cat(paste(dimnames(x.ac[[chain]])[[1]][i],"\n"))
         print(x.ac[[chain]][i,,])
@@ -37,7 +45,11 @@ mcmc.diagnostics.ergmm <- function(x,which.diags=c("cor","acf","trace","raftery"
   }
 
   if("raftery" %in% which.diags){
-    rd<-raftery.diag(x,r=0.0125)
+    rd<-try(raftery.diag(x,r=0.0125))
+    if(inherits(rd,"try-error")){
+      cat("Raftery-Lewis diagnostic failed, likely due to some of the vairables not mixing at all.\n MCMC should be rerun.\n")
+      return(invisible(NULL))
+    }
     print(rd)
     invisible(rd)
   }
@@ -53,10 +65,9 @@ as.mcmc.list.ergmm<-as.mcmc.ergmm<-function(x,burnin=FALSE,
   start<-x$control$burnin
   thin<-x$control$interval
 
-  as.mcmc.list.ergmm.par.list(if(burnin) x$burnin else x$samples,
+  as.mcmc.list.ergmm.par.list(if(burnin) x$burnin.samples[[burnin]] else x$sample,
                               if(is.null(which.vars)) list(llk=1,
                                                            beta=1:p,
-                                                           Z=cbind(rep(vertex.i,each=d),rep(1:d,length(vertex.i))))
-                              else which.vars,
+                                                           Z=cbind(rep(vertex.i,each=d),rep(1:d,length(vertex.i)))) else which.vars,
                               start,thin)
 }

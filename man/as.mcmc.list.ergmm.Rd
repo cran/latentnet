@@ -3,8 +3,8 @@
 \alias{as.mcmc.ergmm}
 \title{Convert an ERGMM Object to an MCMC list object for Diagnostics.}
 \description{
-  A function to extract a subset of MCMC samples from an object of class
-  \code{\link[=ergmm.object]{ergmm}} to an \code{\link[coda]{mcmc.list}} object.
+  A function to extract a subset of MCMC-sampled variables from an object of class
+  \code{\link[=ergmm.object]{ergmm}} and construct an \code{\link[coda]{mcmc.list}} object.
 }
 \usage{
 \method{as.mcmc}{ergmm}(x, burnin = FALSE, which.vars = NULL, vertex.i = c(1))
@@ -30,10 +30,9 @@
   thread, if necessary.
 }
 \value{
-  A \code{\link[coda]{mcmc.list}} object with the samples of the
+  A \code{\link[coda]{mcmc.list}} object with the sample of the
   selected subset of the variables.
 }
-\author{ Pavel N. Krivitsky \email{pavel@stat.washington.edu}}
 \seealso{ \code{\link{ergmm}},\code{\link[coda]{mcmc}},
   \code{\link[coda]{mcmc.list}}, \code{\link{mcmc.diagnostics.ergmm}} }
 \examples{

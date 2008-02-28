@@ -10,7 +10,7 @@
   dyad-independent terms. In the formula for the model, the model terms are various function-like
   calls, some of which require arguments, separated by \code{+} signs.
   
-  \emph{Latent position and cluster terms}\cr
+  \emph{Random Effects}\cr
   \describe{
     \item{\code{latent(d, G=0, var.mul=1/8, var=NULL, var.df.mul=1, var.df=NULL,
   mean.var.mul=1, mean.var=NULL, pK.mul=1, pK=NULL)}}{\emph{Latent position model term, with
@@ -134,7 +134,6 @@
       \code{g} is directed.}
   }
 }
-\author{Pavel N. Krivitsky \email{pavel@stat.washington.edu}}
 \seealso{
   \code{\link{ergmm}}
 }

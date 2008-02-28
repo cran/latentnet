@@ -30,9 +30,10 @@
   the object may also have some of the following:
   \tabular{ll}{
     \code{mlp}: \eqn{\log
-      p(Y,Z,\beta,\mu,\sigma|\dots)}\tab Joint
+      p(Y,Z,\beta,\mu,\sigma,\delta,\gamma,\sigma_\delta,\sigma_\gamma,|\dots)}\tab Joint
     probability/density of network, the covariate coefficients, the
-    latent space positions, and their parameters, conditional on cluster assignments. \cr
+    latent space positions and parameters, and the random effects and
+    their variances, conditional on cluster assignments. \cr
     \code{llk}: \eqn{\log p(Y|\dots)}\tab Depending on the model, the log-probability or
     log-density of the network conditional on all the parameters. \cr
     \code{lpZ}: \eqn{\log p(Z|\mu,\sigma,K)} \tab Log-density of latent space positions conditional on
@@ -40,6 +41,11 @@
     \code{lpbeta}: \eqn{\log p(\beta)}\tab Prior log-density of the covariate coefficients. \cr
     \code{lpLV}: \eqn{\log p(\mu,\sigma)}\tab Prior log-density of latent space or cluster
     parameters (but not that of the cluster assignments).\cr
+    \code{Z.rate}\tab
+    Proportion of single-vertex proposals accepted over the preceding
+    interval. \cr
+    \code{beta.rate}\tab
+    Proportion of group proposals accepted over the preceding interval. \cr
   }
 }
 \seealso{

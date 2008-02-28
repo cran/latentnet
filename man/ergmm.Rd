@@ -11,11 +11,10 @@
   or the two-stage MLE.
 }
 \usage{
-ergmm(formula, response=NULL, family="Bernoulli.logit",fam.par=NULL,
-      control=ergmm.control(), user.start=ergmm.par.blank(), prior=ergmm.par.blank(),
-      tofit=c("pmode", "mcmc", "mkl", "mkl.mbc", "mle","procrustes",
+ergmm(formula, response=NULL, family="Bernoulli",fam.par=NULL,
+      control=ergmm.control(), user.start=ergmm.par.blank(), prior=ergmm.prior(),
+      tofit=c("mcmc", "mkl", "mkl.mbc", "procrustes",
       "klswitch"), Z.ref=NULL, Z.K.ref=NULL, seed=NULL,
-      orthogonalize=FALSE,
       verbose=FALSE)
 }
 \arguments{
@@ -51,8 +50,8 @@ ergmm(formula, response=NULL, family="Bernoulli.logit",fam.par=NULL,
     If given, will override those given in the
     formula terms, making it useful as a convenient way to store and reproduce a
     prior distribution. The list or prior parameters can also be
-    extracted from an \link[=ergmm.object]{ERGMM fit object}. Defaults to an empty list (that is, all prior
-    parameters are set in the formula terms).}
+    extracted from an \link[=ergmm.object]{ERGMM fit object}. See
+    \code{\link{ergmm.prior}} for more information.}
   \item{tofit}{A character vector listing some subset of "pmode",
       "mcmc", "mkl", "mkl.mbc", "mle","procrustes", and "klswitch",
       defaulting to all of the above, instructing \code{\link{ergmm}}
@@ -67,17 +66,13 @@ ergmm(formula, response=NULL, family="Bernoulli.logit",fam.par=NULL,
   \item{verbose}{If this is \code{TRUE} (or \code{1}), causes information to be
     printed out about the progress of the fitting, particularly initial
     value generation. Higher values lead to greater verbosity.}
-  \item{orthogonalize}{\emph{EXPERIMENTAL.} Performs Gramm-Schmidt
-    orthogonalization on covariates passed to the model to reduce
-    dependence. This capacity may be obsoleted in the future by the use
-    of correlated proposals.}
 }
 \value{
   \code{\link{ergmm}} returns an object of class \code{\link[=ergmm.object]{ergmm}}
   containing the information about the posterior.
 }
 \seealso{network, set.vertex.attributes, set.network.attributes,
-  summary.ergmm, print.ergmm,\link{terms.ergmm}}
+  \code{\link{summary.ergmm}}, \link{terms.ergmm}}
 \references{
   Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
   \emph{Latent space approaches to social network analysis.} 
@@ -87,6 +82,7 @@ ergmm(formula, response=NULL, family="Bernoulli.logit",fam.par=NULL,
   Mark S. Handcock, Adrian E. Raftery and Jeremy Tantrum.
   \emph{Model-Based Clustering for Social Networks.} Journal of the Royal
   Statistical Society: Series A, 2007, Vol. 170, Iss. 2; pp. 301-354.
+  
 }
 \examples{
 
@@ -99,10 +95,6 @@ data(package="latentnet")
 # simple latent position model
 #
 data(sampson)
-#
-# Get the group labels
-#
-
 samp.fit <- ergmm(samplike ~ latent(d=2))
 #
 # See if we have convergence in the MCMC
@@ -112,19 +104,15 @@ mcmc.diagnostics(samp.fit)
 #
 plot(samp.fit)
 #
-# Using Sampson's Monk data, lets fit a latent clustering model
+# Using Sampson's Monk data, lets fit a latent clustering model.
 #
-\dontrun{
 samp.fit <- ergmm(samplike ~ latent(d=2, G=3))
 #
 # See if we have convergence in the MCMC
 mcmc.diagnostics(samp.fit)
 #
-# Lets look at the goodness of fit:
+# Plot the fit.
 #
 plot(samp.fit)
-plot(samp.fit,pie=TRUE)
-summary(samp.fit)
-}
 }
 \keyword{graphs}

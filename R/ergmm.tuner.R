@@ -1,164 +1,50 @@
-ergmm.tuner<-function(model, start, prior, control,start.is.list=FALSE){
-  ctrl<-control
-  tuning.runs<-ctrl$tuning.runs
-  threads<-control$threads
-  p<-model$p
+get.init.deltas<-function(model, control){
+  nterms<-model$p+(if(model$d) 1 else 0)
 
-  if(!start.is.list) start<-list(start)
-
-  ctrl$samplesize<-ceiling(control$tuning.runsize
-                           *with(model,
-                                 p+(network.size(Yg)+1)
-                                 *(d*2)+1)
-                           /threads/ctrl$interval)
-  ctrl$burnin<-0
-#  ctrl$interval<-1
-
-  if(control$verbose) cat("Making",tuning.runs,"tuning runs, each with sample size",ctrl$samplesize,"with interval",ctrl$interval,"in",threads,"thread(s).\n")
-  
-  if(threads<=1)
-    opt.f<-function(ldelta){
-      my.ctrl<-ctrl
-      my.ctrl[c("Z.delta","Z.tr.delta","Z.scl.delta")]<-exp(ldelta[1:5])
-      my.ctrl$beta.delta<-exp(ldelta[6:length(ldelta)])
-      run.proposal(model,start[[1]],prior,my.ctrl)
-    }
-  else
-    opt.f<-function(ldelta){
-      my.ctrl<-ctrl
-      my.ctrl[c("Z.delta","Z.tr.delta","Z.scl.delta")]<-exp(ldelta[1:5])
-      my.ctrl$beta.delta<-exp(ldelta[6:length(ldelta)])
-      opts<-run.proposal.snowFT(threads,model,start,prior,my.ctrl)
-      min(opts)*mean(opts)
-    }
-  
-
-
-
-  ## This is a slightly modified Complex Search (as described by Biles
-  ## (1981)). I find that it works better than the gradient methods,
-  ## probably because the data here are very "noisy".
-  
-  ldelta.start<-log(with(ctrl,c(Z.delta,Z.tr.delta,Z.scl.delta,
-                                rep(beta.delta,length.out=p))))
-
-  gmmajs<-numeric(0)
-
-  ldelta.min<-ldelta.start-log(100)
-  ldelta.max<-ldelta.start+log(100)
-
-  ldeltas<-rbind(ldelta.start,t(sapply(1:ceiling(2*length(ldelta.start)-2),function(i) runif(length(ldelta.start),ldelta.min,ldelta.max))))
-
-  a.base<-0
-  a<-0
-  
-  for(i in 1:tuning.runs){
-    if(dim(ldeltas)[1]>length(gmmajs)) ldelta<-ldeltas[length(gmmajs)+1,]
-    else{
-      w<-which.min(gmmajs)
-      centroid<-apply(ldeltas[-w,],2,mean)
-      #a<-exp(a.base*(0.5-i/tuning.runs))/(1+exp(a.base*(0.5-i/tuning.runs))) /2 +.45
-      a<-0.6
-      ldelta<-centroid+a*(centroid-ldeltas[w,])
-      ldeltas<-rbind(ldeltas,ldelta)
-      # Also, "queue" a "long shot".
-      if(i%%5==0){
-        a<-1/a
-        ldeltas<-rbind(ldeltas,centroid+a*(centroid-ldeltas[w,]))
-      }
-      
-      gmmajs<-gmmajs[-w]
-      ldeltas<-ldeltas[-w,]
-    }
-    
-    if(control$verbose>1) cat("i=",i,": a=",round(a,1)," delta=",paste(round(exp(ldelta),3),collapse=",")," ",sep="")
-    gmmaj<-opt.f(ldelta)
-    gmmajs<-c(gmmajs,gmmaj)
-
-    if(control$verbose>1) cat("gmmaj=",gmmajs[length(gmmajs)],"\n",sep="")    
+  ## If proposal coefficient matrix is given, leave it alone.
+  if(is.matrix(control$group.deltas)){
+    if(any(dim(control$group.deltas)!=nterms))
+      stop(paste("Incorrect proposal coefficient matrix size: (",
+                 paste(dim(control$group.deltas),collapse=", "),"), ",
+                 "while the model calls for ",nterms,".",sep=""))
+    return(control)
   }
   
+  ## If a vector of appropriate length is given, use a diagonal matrix
+  if(length(control$group.deltas)==nterms){
+    control$group.deltas<-diag(control$group.deltas,nrow=nterms)
+    return(control)
+  }
   
-  best.delta<-exp(apply(ldeltas[-which.min(gmmajs),],2,mean))
-  if(control$verbose) cat("Estimated optimal deltas=",paste(round(best.delta,3),collapse=","),"\n")
-  
-  list(Z.delta=best.delta[1],
-       Z.tr.delta=best.delta[2],
-       Z.scl.delta=best.delta[3],
-       beta.delta=best.delta[4:length(best.delta)])
+  ## If a scalar is given, construct a diagonal matrix that's in the ballpark.
+  if(length(control$group.deltas)==1){
+    group.deltas.scale<-control$group.deltas
+    control$group.deltas<-1/sapply(1:model$p,function(i) sqrt(mean((model$X[[i]][observed.dyads(model$Yg)])^2)))
+    if(model$d) control$group.deltas<-c(control$group.deltas, 0.05)
+    control$group.deltas<-diag(group.deltas.scale*control$group.deltas*2/(1+nterms),nrow=nterms)
+  }
+
+  control
 }
 
-run.proposal<-function(model, start, prior, tune.control){
-  gmmajump(model,ergmm.MCMC.C(model,start,prior,tune.control)$samples)
+get.sample.deltas<-function(model,sample,control){
+  use.draws<-ceiling(length(sample)*control$pilot.discard.first):length(sample)
+  if(model$d) control$Z.delta<-control$Z.delta*mean(sample$Z.rate[use.draws])/control$target.acc.rate
+  
+  control$pilot.factor<-control$pilot.factor*mean(sample$beta.rate[use.draws])/control$target.acc.rate
+  cov.beta.ext<-cov.beta.ext(model,sample[use.draws])
+  
+  ## Take the Choletsky decomposition of the empirical covariance matrix.
+  control$group.deltas<-try(chol(cov.beta.ext)*control$pilot.factor)
+  if(inherits(control$group.deltas,"try-error")) stop("Looks like a pilot run did not mix at all (practically no proposals were accepted). Try using a smaller starting proposal variance.")
+  control
 }
 
-run.proposal.snowFT<-function(threads,model,start.l,prior,tune.control){
-  unlist(performParallel(threads,1:max(threads,length(start.l)),
-                         run.proposal.snowFT.slave,
-                         lib=path.to.me,
-                         model=model,
-                         start.l=start.l,
-                         prior=prior,
-                         tune.control=tune.control))
-}
-
-run.proposal.snowFT.slave<-function(i,lib,model,start.l,prior,tune.control){
-  library(latentnet,lib=lib)
-  run.proposal(model,start.l[[min(length(start.l),i)]],prior,tune.control)
-}
-
-
-gmmajump<-function(model,samples){
-  Z.ref<-samples[[which.max(samples$llk)]]$Z
-  samples<-proc.Z.mean.C(samples,Z.ref)
-
-  obs<-observed.dyads(model$Yg)
-  y<-t(sapply(1:length(samples),function(i){
-    l<-samples[[i]]
-
-    ## Center latent space positions for the purpose of
-    ## evaluating mixing.
-    ## The scale of latent space positions and their centroid
-    ## are separated from individual latent space positions.
-
-    etas<-ergmm.eta(model,l)[obs]
-    dens<-mean(etas)
-    vdens<-var(etas)
-
-    if(model$d) l$Z<-scale(l$Z)
-    
-    o<-c(l$llk,
-         dens,
-         vdens,
-         pack.optim(l),
-         if(model$d) c(attr(l$Z,"scaled:scale"),attr(l$Z,"scaled:center")))
-    o[is.nan(o)]<-0
-    o
-  }))
-
-  ## Compute mean squared jumps.
-  dy<-diff(y)
-  gmmajs<-apply(dy^2,2,trimmed.mean)
-  
-  
-  min(gmmajs)*mean(gmmajs)
-
-  # Since we expect (and want) a strong linear trend during the
-  # burnin, we detrend before computing the acf.
-#  y<-apply(y,2,function(x)lm(x~I(1:length(x)))$residuals)
-  
-  
-
-  
-#  ac1<-diag(acf(y,lag.max=1,plot=FALSE)$acf[2,,])
-
-#  ac1[is.nan(ac1)]<-1
-
-  #exp(mean(log(1-ac1)))
-#  min(-ac1)
-  
-}
-trimmed.mean<-function(x,trim=0.05){
-  n<-length(x)
-  mean(sort(x)[floor(trim*n):ceiling((1-trim)*n)])
+## Compute the empirical covariance of coefficients and latent scale.
+cov.beta.ext<-function(model,sample){
+  ## Construct the "extended" beta: not just the coefficients, but also the scale and the average
+  ## value of each random effect.
+  beta.ext<-cbind(if(model$p) sample$beta, # covariate coefs
+                  if(model$d) log(apply(sqrt(apply(sample$Z^2,1:2,sum)),1,mean))) # scale of Z
+  cov(beta.ext)
 }

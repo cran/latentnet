@@ -60,25 +60,27 @@ unsigned int *runifperm(unsigned int n, unsigned int *a){
   return(a);
 }
 
-R_INLINE void iswap(int *a, int *b){
+/*R_INLINE*/ void iswap(int *a, int *b){
   int tmp=*b;
   *b=*a;
   *a=tmp;
 }
 
-R_INLINE void uiswap(unsigned int *a, unsigned int *b){
+/*R_INLINE*/ void uiswap(unsigned int *a, unsigned int *b){
   unsigned int tmp=*b;
   *b=*a;
   *a=tmp;
 }
 
 void copy_MCMC_Par(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *source, ERGMM_MCMC_Par *dest){
-  if(source->Z && (source->Z != dest->Z)) copy_dmatrix(source->Z,dest->Z,model->verts,model->latent);
-  if(source->coef && (source->coef != dest->coef)) copy_dvector(source->coef,dest->coef,model->coef);
-  if(source->Z_mean && (source->Z_mean != dest->Z_mean)) copy_dmatrix(source->Z_mean,dest->Z_mean,model->clusters,model->latent);
-  if(source->Z_var && (source->Z_var != dest->Z_var)) copy_dvector(source->Z_var,dest->Z_var,model->clusters?model->clusters:1);
-  if(source->Z_pK && (source->Z_pK != dest->Z_pK)) copy_dvector(source->Z_pK,dest->Z_pK,model->clusters);
-  if(source->Z_K && (source->Z_K != dest->Z_K)) copy_ivector((int *) source->Z_K,(int *) dest->Z_K,model->verts);
+#define tocopy(name) (source->name && (source->name != dest->name))
+  if(tocopy(Z)) copy_dmatrix(source->Z,dest->Z,model->verts,model->latent);
+  if(tocopy(coef)) copy_dvector(source->coef,dest->coef,model->coef);
+  if(tocopy(Z_mean)) copy_dmatrix(source->Z_mean,dest->Z_mean,model->clusters,model->latent);
+  if(tocopy(Z_var)) copy_dvector(source->Z_var,dest->Z_var,model->clusters?model->clusters:1);
+  if(tocopy(Z_pK)) copy_dvector(source->Z_pK,dest->Z_pK,model->clusters);
+  if(tocopy(Z_K)) copy_ivector((int *) source->Z_K,(int *) dest->Z_K,model->verts);
+#undef tocopy
 
   dest->llk=source->llk;
   // The lpedge matrix is NOT copied.
@@ -86,3 +88,4 @@ void copy_MCMC_Par(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *source, ERGMM_MCMC_P
   dest->lpLV=source->lpLV;
   dest->lpcoef=source->lpcoef;
 }
+

@@ -22,8 +22,10 @@
   default.  The maximum likelihood, posterior mean, posterior mode, or a
   particular iteration's or configuration's positions
   can be used instead, or pie charts of the posterior
-  probabilities of cluster membership can be shown. See \code{\link{ergmm}} for more information on how to fit these
-  models.
+  probabilities of cluster membership can be shown. See
+  \code{\link{ergmm}} for more information on how to fit these models.
+
+  At this time, no plotting non-latent-space model fits is not supported.
 }
 \arguments{
   \item{x}{an R object of class \code{\link[=ergmm.object]{ergmm}}.
@@ -98,31 +100,18 @@
   
   More information can be found by looking at the documentation of
   \code{\link{ergmm}}.
-}
-\value{NULL
 
+  For bipartite networks, the events are marked with a bullet (small
+  black circle) inside the plotting symbol.
 }
-\seealso{ergmm, network, plot.network, plot, ergmm.add.contours}
+\value{If applicable, invisibly returns the vertex positions plotted.}
+\seealso{\code{\link{ergmm}},\code{\link[=ergmm.object]{ergmm (object)}}, \code{network}, \code{\link[network]{plot.network}}, \code{\link{plot}}}
 \examples{
-\dontrun{
 #
 # Using Sampson's Monk data, lets fit a 
 # simple latent position model
 #
 data(sampson)
-#
-# Get the group labels
-#
-samp.labs <- substr(get.vertex.attribute(samplike,"group"),1,1)
-#
-samp.fit <- ergmm(samplike ~ latent(d=2))
-#
-# See if we have convergence in the MCMC
-mcmc.diagnostics(samp.fit)
-#
-# Plot the fit
-#
-plot(samp.fit,label=samp.labs, vertex.col="group")
 #
 # Using Sampson's Monk data, lets fit a latent clustering model
 #
@@ -131,11 +120,13 @@ samp.fit <- ergmm(samplike ~ latent(d=2, G=3))
 # See if we have convergence in the MCMC
 mcmc.diagnostics(samp.fit)
 #
-# Lets look at the goodness of fit:
+# Plot the resulting fit.
 #
-plot(samp.fit,label=samp.labs, vertex.col="group")
-plot(samp.fit,pie=TRUE,label=samp.labs)
-}
+plot(samp.fit,labels=TRUE)
+plot(samp.fit,pie=TRUE)
+plot(samp.fit,what="pmean")
+plot(samp.fit,what="cloud")
+plot(samp.fit,what="density")
 }
 \keyword{graphs}
 \keyword{hplot}

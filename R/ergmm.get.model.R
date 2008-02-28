@@ -1,4 +1,4 @@
-ergmm.get.model <- function(formula,response,family,fam.par,orthogonalize,prior){
+ergmm.get.model <- function(formula,response,family,fam.par,prior){
   
   terms<-terms(formula)
 
@@ -28,7 +28,7 @@ ergmm.get.model <- function(formula,response,family,fam.par,orthogonalize,prior)
   model<-fam.par.check(model)
   
   if(model$intercept){
-    model<-InitErgmm.latentcov(model,observed.dyads(Yg),"density")
+    model<-InitErgmm.latentcov(model,matrix(1,network.size(Yg),network.size(Yg)),"density")
   }
               
   for (term in as.list(attr(terms,"variables"))[-(1:2)]){
@@ -44,39 +44,20 @@ ergmm.get.model <- function(formula,response,family,fam.par,orthogonalize,prior)
     model <- eval(as.call(init.call), attr(terms,".Environment"))
   }
   
-  if(orthogonalize && model$p>1)
-    model$X<-GS.orth.matrix(model$X,observed.dyads(Yg))
-
+  if(!("Z.var" %in% names(model$prior))) model$prior$Z.var<-model$prior$Z.var.mul*(network.size(model$Yg)/max(1,model$G))^(2/model$d)
+  if(!("Z.mean.var" %in% names(model$prior))) model$prior$Z.mean.var<-model$prior$Z.mean.var.mul*model$prior$Z.var*max(1,model$G)^(2/model$d)
+  if(!("Z.var.df" %in% names(model$prior))) model$prior$Z.var.df<-model$prior$Z.var.df.mul*sqrt(network.size(model$Yg)/max(1,model$G))
+  if(!("Z.pK" %in% names(model$prior))) model$prior$Z.pK<-model$prior$Z.pK.mul*sqrt(network.size(model$Yg)/max(1,model$G))
+  
+  if(prior$adjust.beta.var) model$prior$beta.var<-model$prior$beta.var/sapply(1:model$p,function(i) mean((model$X[[i]][observed.dyads(model$Yg)])^2))
+  
   for(name in names(prior)){
     model$prior[[name]]<-prior[[name]]
   }
 
   prior<-model$prior
   model$prior<-NULL
-
-  if(!("Z.var" %in% names(prior))) prior$Z.var<-prior$Z.var.mul*(network.size(model$Yg)/max(1,model$G))^(2/model$d)
-  if(!("Z.mean.var" %in% names(prior))) prior$Z.mean.var<-prior$Z.mean.var.mul*prior$Z.var*max(1,model$G)^(2/model$d)
-  if(!("Z.var.df" %in% names(prior))) prior$Z.var.df<-prior$Z.var.df.mul*sqrt(network.size(model$Yg)/max(1,model$G))
-  if(!("Z.pK" %in% names(prior))) prior$Z.pK<-prior$Z.pK.mul*sqrt(network.size(model$Yg)/max(1,model$G))
-
+  
   class(model)<-"ergmm.model"  
   list(model=model,prior=prior)
-}
-
-GS.orth.matrix<-function(X,missing){
-  p<-length(X)
-  if(p<=1) return(X)
-  
-  Y<-list()
-  Y[[1]]<-X[[1]]
-  for(i in 2:p){
-    Y[[i]]<-X[[i]]
-    
-    for(j in 1:(i-1)){
-      Yv<-Y[[j]][!missing]
-      Xv<-Y[[i]][!missing]
-      Y[[i]]<-Y[[i]]-crossprod(Yv,Xv)/sqrt(crossprod(Xv))*X[[j]]
-    }
-  }
-  Y
 }

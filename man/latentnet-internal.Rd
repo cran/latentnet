@@ -10,12 +10,10 @@
 \alias{inv.fit.vars}
 \alias{is.latent}
 \alias{is.latent.cluster}
-\alias{kief.wolf2.optim}
-\alias{kief.wolf.optim}  
  
 \alias{pack.optim}
 \alias{path.to.me}   
-\alias{proc.samples.ergmm}
+\alias{proc.sample.ergmm}
 \alias{proc.Z.mean.C} 
 \alias{reg.fit.vars}
 
@@ -28,7 +26,7 @@
 \alias{ergmm.tuner}
 \alias{ergmm.labelswitch}
 \alias{klswitch.C}
-\alias{labelswitch.samples.ergmm}
+\alias{labelswitch.sample.ergmm}
 \alias{nearest.perm}
 \alias{ergmm.MCMCacf} 
 \alias{ergmm.permutation}
@@ -106,14 +104,14 @@
 \alias{ergmm.model.object}
 
 \alias{getYm}
-
+\alias{bipartite.augment}
 \alias{observed.dyads}
 
 \alias{statsreeval.ergmm}
 
-\alias{ergmm.loglike}
-\alias{ergmm.loglike.C}
-\alias{ergmm.loglike.grad}
+\alias{ergmm.lpY}
+\alias{ergmm.lpY.C}
+\alias{ergmm.lpY.grad}
 \alias{ergmm.lp}
 \alias{ergmm.lpBeta}
 \alias{ergmm.lpBeta.grad}
@@ -126,6 +124,10 @@
 \alias{ergmm.eta}
 \alias{ergmm.EY}
 \alias{lp.works}
+
+\alias{cov.beta.ext}
+\alias{get.init.deltas}
+\alias{get.sample.deltas}
 
 \alias{find.mle}
 \alias{find.mle.loop}

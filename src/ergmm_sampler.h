@@ -15,13 +15,11 @@
 
 /* deltas have the following values:
    [0] Z_delta
-   [1] Z_tr_delta
-   [2] Z_scl_delta 
-   [3]-[3+p-1] coef_delta
+   [1]- group_deltas
 */
-#define COEF_DELTA_START 3
+#define GROUP_DELTAS_START 1
 
-void ERGMM_MCMC_wrapper(int *samples_stored, int *interval,
+void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 			   
 			int *n, int *p, int *d, int *G,
 			  
@@ -39,7 +37,7 @@ void ERGMM_MCMC_wrapper(int *samples_stored, int *interval,
 			double *Z_var_prior, double *Z_mean_prior_var, 
 			double *Z_K_prior, double *Z_var_prior_df,
 
-			double *Z_mcmc, double *Z_rate_move, double *Z_rate_move_all,
+			double *Z_mcmc, double *Z_rate_move, 
 
 			int *Z_K_mcmc, double *Z_pK_mcmc, double *Z_mean_mcmc, double *Z_var_mcmc,
 			  
@@ -48,9 +46,10 @@ void ERGMM_MCMC_wrapper(int *samples_stored, int *interval,
 			double *coef_mcmc, double *coef_rate, 
 			  
 			int *vobserved_ties,
-			double *deltas);
+			double *deltas,
+			int *accept_all);
 
-void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval, 
+void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval, 
 
 		     unsigned int n, 
 		     unsigned int p, unsigned int d, unsigned int G,
@@ -67,7 +66,7 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 		     double *Z_pK_start, double **Z_mean_start, double *Z_var_start, unsigned int *Z_K_start,
 		     double Z_var_prior, double Z_mean_prior_var, double Z_K_prior,
 		     double Z_var_prior_df,
-		     double *Z_mcmc, double *Z_rate_move, double *Z_rate_move_all, int *K_mcmc,
+		     double *Z_mcmc, double *Z_rate_move, int *K_mcmc,
 		     double *Z_pK_mcmc,
 		     double *Z_mean_mcmc, double *Z_var_mcmc,
 
@@ -77,8 +76,9 @@ void ERGMM_MCMC_init(unsigned int samples_stored, unsigned int interval,
 
 		     unsigned int **observed_ties,
 
-		     double Z_delta, double Z_tr_delta, double Z_scl_delta,
-		     double *coef_delta);
+		     double Z_delta,
+		     double **group_deltas, unsigned int group_prop_size,
+		     unsigned int accept_all);
 
 void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
 		     ERGMM_MCMC_MCMCState *cur, ERGMM_MCMC_MCMCSettings *setting,

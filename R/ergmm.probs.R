@@ -8,16 +8,31 @@ lp.works<-function(name,theta,given){
   not.given(name, theta, given) && all(PRIOR_NAMES[[name]]%in%names(merge.lists(theta,given)))
 }
 
+bipartite.augment<-function(m){
+  actors<-dim(m)[1]
+  events<-dim(m)[2]
+  rbind(matrix(NA,actors,actors+events),
+        cbind(t(m),matrix(NA,events,events)))
+}
 
 getYm<-function(Yg,response=NULL){
-  if(is.null(response)){
-    return(as.matrix.network(Yg, matrix.type="adjacency"))
-  }else{
-    if(is.matrix(response)) return(response)
-    else return(as.matrix.network(Yg, response, matrix.type="adjacency"))
-  }
+  m <-
+    if(is.null(response)){
+      as.matrix.network(Yg, matrix.type="adjacency")
+    }else{
+      if(is.matrix(response)) response
+      else as.matrix.network(Yg, response, matrix.type="adjacency")
+    }
+
+  ## If bipartite, augment into a matrix of the form
+  ##  N    m
+  ## t(m)  N
+  ## where N is a matrix of NAs of appropriate dimension.
+  if(is.bipartite(Yg)) m<-bipartite.augment(m)
+
+  m[!observed.dyads(Yg)]<-NA
+  m
 }
-  
 
 ergmm.eta<-function(model,theta){
   n<-network.size(model$Yg)
@@ -41,7 +56,7 @@ ergmm.EY<-function(model,theta,NA.unobserved=TRUE){
   EY.fs[[model$familyID]](eta,fam.par=model$fam.par)
 }
 
-ergmm.loglike<-function(model,theta,given=ergmm.par.blank(),up.to.const=FALSE){
+ergmm.lpY<-function(model,theta,given=ergmm.par.blank(),up.to.const=FALSE){
   theta<-merge.lists(theta,given)
   Yg<-model$Yg
   Ym<-model$Ym
@@ -52,38 +67,39 @@ ergmm.loglike<-function(model,theta,given=ergmm.par.blank(),up.to.const=FALSE){
   return(sum(lpY))
 }
 
-ergmm.loglike.grad<-function(model,theta,given=ergmm.par.blank()){
+ergmm.lpY.grad<-function(model,theta,given=ergmm.par.blank()){
   theta<-merge.lists(theta,given)
   n<-network.size(model$Yg)
   obs<-observed.dyads(model$Yg)
   eta<-ergmm.eta(model,theta)
   
   dlpY.deta <- dlpY.deta.fs[[model$familyID]](model$Ym,eta,model$fam.par)
+  dlpY.deta[!obs] <- 0
 
   grad<-list()
   
-  if(!is.null(theta$beta)) grad$beta <- sapply(1:length(theta$beta),function(k) sum(dlpY.deta*model$X[[k]]*obs))
+  if(not.given("beta",theta,given)) grad$beta <- sapply(1:length(theta$beta),function(k) sum((dlpY.deta*model$X[[k]])[obs]))
 
   if(not.given("Z",theta,given)){
     d<-model$d
-    Z.invdist<- -as.matrix(dist(theta$Z))
+    Z.invdist<- as.matrix(dist(theta$Z))
     Z.invdist[Z.invdist==0]<-Inf
     Z.invdist<-1/Z.invdist
 
     grad$Z<-matrix(0,n,d)
-    for(k in 1:d){
-      Z.k.d<-with(theta,sapply(1:n,function(i) sapply(1:n, function(j) Z[j,k]-Z[i,k]))*Z.invdist)
+    for(k in 1:d)
       for(i in 1:n)
         for(j in 1:n)
-          grad$Z[i,k]<-grad$Z[i,k]+(Z.k.d[i,j]*dlpY.deta[i,j]*obs[i,j]-
-                                    Z.k.d[j,i]*dlpY.deta[j,i]*obs[j,i])
-    }
+          if(obs[i,j]){
+            grad$Z[i,k]<-grad$Z[i,k]+-(theta$Z[i,k]-theta$Z[j,k])*Z.invdist[i,j]*dlpY.deta[i,j]
+            grad$Z[j,k]<-grad$Z[j,k]+-(theta$Z[j,k]-theta$Z[i,k])*Z.invdist[j,i]*dlpY.deta[i,j]
+          }
   }
 
   grad
 }
   
-ergmm.loglike.C<-function(model,theta){
+ergmm.lpY.C<-function(model,theta){
   Y <- model$Ym
   n <- network.size(model$Yg)
 
@@ -134,14 +150,19 @@ ergmm.loglike.C<-function(model,theta){
 
 observed.dyads<-function(Yg){
   observed.dyads<-get.network.attribute(Yg,"design")
-  if(is.null(observed.dyads))
-    observed.dyads<-matrix(TRUE,network.size(Yg),network.size(Yg))
-  else
-    observed.dyads<-as.matrix.network(observed.dyads,matrix.type="adjacency")==0
-      
-  if(!is.directed(Yg)) observed.dyads[upper.tri(observed.dyads)]<-FALSE
+  if(is.null(observed.dyads)){
+    if(!is.bipartite(Yg))
+      observed.dyads<-matrix(TRUE,network.size(Yg),network.size(Yg))
+    else
+      observed.dyads<-bipartite.augment(!is.na(as.matrix.network(Yg,matrix.type="adjacency")))
+  }
+  else{
+    observed.dyads<-bipartite.augment(as.matrix.network(observed.dyads,matrix.type="adjacency")==0)
+  }
 
-  if(!has.loops(Yg)) diag(observed.dyads)<-FALSE
+  observed.dyads[is.na(observed.dyads)]<-FALSE
+  if(!is.directed(Yg)) observed.dyads[upper.tri(observed.dyads)]<-FALSE
+  if(!is.bipartite(Yg) && !has.loops(Yg)) diag(observed.dyads)<-FALSE
   
   observed.dyads
 }
@@ -212,7 +233,7 @@ unpack.optim<-function(v,fit.vars,model){
     ret$Z.mean<-matrix(v[pos+1:(G*d)],nrow=G,ncol=d)
     pos<-pos+G*d
   }
-  
+
   class(ret)<-"ergmm.par"
   
   ret
@@ -308,12 +329,11 @@ find.mpe<-function(model,start,given=ergmm.par.blank(),prior=list(),control,fit.
 
 ergmm.lp<-function(model,theta,prior,given=ergmm.par.blank(),opt=c("lpY","lpZ","lpBeta","lpLV"),up.to.const=FALSE){
 
-  lpY<-if("lpY" %in% opt) ergmm.loglike(model,theta,
+  lpY<-if("lpY" %in% opt) ergmm.lpY(model,theta,
                                         given=given,up.to.const=up.to.const) else 0
   
   lpZ<-if("lpZ" %in% opt) ergmm.lpZ(theta,given=given) else 0
   lpBeta<-if("lpBeta" %in% opt) ergmm.lpBeta(theta,prior,given=given) else 0
-  
   lpLV<-if("lpLV" %in% opt) ergmm.lpLV(theta,prior,given=given) else 0
   
   lpAll<-lpY+lpZ+lpBeta+lpLV
@@ -376,7 +396,7 @@ cmp.lists<-function(x,y){
 ergmm.lp.grad<-function(model,theta,prior,given=ergmm.par.blank(),opt=c("lpY","lpZ","lpBeta","lpLV")){
   
   grad<-sum.lists(if("lpY" %in% opt) if(not.given("beta",theta,given)||
-                                        not.given("Z",theta,given)) ergmm.loglike.grad(model,theta,given=given),
+                                        not.given("Z",theta,given)) ergmm.lpY.grad(model,theta,given=given),
                   if("lpZ" %in% opt) ergmm.lpZ.grad(theta,given=given),
                   if("lpBeta" %in% opt) ergmm.lpBeta.grad(theta,prior,given=given),
                   if("lpLV" %in% opt) ergmm.lpLV.grad(theta,prior,given=given))
