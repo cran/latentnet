@@ -43,7 +43,9 @@ void ERGMM_MCMC_wrapper(int *sample_size,
 			double *llk_mcmc,
 			double *lpZ_mcmc,
 			double *lpcoef_mcmc,
+			double *lpRE_mcmc,
 			double *lpLV_mcmc,
+			double *lpREV_mcmc,
 			   
 			double *vZ_start,
 
@@ -71,8 +73,30 @@ void ERGMM_MCMC_wrapper(int *sample_size,
 			double *coef_mcmc,
 			double *coef_rate, 
 			  
+			double *sender_start,
+			double *receiver_start,
+			double *sender_var_start,
+			double *receiver_var_start,
+
+			double *sender_var_prior,
+			double *sender_var_prior_df,
+			double *receiver_var_prior,
+			double *receiver_var_prior_df,
+
+			double *sender_mcmc,
+			double *receiver_mcmc,
+			double *sender_var_mcmc,
+			double *receiver_var_mcmc,
+
+			int *sociality,
 			int *vobserved_ties,
+
 			double *deltas,
+			double *vcoef_eff_sender,
+			int *coef_eff_sender_size,
+			double *vcoef_eff_receiver,
+			int *coef_eff_receiver_size,
+
 			int *accept_all){
   int i=0,j=0,k=0;
   double **Z_start = vZ_start ? Runpack_dmatrix(vZ_start,*n,*d, NULL) : NULL;
@@ -85,10 +109,14 @@ void ERGMM_MCMC_wrapper(int *sample_size,
   /* The joint proposal coefficient matrix is square with side
      + covariate coefficients  : p
      + latent space            : 1
+     + sender                  : ~p
+     + receiver (no sociality) : ~p
   */
 
-  unsigned int group_prop_size = *p + (*d ? 1 : 0);
+  unsigned int group_prop_size = *p + (*d ? 1 : 0) + (sender_start ? 1 : 0) + (vcoef_eff_sender?*coef_eff_sender_size:0)+(vcoef_eff_receiver?*coef_eff_receiver_size:0);
   double **group_deltas = Runpack_dmatrix(deltas+GROUP_DELTAS_START, group_prop_size, group_prop_size, NULL);
+  double **coef_eff_sender = vcoef_eff_sender? Runpack_dmatrix(vcoef_eff_sender, *coef_eff_sender_size, *n, NULL) : NULL;
+  double **coef_eff_receiver = vcoef_eff_receiver? Runpack_dmatrix(vcoef_eff_receiver, *coef_eff_receiver_size, *n, NULL) : NULL;
 
 
   // set up all of the covariate matrices if covariates are involed 
@@ -106,7 +134,6 @@ void ERGMM_MCMC_wrapper(int *sample_size,
   /* R function enabling uniform RNG */
   GetRNGstate();
  
-
   ERGMM_MCMC_init(*sample_size, *interval,
 
 		  *n,*p,
@@ -117,7 +144,7 @@ void ERGMM_MCMC_wrapper(int *sample_size,
 		  family ? *family-1 : 0,iconsts,dconsts,
 		  X,
 
-		  llk_mcmc, lpZ_mcmc, lpcoef_mcmc, lpLV_mcmc,
+		  llk_mcmc, lpZ_mcmc, lpcoef_mcmc, lpRE_mcmc, lpLV_mcmc, lpREV_mcmc,
 		    
 		  Z_start, 
 		  Z_pK_start,Z_mean_start,Z_var_start,(unsigned int *)Z_K_start,
@@ -131,8 +158,20 @@ void ERGMM_MCMC_wrapper(int *sample_size,
 		  coef_mcmc, coef_rate,    
 		  coef_prior_mean, coef_var,
 
+		  sender_start,receiver_start,
+		  sender_var_start ? *sender_var_start : 0,
+		  receiver_var_start ? *receiver_var_start : 0,
+		  sender_var_prior ? *sender_var_prior : 0,
+		  sender_var_prior_df ? *sender_var_prior_df : 0,
+		  receiver_var_prior ? *receiver_var_prior : 0,
+		  receiver_var_prior_df ? *receiver_var_prior_df : 0,
+		  sender_mcmc, receiver_mcmc, 
+		  sender_var_mcmc, receiver_var_mcmc,
+		  *sociality,
 		  observed_ties,
-		  deltas[0],group_deltas,group_prop_size,
+		  deltas[0],deltas[1],group_deltas,group_prop_size,
+		  coef_eff_sender,coef_eff_sender_size?*coef_eff_sender_size:0,
+		  coef_eff_receiver,coef_eff_receiver_size?*coef_eff_receiver_size:0,
 		  *accept_all);
 
   PutRNGstate();
@@ -152,7 +191,7 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 
 		     double ***X,
 
-		     double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpLV_mcmc,
+		     double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc,
 
 		     double **Z_start,
 		     double *Z_pK_start, double **Z_mean_start, double *Z_var_start, unsigned int *Z_K_start,
@@ -166,11 +205,24 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 		     double *coef_mcmc, double *coef_rate, 
 		     double *coef_prior_mean, double *coef_var, 
 
+		     double *sender_start, double *receiver_start,
+		     double sender_var_start, double receiver_var_start,
+		     double sender_var_prior, double sender_var_prior_df,
+		     double receiver_var_prior, double receiver_var_prior_df,
+		     double *sender_mcmc, double *receiver_mcmc,
+		     double *sender_var_mcmc, double *receiver_var_mcmc,
+		     unsigned int sociality,
 		     unsigned int **observed_ties,
 		     
 		     double Z_delta,
+		     double RE_delta,
 		     double **group_deltas,
 		     unsigned int group_prop_size,
+		     double **coef_eff_sender,
+		     unsigned int coef_eff_sender_size,
+		     double **coef_eff_receiver,
+		     unsigned int coef_eff_receiver_size,
+
 		     unsigned int accept_all)
 {
   unsigned int i;
@@ -189,13 +241,18 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 			    n, // verts
 			    d, // latent
 			    p, // coef
-			    G // clusters
-  };
+			    G, // clusters
+			    sociality};
   ERGMM_MCMC_set_lp_Yconst[family](&model);
 
   ERGMM_MCMC_MCMCSettings setting = {Z_delta,
+				     RE_delta,
 				     group_deltas,
+				     coef_eff_sender,
+				     coef_eff_receiver,
 				     group_prop_size,
+				     coef_eff_sender_size,
+				     coef_eff_receiver_size,
 				     sample_size,interval,
 				     accept_all
   };
@@ -205,19 +262,29 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 			     Z_var_prior_df, // a.k.a. Z_var_df (I hope)
 			     coef_prior_mean,
 			     coef_var,
-			     Z_pK_prior};
+			     Z_pK_prior,
+			     sender_var_prior,
+			     sender_var_prior_df,
+			     receiver_var_prior,
+			     receiver_var_prior_df};
   
   ERGMM_MCMC_Par state = {Z_start, // Z
 			  coef_start, // coef
 			  Z_mean_start, // Z_mean
 			  Z_var_start, // Z_var
 			  Z_pK_start, // Z_pK			  
+			  sender_start,
+			  sender_var_start,
+			  model.sociality?sender_start:receiver_start,
+			  receiver_var_start,
 			  Z_K_start, // Z_K
 			  0, // llk
 			  dmatrix(model.verts,model.verts), // lpedge
 			  0, // lpZ		  
 			  0, // lpLV
-			  0 // lpcoef
+			  0, // lpcoef
+			  0, // lpRE
+			  0 // lpREV
   };
 
   ERGMM_MCMC_Par prop = {model.latent ? dmatrix(model.verts,model.latent):NULL, // Z
@@ -225,13 +292,20 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 			 model.clusters ? dmatrix(model.clusters,model.latent):NULL, // Z_mean
 			 model.latent ? dvector(model.clusters?model.clusters:1):NULL, // Z_var
 			 model.clusters ? dvector(model.clusters):NULL, // Z_pK
+			 sender_start ? dvector(model.verts):NULL, // sender
+			 0, // sender_var
+			 receiver_start && !model.sociality ? dvector(model.verts):NULL, // receiver
+			 0,
 			 state.Z_K, // prop.Z_K === state.Z_K
 			 0, // llk
 			 dmatrix(model.verts,model.verts), // lpedge
 			 0, // lpZ
 			 0, // lpLV
 			 0, // lpcoef
+			 0, // lpRE
+			 0 // lpREV
   };
+  if(model.sociality) prop.receiver=prop.sender;
 
   ERGMM_MCMC_MCMCState start = {&state,
 				&prop,
@@ -240,16 +314,20 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 				model.clusters ? dvector(model.clusters): NULL, // pK
 				model.clusters ? (unsigned int *) ivector(model.clusters) : NULL, // n
 				PROP_NONE, // prop_Z
+				PROP_NONE, // prop_RE
 				PROP_NONE, // prop_coef
 				PROP_NONE, // prop_LV
+				PROP_NONE, // prop_REV
 				FALSE, // after_Gibbs
-				model.latent ? (unsigned int *) ivector(model.verts) : NULL // update_order
+				(model.latent || sender_start || receiver_start) ? (unsigned int *) ivector(model.verts) : NULL // update_order
   };
   
-  ERGMM_MCMC_ROutput outlists = {llk_mcmc, lpZ_mcmc, lpcoef_mcmc, lpLV_mcmc,
+  ERGMM_MCMC_ROutput outlists = {llk_mcmc, lpZ_mcmc, lpcoef_mcmc, lpRE_mcmc, lpLV_mcmc, lpREV_mcmc,
 				 Z_mcmc, Z_rate_move,
 				 coef_mcmc,coef_rate,
 				 Z_mean_mcmc,Z_var_mcmc,Z_pK_mcmc,
+				 sender_mcmc,sender_var_mcmc,
+				 receiver_mcmc,receiver_var_mcmc,
 				 K_mcmc};
 
   if(model.clusters>0)
@@ -259,8 +337,10 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
   // Initialize the log-probabilities.
   state.llk = ERGMM_MCMC_lp_Y(&model, &state, TRUE);
   if(model.latent) ERGMM_MCMC_logp_Z(&model, &state);
+  if(state.sender || state.receiver) ERGMM_MCMC_logp_RE(&model, &state);
   if(state.coef) ERGMM_MCMC_logp_coef(&model, &state, &prior);
   if(model.latent) ERGMM_MCMC_logp_LV(&model, &state, &prior);
+  if(state.sender || state.receiver) ERGMM_MCMC_logp_REV(&model, &state, &prior);
   copy_MCMC_Par(&model,&state,&prop);
   ERGMM_MCMC_store_iteration(0,&model,&state,&setting,&outlists);
   ERGMM_MCMC_store_iteration(1,&model,&state,&setting,&outlists);
@@ -284,12 +364,12 @@ void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
   for(iter=1;iter<=total_iters;iter++){
 
     R_CheckUserInterrupt(); // So that CTRL-C can interrupt the run.
-    if(model->latent)
-      n_accept_z += ERGMM_MCMC_Z_up(model, prior, cur, setting);
+    if(model->latent || cur->state->sender || cur->state->receiver)
+      n_accept_z += ERGMM_MCMC_Z_RE_up(model, prior, cur, setting);
 
     if(model->latent){
       // Update cluster parameters (they are separated from data by Z, so full conditional sampling).
-      // Note that they are also updated in coef_up_scl_Z.
+      // Note that they are also updated in coef_up_scl_tr_Z_shift_RE.
       if(model->clusters>0)
 	ERGMM_MCMC_CV_up(model,prior,cur);
       else
@@ -297,10 +377,14 @@ void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
     }
 
     /* Update coef given this new value of Z and conditioned on everything else.
-       Also propose to scale Z.
+       Also propose to scale Z and shift random effects.
     */
-    if( ERGMM_MCMC_coef_up_scl_Z(model,prior,cur,setting) ){
+    if( ERGMM_MCMC_coef_up_scl_Z_shift_RE(model,prior,cur,setting) ){
       n_accept_b++;
+    }
+
+    if(cur->state->sender || cur->state->receiver){
+      ERGMM_MCMC_REV_up(model,prior,cur);
     }
 
     // If we have a new MLE (actually, the highest likelihood encountered to date), store it.
@@ -308,9 +392,9 @@ void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,
 
     // If we have a new posterior mode (actually, the highest joint density of all variables but K observed to date), store it.
     if( cur->state->llk + cur->state->lpZ + cur->state->lpLV + 
-	cur->state->lpcoef >
+	cur->state->lpcoef + cur->state->lpRE + cur->state->lpREV >
 	GET_DEFAULT(outlists->llk,1,0) + GET_DEFAULT(outlists->lpZ,1,0) + GET_DEFAULT(outlists->lpLV,1,0) + 
-	GET_DEFAULT(outlists->lpcoef,1,0) )
+	GET_DEFAULT(outlists->lpcoef,1,0) + GET_DEFAULT(outlists->lpRE,1,0) + GET_DEFAULT(outlists->lpREV,1,0) )
       ERGMM_MCMC_store_iteration(1,model,cur->state,setting,outlists);
 
     /* every interval save the results */
@@ -344,8 +428,12 @@ void ERGMM_MCMC_store_iteration(unsigned int pos, ERGMM_MCMC_Model *model, ERGMM
     outlists->lpZ[pos] = par->lpZ;
   if(outlists->lpcoef)
     outlists->lpcoef[pos] = par->lpcoef;
+  if(outlists->lpRE)
+    outlists->lpRE[pos] = par->lpRE;
   if(outlists->lpLV)
     outlists->lpLV[pos] = par->lpLV;
+  if(outlists->lpREV)
+    outlists->lpREV[pos] = par->lpREV;
 
   // Covariate coefficients.
   Rpack_dvectors(par->coef,model->coef,outlists->coef+pos,setting->sample_size+ERGMM_OUTLISTS_RESERVE);
@@ -375,5 +463,17 @@ void ERGMM_MCMC_store_iteration(unsigned int pos, ERGMM_MCMC_Model *model, ERGMM
       outlists->Z_var[pos]=par->Z_var[0];
   }
 
+  // Sender effects.
+  if(par->sender){
+    Rpack_dvectors(par->sender,model->verts,outlists->sender+pos,setting->sample_size+ERGMM_OUTLISTS_RESERVE);
+    outlists->sender_var[pos] = par->sender_var;
+  }
+
+  // Receiver effects.
+  if(par->receiver && !model->sociality){
+    Rpack_dvectors(par->receiver,model->verts,outlists->receiver+pos,setting->sample_size+ERGMM_OUTLISTS_RESERVE);
+    outlists->receiver_var[pos] = par->receiver_var;
+  }      
+      
 }
 

@@ -5,14 +5,15 @@
 \title{Fit a Latent Space Random Graph Model}
 \description{
   \code{\link{ergmm}} is used to fit latent space and latent space cluster random network models, 
-    as described in Hoff, Raftery and Handcock (2002),
-    Handcock, Raftery and Tantrum (2005), and the article we are working on.
+    as described by Hoff, Raftery and Handcock (2002),
+    Handcock, Raftery and Tantrum (2005), and Krivitsky, Handcock,
+    Raftery, and Hoff (2009).
   \code{\link{ergmm}} can return either a Bayesian model fit
   or the two-stage MLE.
 }
 \usage{
 ergmm(formula, response=NULL, family="Bernoulli",fam.par=NULL,
-      control=ergmm.control(), user.start=ergmm.par.blank(), prior=ergmm.prior(),
+      control=ergmm.control(), user.start=list(), prior=ergmm.prior(),
       tofit=c("mcmc", "mkl", "mkl.mbc", "procrustes",
       "klswitch"), Z.ref=NULL, Z.K.ref=NULL, seed=NULL,
       verbose=FALSE)
@@ -32,7 +33,7 @@ ergmm(formula, response=NULL, family="Bernoulli",fam.par=NULL,
     \code{g} is used.}
   \item{family}{A character vector that is one of "Bernoulli" (the default),
     "binomial", or "Poisson", specifying the conditional distribution of
-    each edge value. See \code{Details} for more information.}
+    each edge value.}
   \item{fam.par}{For those families that require additional parameters,
     a list.}
   \item{control}{The MCMC parameters that do not affect the posterior
@@ -46,7 +47,7 @@ ergmm(formula, response=NULL, family="Bernoulli",fam.par=NULL,
     configuration. If this is done, the remaining paramters are fitted
     conditional on those supplied.}
   \item{prior}{The prior parameters for the model being fitted in the
-    form of a named list or an \link[=ergmm.par.object]{ergmm.par}. See \link{terms.ergmm} for the names to use.
+    form of a named list. See \link{terms.ergmm} for the names to use.
     If given, will override those given in the
     formula terms, making it useful as a convenient way to store and reproduce a
     prior distribution. The list or prior parameters can also be
@@ -74,15 +75,23 @@ ergmm(formula, response=NULL, family="Bernoulli",fam.par=NULL,
 \seealso{network, set.vertex.attributes, set.network.attributes,
   \code{\link{summary.ergmm}}, \link{terms.ergmm}}
 \references{
-  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock.
-  \emph{Latent space approaches to social network analysis.} 
-  Journal of the American Statistical Association, Dec 2002, Vol.97, 
-  Iss. 460; pp. 1090-1098.
-  
-  Mark S. Handcock, Adrian E. Raftery and Jeremy Tantrum.
+   Mark S. Handcock, Adrian E. Raftery and Jeremy Tantrum (2002).
   \emph{Model-Based Clustering for Social Networks.} Journal of the Royal
-  Statistical Society: Series A, 2007, Vol. 170, Iss. 2; pp. 301-354.
+  Statistical Society: Series A, 170(2), 301-354.
   
+  Peter D. Hoff,  Adrian E. Raftery and Mark S. Handcock (2002).
+  \emph{Latent space approaches to social network analysis.} 
+  Journal of the American Statistical Association, 97(460), 
+  1090-1098.
+  
+  Pavel N. Krivitsky, Mark S. Handcock, Adrian E. Raftery, and Peter
+  D. Hoff (2009). \emph{Representing degree distributions, clustering, and
+  homophily in social networks with latent cluster random effects
+  models}.  Social Networks, 31(3), 204-213.
+
+ Pavel N. Krivitsky and Mark S. Handcock (2008).
+ \emph{Fitting Position Latent Cluster Models for Social Networks with
+ \code{latentnet}}. Journal of Statistical Software, 24(5).
 }
 \examples{
 
@@ -104,9 +113,9 @@ mcmc.diagnostics(samp.fit)
 #
 plot(samp.fit)
 #
-# Using Sampson's Monk data, lets fit a latent clustering model.
+# Using Sampson's Monk data, lets fit a latent clustering random effects model
 #
-samp.fit <- ergmm(samplike ~ latent(d=2, G=3))
+samp.fit <- ergmm(samplike ~ latent(d=2, G=3)+rreceiver)
 #
 # See if we have convergence in the MCMC
 mcmc.diagnostics(samp.fit)

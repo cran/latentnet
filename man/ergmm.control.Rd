@@ -1,5 +1,6 @@
 \name{ergmm.control}
 \alias{ergmm.control}
+\alias{control.ergmm}
 \title{Auxiliary for Controlling ERGMM Fitting}
 \description{
   Auxiliary function as user interface for \code{ergmm}
@@ -7,21 +8,24 @@
   set parameters that affect the sampling but do not affect the posterior distribution.
 }
 \usage{
-ergmm.control(sample.size=4000,
+control.ergmm(sample.size=4000,
               burnin=10000,
               interval=10,
               threads=1,
+              kl.threads=1,
               mle.maxit=100,
               Z.delta=0.6,
+              RE.delta=0.6,
               group.deltas=0.4,
               pilot.runs=4,
               pilot.factor=0.8,
               pilot.discard.first=0.5,
               target.acc.rate=0.234,
               backoff.threshold=0.05,
-              backoff.factor=0.1,
+              backoff.factor=0.2,
               accept.all=FALSE,
-              store.burnin=FALSE)
+              store.burnin=FALSE,
+              refine.user.start=TRUE)
 }
 \arguments{
   \item{sample.size}{The number of draws to be taken from the posterior distribution.}
@@ -32,15 +36,20 @@ ergmm.control(sample.size=4000,
     advantage of any multiprocessing or distributed computing
     capabilities that may be available. Currently, only PVM (via
     \code{rpvm}) has been tested. Note, also, that PVM daemon needs to
-    be started before the package is loaded. } 
+    be started before the package is loaded. }
+  \item{kl.threads}{If greather than 1, uses an experimental parallelized
+    label-switching algorithm. This is not guaranteed to work. }
   \item{mle.maxit}{Maximum number of iterations for computing the
     starting values, posterior modes, MLEs, MKL estimates, etc..}
   \item{Z.delta}{Standard deviation of the proposal for the jump in the
     individual latent space position, or its starting value for the tuner.}
+  \item{RE.delta}{Standard deviation of the proposal for the jump in the
+    individual random effects values, or its starting value for the
+    tuner.}
   \item{group.deltas}{A scalar, a vector, or a matrix of an
     appropriate size, giving the initial proposal structure for the
-    ``group proposal'' of a jump in covariate coefficients and scaling of
-    latent space positions. If a matrix of
+    ``group proposal'' of a jump in covariate coefficients, scaling of
+    latent space positions, and a shift in random ffects. If a matrix of
     an appropriate size is given, it is used as a matrix of coefficients
     for a correlated proposal. If a vector is given, an independent
     proposal is used with the corresponding elements being proposal
@@ -50,7 +59,7 @@ ergmm.control(sample.size=4000,
     sampling be used.}
   \item{pilot.runs}{Number of pilot runs into which to split the
     burn-in period. After each pilot run, the proposal standard
-    deviations and coefficients \code{Z.delta} and
+    deviations and coefficients \code{Z.delta}, \code{RE.delta}, and
     \code{group.deltas} are reevaluated. If set to \code{0}, disables
     adaptive sampling, and only makes a single burn-in run.}
   \item{pilot.factor}{Initial value for the factor by which the
@@ -72,6 +81,8 @@ ergmm.control(sample.size=4000,
     unconditionally. Use only in debugging proposal distributions!}
   \item{store.burnin}{If \code{TRUE}, the samples from the burnin are
     also stored and returned, to be used in MCMC diagnostics.}
+  \item{refine.user.start}{If \code{TRUE}, the values passed to
+    \code{\link{ergmm}} in the \code{user.start} argument can be updated by the mode-finding algorithm.}
 }
 \value{
   A list with the arguments as components.
@@ -80,7 +91,7 @@ ergmm.control(sample.size=4000,
 \examples{
 data(sampson)
 ## Shorter run than default.
-samp.fit<-ergmm(samplike~latent(d=2,G=3),
+samp.fit<-ergmm(samplike~latent(d=2,G=3)+rreceiver,
 control=ergmm.control(burnin=1000,sample.size= 2000,interval=5))
 }
 \keyword{graphs}

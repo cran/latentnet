@@ -5,11 +5,16 @@
 % Genuinely internal
 %
 
+\alias{nterms.model}
 \alias{ergmm.tofit.resolve}
 \alias{extraneous.argcheck}
 \alias{inv.fit.vars}
 \alias{is.latent}
 \alias{is.latent.cluster}
+\alias{is.receiver}
+\alias{is.sender}
+\alias{kief.wolf2.optim}
+\alias{kief.wolf.optim}  
  
 \alias{pack.optim}
 \alias{path.to.me}   
@@ -27,7 +32,7 @@
 \alias{ergmm.labelswitch}
 \alias{klswitch.C}
 \alias{labelswitch.sample.ergmm}
-\alias{nearest.perm}
+\alias{which.perm.nearest}
 \alias{ergmm.MCMCacf} 
 \alias{ergmm.permutation}
 \alias{ergmm.statseval}
@@ -51,6 +56,8 @@
 \alias{ergmm.midarrow}
 \alias{ergmm.plotting.region}
 \alias{ergmm.plotting.vertex.radius} 
+\alias{THra3d}
+\alias{THron3d}
 
 \alias{ergmm.fit.deps}
 \alias{ergmm.geodesicmatrix}
@@ -67,6 +74,9 @@
 \alias{InitErgmm.latentcov}
 \alias{InitErgmm.nodematch}
 \alias{InitErgmm.receivercov}
+\alias{InitErgmm.rreceiver}
+\alias{InitErgmm.rsender}
+\alias{InitErgmm.rsociality}
 \alias{InitErgmm.sendercov}
 \alias{InitErgmm.socialitycov}
 
@@ -87,13 +97,24 @@
 \alias{run.proposal}
 \alias{run.proposal.snowFT}
 \alias{run.proposal.snowFT.slave}
+\alias{bayesmbc.snowFT}
+\alias{klswitch.snowFT}
+\alias{klswitch.step2.snowFT.slave}
+\alias{backoff.check}
 
 \alias{seldrop}
 \alias{sim.1.ergmm}
 \alias{switch.Q.K}
+\alias{labelswitch.K}
+\alias{get.beta.eff}
+\alias{scale.ergmm.model}
+\alias{scale}
 
 \alias{post.predict.C}
 \alias{post.predict.R}
+
+\alias{combine.2ergmm}
+
 
 %
 % These might be worth documenting
@@ -119,11 +140,16 @@
 \alias{ergmm.lp.grad.approx}
 \alias{ergmm.lpLV}
 \alias{ergmm.lpLV.grad}
+\alias{ergmm.lpRE}
+\alias{ergmm.lpRE.grad}
+\alias{ergmm.lpREV}
+\alias{ergmm.lpREV.grad}
 \alias{ergmm.lpZ}
 \alias{ergmm.lpZ.grad}
 \alias{ergmm.eta}
 \alias{ergmm.EY}
 \alias{lp.works}
+\alias{lpsum}
 
 \alias{cov.beta.ext}
 \alias{get.init.deltas}
@@ -139,6 +165,9 @@
 \alias{add.mcmc.pmode.pmode.ergmm}
 \alias{add.mkl.mbc.ergmm}
 \alias{add.mkl.pos.ergmm}
+
+\alias{xtabs.ergmm}
+\alias{clust.homogeneity}
 
 \description{
   Internal latentnet functions.

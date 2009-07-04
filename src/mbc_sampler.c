@@ -41,6 +41,7 @@ void MBC_MCMC_wrapper(int *sample_size,
   /* R function enabling uniform RNG */
   GetRNGstate();
   
+  
   MBC_MCMC_init(*sample_size, *interval,
 		
 		*n, *d, *G,
@@ -108,7 +109,7 @@ void MBC_MCMC_init(unsigned int sample_size,
 			    G // clusters
   };
 
-  ERGMM_MCMC_MCMCSettings setting = {0,NULL,0, // deltas
+  ERGMM_MCMC_MCMCSettings setting = {0,0,NULL,NULL,NULL,0,0,0, // deltas
 				     sample_size,interval,
 				     FALSE // accept_all
   };
@@ -118,19 +119,26 @@ void MBC_MCMC_init(unsigned int sample_size,
 			     Z_var_df, // a.k.a. Z_var_df (I hope)
 			     NULL,
 			     NULL,
-			     Z_K_prior};
+			     Z_K_prior,
+			     0,0,0,0};
   
   ERGMM_MCMC_Par state = {Z, // Z
 			  NULL, // coef
 			  Z_mean_start, // Z_mean
 			  Z_var, // Z_var
 			  Z_pK, // Z_pK			  
+			  NULL,
+			  0,
+			  NULL,
+			  0,
 			  Z_K, // Z_K
 			  0, // llk
 			  NULL, // lpedge
 			  0, // lpZ		  
 			  0, // lpLV
-			  0 // lpcoef
+			  0, // lpcoef
+			  0, // lpRE
+			  0 // lpREV
   };
 
   ERGMM_MCMC_MCMCState start = {&state,
@@ -140,8 +148,10 @@ void MBC_MCMC_init(unsigned int sample_size,
 				model.clusters ? dvector(model.clusters): NULL, // pK
 				model.clusters ? (unsigned int *) ivector(model.clusters) : NULL, // n
 				PROP_NONE, // prop_Z
+				PROP_NONE, // prop_RE
 				PROP_NONE, // prop_coef
 				PROP_NONE, // prop_LV
+				PROP_NONE, // prop_REV
 				FALSE, // after_Gibbs
 				NULL // update_order
   };
@@ -149,12 +159,16 @@ void MBC_MCMC_init(unsigned int sample_size,
   ERGMM_MCMC_ROutput outlists = {NULL, // llk
 				 lpZ_mcmc,
 				 NULL, // lpcoef
+				 NULL, // lpRE
 				 lpLV_mcmc,
+				 NULL, //lpREV,
 				 NULL, // Z
 				 NULL, // Z_rate_move
 				 NULL, // coef
 				 NULL, // coef_rate
 				 Z_mean_mcmc,Z_var_mcmc,Z_pK_mcmc,
+				 NULL,NULL,
+				 NULL,NULL,
 				 K_mcmc};
 
   if(model.clusters>0)

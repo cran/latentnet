@@ -22,7 +22,7 @@
   *** It MUST be called BEFORE the proposals are made. ***
   Gibbs-updating is OK, as long as the affected probabilities are updated.
  */
-void ERGMM_MCMC_propose(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, unsigned int Z, unsigned int coef, unsigned int LV){
+void ERGMM_MCMC_propose(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, unsigned int Z, unsigned int RE, unsigned int coef, unsigned int LV, unsigned int REV){
   // If the state has been Gibbs-updated, it means prop is inconsistent.
   if(cur->after_Gibbs) copy_MCMC_Par(model,cur->state,cur->prop);
   cur->after_Gibbs=FALSE;
@@ -35,11 +35,25 @@ void ERGMM_MCMC_propose(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur, unsi
     else cur->prop_Z=Z;
   }
   
+  // Ditto RE...
+  if(RE!=PROP_NONE && (cur->state->sender || cur->state->receiver )){
+    if(cur->prop_RE!=PROP_NONE && cur->prop_RE!=RE) cur->prop_RE=PROP_ALL;
+    else cur->prop_RE=RE;
+  }
+
   if(coef!=PROP_NONE) cur->prop_coef=PROP_ALL;
 
   if(LV!=PROP_NONE && cur->state->Z){
     cur->prop_LV=PROP_ALL;
   }
+  if(REV!=PROP_NONE && (cur->state->sender || cur->state->receiver)){
+    cur->prop_REV=PROP_ALL;
+  }
+
+  /* Also, if we want to change latent position of one vertex but a random
+     effect of another. */
+  if(cur->prop_RE!=PROP_NONE && cur->prop_Z!=PROP_NONE && cur->prop_RE != cur->prop_Z)
+    cur->prop_RE=cur->prop_Z = PROP_ALL;
 }
 
 /*
@@ -61,6 +75,21 @@ void ERGMM_MCMC_prop_end(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur,
     copy_dvector(new->Z[cur->prop_Z],old->Z[cur->prop_Z],model->latent); break;
   }
 
+  switch(cur->prop_RE){
+  case PROP_ALL:
+    if(new->sender)
+      copy_dvector(new->sender,old->sender,model->verts); 
+    if(new->receiver && !model->sociality)
+      copy_dvector(new->receiver,old->receiver,model->verts);
+    break;
+  case PROP_NONE: break;
+  default:
+    if(new->sender)
+      old->sender[cur->prop_RE]=new->sender[cur->prop_RE];
+    if(new->receiver && !model->sociality)
+      old->receiver[cur->prop_RE]=new->receiver[cur->prop_RE];
+  }
+  
   if(cur->prop_coef==PROP_ALL)
     copy_dvector(new->coef,old->coef,model->coef);
 
@@ -69,9 +98,16 @@ void ERGMM_MCMC_prop_end(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur,
     if(new->Z_var) copy_dvector(new->Z_var,old->Z_var,model->clusters?model->clusters:1);
   }
 
+  if(cur->prop_REV==PROP_ALL){
+    if(new->sender) old->sender_var=new->sender_var;
+
+    if(new->sender && model->sociality) old->receiver_var=new->sender_var;
+    else if(new->receiver) old->receiver_var=new->receiver_var;      
+  }
+
   // Update the lpedge matrix.
   if(copy_lpedge){
-    if(cur->prop_Z==PROP_ALL || cur->prop_coef==PROP_ALL){
+    if(cur->prop_Z==PROP_ALL || cur->prop_RE==PROP_ALL || cur->prop_coef==PROP_ALL){
       copy_dmatrix(new->lpedge,old->lpedge,model->verts,model->verts);
     }
     else if(cur->prop_Z!=PROP_NONE){
@@ -86,12 +122,37 @@ void ERGMM_MCMC_prop_end(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur,
 	for(j=i+1;j<model->verts;j++) old->lpedge[j][i]=new->lpedge[j][i];
       }
     }
+    else if(cur->prop_RE!=PROP_NONE){
+      if(new->sender){
+	i=cur->prop_RE;
+	if(model->dir){
+	  copy_dvector(new->lpedge[i],old->lpedge[i],model->verts);
+	}
+	else{
+	  copy_dvector(new->lpedge[i],old->lpedge[i],i);
+	  for(j=i+1;j<model->verts;j++) old->lpedge[j][i]=new->lpedge[j][i];
+	}
+      }
+      /* Note that whether we update the "column" is determined by directedness
+	 of the graph and presence of receiver effect, not whether it's locked
+	 to sender effect. */
+      if(new->receiver && model->dir){
+	j=cur->prop_RE;
+	for(i=0;i<model->verts;i++) old->lpedge[i][j]=new->lpedge[i][j];
+      }
+    }
   }
 
   if(cur->prop_Z!=PROP_NONE){
     old->llk=new->llk;
     old->lpZ=new->lpZ;
     cur->prop_Z=PROP_NONE;
+  }
+
+  if(cur->prop_RE!=PROP_NONE){
+    old->llk=new->llk;
+    old->lpRE=new->lpRE;
+    cur->prop_RE=PROP_NONE;
   }
 
   if(cur->prop_coef!=PROP_NONE){
@@ -106,11 +167,18 @@ void ERGMM_MCMC_prop_end(ERGMM_MCMC_Model *model, ERGMM_MCMC_MCMCState *cur,
     old->lpZ=new->lpZ;
     cur->prop_LV=PROP_NONE;
   }
+
+  if(cur->prop_REV!=PROP_NONE){
+    old->lpREV=new->lpREV;
+    // Ditto RE...
+    old->lpRE=new->lpRE;
+    cur->prop_REV=PROP_NONE;
+  }
 }
 
-/* update Z one vertex at a time */
-unsigned int ERGMM_MCMC_Z_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
-			     ERGMM_MCMC_MCMCSettings *setting)
+/* update Z and RE one vertex at a time */
+unsigned int ERGMM_MCMC_Z_RE_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
+	    ERGMM_MCMC_MCMCSettings *setting)
 {
   double lr;
   unsigned int iord, i, j, change=0;
@@ -123,15 +191,23 @@ unsigned int ERGMM_MCMC_Z_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, 
     i=cur->update_order[iord];
     // Make the proposal...
     
-    ERGMM_MCMC_propose(model,cur,i,PROP_NONE,PROP_NONE);
+    ERGMM_MCMC_propose(model,cur,i,i,PROP_NONE,PROP_NONE,PROP_NONE);
     if(model->latent){
       for(j=0;j<model->latent;j++){ 
 	par->Z[i][j] = cur->state->Z[i][j] + rnorm(0,setting->Z_delta);
       }
     }
+    if(par->sender){
+      par->sender[i] += rnorm(0,setting->RE_delta);
+    }
+
+    if(par->receiver && !model->sociality){
+      par->receiver[i] += rnorm(0,setting->RE_delta);
+    }
 
     lr = (ERGMM_MCMC_lp_Y_diff(model,cur)
 	  +ERGMM_MCMC_logp_Z_diff(model,cur)
+	  +ERGMM_MCMC_logp_RE_diff(model,cur)
 	  );
 	  
     if( setting->accept_all || runif(0.0,1.0) < exp(lr) ){
@@ -146,14 +222,14 @@ unsigned int ERGMM_MCMC_Z_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, 
   return(change);
 }
 
-/* updates coef, scale of Z */
-unsigned int ERGMM_MCMC_coef_up_scl_Z(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
-						  ERGMM_MCMC_MCMCSettings *setting){
+/* updates coef, scale of Z, and shifts the random effects; also translates Z */
+unsigned int ERGMM_MCMC_coef_up_scl_Z_shift_RE(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur,
+					       ERGMM_MCMC_MCMCSettings *setting){
   double acc_adjust=0;
   ERGMM_MCMC_Par *par=cur->prop;
   
   // Signal the proposal (of everything).
-  ERGMM_MCMC_propose(model,cur,PROP_ALL,PROP_ALL,PROP_ALL);
+  ERGMM_MCMC_propose(model,cur,PROP_ALL,PROP_ALL,PROP_ALL,PROP_ALL,PROP_NONE);
 
   for(unsigned int j=0; j<setting->group_prop_size; j++) 
     cur->deltas[j] = 0;
@@ -196,6 +272,23 @@ unsigned int ERGMM_MCMC_coef_up_scl_Z(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Prior
     }
   }
 
+  // Propose to shift random effects.
+  if(par->sender){
+    for(unsigned int k=0; k<setting->coef_eff_sender_size; k++){
+      double delta=cur->deltas[prop_pos++];
+      for(unsigned int i=0; i<model->verts; i++)
+	par->sender[i]+=delta*setting->coef_eff_sender[k][i];
+    }
+  }
+  
+  if(par->receiver && !model->sociality){
+    for(unsigned int k=0; k<setting->coef_eff_receiver_size; k++){
+      double delta=cur->deltas[prop_pos++];
+      for(unsigned int i=0; i<model->verts; i++)
+	par->receiver[i]+=delta*setting->coef_eff_receiver[k][i];
+    }
+  }
+
   /* Calculate the log-likelihood-ratio.
      Note that even functions that don't make sense in context
      (e.g. logp_Z for a non-latent-space model) are safe to call and return 0). */
@@ -204,6 +297,7 @@ unsigned int ERGMM_MCMC_coef_up_scl_Z(ERGMM_MCMC_Model *model,  ERGMM_MCMC_Prior
 	       +ERGMM_MCMC_logp_coef_diff(model,cur,prior)
 	       +ERGMM_MCMC_logp_Z_diff(model,cur)
 	       +ERGMM_MCMC_logp_LV_diff(model,cur,prior)
+	       +ERGMM_MCMC_logp_RE_diff(model,cur)
 	       +acc_adjust
 	       );
   
@@ -313,4 +407,39 @@ void ERGMM_MCMC_LV_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_M
   // The following functions update par->lpZ and par->lpLV; they are NOT frivolous.
   ERGMM_MCMC_logp_Z(model,par);
   ERGMM_MCMC_logp_LV(model,par,prior);
+}
+
+
+void ERGMM_MCMC_REV_up(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior, ERGMM_MCMC_MCMCState *cur){
+  double S_hat;
+  unsigned int i;
+  ERGMM_MCMC_Par *par=cur->state;
+
+  // Signal that this is a Gibbs-sampling update, so prop will need be caught up.
+  cur->after_Gibbs=TRUE;
+
+  //Inverse-chisq (Wishart in the future?) for sender and receiver effect variances.
+  if(par->sender){
+    S_hat = 0.0;
+    for(i=0;i<model->verts;i++)
+      S_hat += par->sender[i] * par->sender[i];
+    par->sender_var = rsclinvchisq(model->verts + prior->sender_var_df,
+				   (prior->sender_var*prior->sender_var_df +  S_hat)/
+				   (model->verts + prior->sender_var_df));
+  }
+
+
+  if(par->receiver && !model->sociality){
+    S_hat = 0.0;
+    for(i=0;i<model->verts;i++)
+      S_hat += par->receiver[i] * par->receiver[i];
+    par->receiver_var = rsclinvchisq(model->verts + prior->receiver_var_df,
+				     (prior->receiver_var*prior->receiver_var_df + S_hat)/
+				     (model->verts + prior->receiver_var_df));
+  }
+  else par->receiver_var=par->sender_var;
+
+  // The following function updates par->lpRE; it is NOT frivolous.
+  ERGMM_MCMC_logp_RE(model,par);
+  ERGMM_MCMC_logp_REV(model,par,prior);
 }

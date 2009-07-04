@@ -15,9 +15,10 @@
 
 /* deltas have the following values:
    [0] Z_delta
-   [1]- group_deltas
+   [1] RE_delta
+   [2]- group_deltas
 */
-#define GROUP_DELTAS_START 1
+#define GROUP_DELTAS_START 2
 
 void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 			   
@@ -28,7 +29,7 @@ void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 
 			double *vX,
 			  
-			double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpLV_mcmc,
+			double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc,
 			   
 			double *vZ_start,
 
@@ -45,8 +46,24 @@ void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 			double *coef_mean, double *coef_prior_var,
 			double *coef_mcmc, double *coef_rate, 
 			  
+			  
+			double *sender_start, double *receiver_start,
+			double *sender_var_start, double *receiver_var_start,
+
+			double *sender_var_prior, double *sender_var_prior_df,
+			double *receiver_var_prior, double *receiver_var_prior_df,
+
+			double *sender_mcmc, double *receiver_mcmc,
+			double *sender_var_mcmc, double *receiver_var_mcmc,
+
+			int *sociality,
 			int *vobserved_ties,
 			double *deltas,
+			double *coef_eff_sender,
+			int *coef_eff_sender_size,
+			double *coef_eff_receiver,
+			int *coef_eff_receiver_size,
+
 			int *accept_all);
 
 void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval, 
@@ -60,7 +77,7 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 
 		     double ***X,
 
-		     double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpLV_mcmc,
+		     double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc,
 
 		     double **Z_start,
 		     double *Z_pK_start, double **Z_mean_start, double *Z_var_start, unsigned int *Z_K_start,
@@ -74,10 +91,23 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 		     double *coef_mcmc, double *coef_rate, 
 		     double *coef_mean, double *coef_prior_var, 
 
+		     double *sender_start, double *receiver_start,
+		     double sender_var_start, double receiver_var_start,
+		     double sender_var_prior, double sender_var_prior_df,
+		     double receiver_var_prior, double receiver_var_prior_df,
+		     double *sender_mcmc, double *receiver_mcmc,
+		     double *sender_var_mcmc, double *receiver_var_mcmc,
+		     unsigned int sociality,
 		     unsigned int **observed_ties,
 
 		     double Z_delta,
+		     double RE_delta,
 		     double **group_deltas, unsigned int group_prop_size,
+		     double **coef_eff_sender,
+		     unsigned int coef_eff_sender_size,
+		     double **coef_eff_receiver,
+		     unsigned int coef_eff_receiver_size,
+
 		     unsigned int accept_all);
 
 void ERGMM_MCMC_loop(ERGMM_MCMC_Model *model, ERGMM_MCMC_Priors *prior,

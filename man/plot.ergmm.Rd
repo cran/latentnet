@@ -1,19 +1,28 @@
 \name{plot.ergmm}
 \alias{plot.ergmm}
+\alias{plot3d.ergmm}
 \title{Plotting Method for class ERGMM}
 \usage{
 \method{plot}{ergmm}(x, \dots, vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex.cex)),
                           what="mkl",
-                          main = NULL, xlab=NULL, ylab=NULL, xlim=NULL,ylim=NULL,
-                          object.scale=formals(plot.network.default)$object.scale,
-                          pad=formals(plot.network.default)$pad,
+                          main = NULL, xlab=NULL, ylab=NULL, zlab=NULL,
+                          xlim=NULL, ylim=NULL, zlim=NULL,
+                          object.scale=formals(plot.network.default)[["object.scale"]],
+                          pad=formals(plot.network.default)[["pad"]],
                           cluster.col=c("red","green","blue","cyan","magenta","orange","yellow","purple"),
-                          vertex.col=NULL, print.formula=TRUE,
-                          edge.col=8,
+                          vertex.col = NULL, print.formula = TRUE,
+                          edge.col = 8,
+                          Z.ref = NULL,
+                          Z.K.ref = NULL,
+                          zoom.on = NULL,
                           pie = FALSE,
                           labels=FALSE,
-                          plot.means=TRUE,plot.vars=TRUE,suppress.axes=FALSE,
-                          jitter1D=1,curve1D=TRUE,suppress.center=FALSE,density.par=list())
+                          rand.eff = NULL, rand.eff.cap = NULL,
+                          plot.means = TRUE, plot.vars = TRUE,
+                          suppress.axes = FALSE,
+                          jitter1D=1, curve1D=TRUE,
+                          use.rgl = FALSE, vertex.3d.cex = 1/20,
+                          suppress.center=FALSE,density.par=list())
 
 }
 \description{
@@ -31,8 +40,7 @@
   \item{x}{an R object of class \code{\link[=ergmm.object]{ergmm}}.
     See documentation for \code{\link{ergmm}}.}
 
-  \item{what}{Character vector, integer, or an object of class
-    \code{\link[=ergmm.par.object]{ergmm.par}} that specifies
+  \item{what}{Character vector, integer, or a list that specifies
     the point estimates to be used. Can be one of the follwoing:
     \describe{
       \item{\code{"mkl"}}{This is the defult. Plots the Minimum Kulblack-Leibler
@@ -41,20 +49,28 @@
 	configuration.}
       \item{\code{"sampling.start"}}{Plots the starting configuration of
 	the sampling phase (the last burnin configuration).}
-      \item{\code{"mle"}}{Plots the maximum likelihood estimates.}
+      \item{\code{"mle"}}{Plots the maximum likelihood estimates. Random effects
+	are treated as fixed.}
       \item{\code{"pmean"}}{Plots the posterior means.}
       \item{\code{"pmode"}}{Plots the conditional posterior mode.}
       \item{\code{"cloud"}}{Plots the ``cloud'' of latent space position draws,
     with their cluster colors.}
       \item{\code{"density"}}{Plots density and contours of the posterior
 	latent positions, and, in cluster models, each cluster.}
-      \item{\code{\link[=ergmm.par.object]{ergmm.par}}}{Plots the configuration contained in \code{ergmm.fit}.}
-      \item{integer}{Plots the configuration of \code{ergm.fit}'th
-	stored MCMC iteration.}
+      \item{\code{list}}{Plots the
+    configuration contained in the list.}
+      \item{integer}{Plots the configuration of \code{what}th
+	 MCMC draw stored in \code{x}.}
     }
   }
   \item{pie}{For latent clustering models, each node is drawn as a pie
     chart representing the probabilities of cluster membership.}
+  \item{rand.eff}{A character vector selecting "sender", "receiver",
+    "sociality", or "total" random effects. Each vertex is scaled such that its area is proportional
+    to the odds ratio due to its selected random effect. }
+  \item{rand.eff.cap}{If not \code{NULL} and \code{rand.eff} is given,
+    limits the scaling of the plotting symbol due to random effect to
+    the given value.} 
   \item{plot.means}{Whether cluster means are plotted for latent cluster
     models. The "+" character is used. Defaults to \code{TRUE}.}
   \item{plot.vars}{Whether circles with radius equal to the square root
@@ -76,10 +92,25 @@
     edge.col,xlab,ylab}{Arguments passed to
     \code{\link[pkg:network]{plot.network}}, whose defaults differ from
     those of \code{\link[pkg:network]{plot.network}}.}
+  \item{zlim,zlab}{Limits and labels for the third latent space
+    dimension or principal component, if \code{use.rgl=TRUE}.}
   \item{labels}{Whether vertex labels should be displayed. Defaults to
     \code{FALSE}.}
   \item{print.formula}{Whether the formula based on which the \code{x}
-    was fitted should be printed under the main title. Defaults to \code{TRUE}.}
+    was fitted should be printed under the main title. Defaults to
+    \code{TRUE}.}
+  \item{Z.ref}{If given, rotates the the latent positions to the nearest
+    configuration to this one before plotting.}
+  \item{Z.K.ref}{If given, relabels the clusters to the nearest
+    configuration to this one before plotting.}
+  \item{use.rgl}{Whether the package rgl should be used to plot fits for
+    latent space dimension 3 or higher in 3D. Defaults to
+    \code{FALSE}. If set to \code{TRUE} and a 3-dimensional plot is
+    produced, edges are not plotted and
+    argument \code{pie} has no effect.}
+  \item{vertex.3d.cex}{Controls the size of the plotting symbol when \code{use.rgl=TRUE}.}
+  \item{zoom.on}{If given a list of vertex indices, sets the plotting
+    region to the smallest that can fit those vertices.}
   \item{density.par}{A list of optional parameters for density plots:
     \describe{
       \item{\code{totaldens}}{Whether the overal density of latent space
@@ -105,7 +136,7 @@
   black circle) inside the plotting symbol.
 }
 \value{If applicable, invisibly returns the vertex positions plotted.}
-\seealso{\code{\link{ergmm}},\code{\link[=ergmm.object]{ergmm (object)}}, \code{network}, \code{\link[network]{plot.network}}, \code{\link{plot}}}
+\seealso{\code{\link{ergmm}},\code{\link{ergmm.object}}, \code{network}, \code{\link[network]{plot.network}}, \code{\link{plot}}}
 \examples{
 #
 # Using Sampson's Monk data, lets fit a 
@@ -113,20 +144,31 @@
 #
 data(sampson)
 #
-# Using Sampson's Monk data, lets fit a latent clustering model
+# Using Sampson's Monk data, lets fit a latent clustering random effects model
 #
-samp.fit <- ergmm(samplike ~ latent(d=2, G=3))
+samp.fit <- ergmm(samplike ~ latent(d=2, G=3)+rreceiver)
 #
 # See if we have convergence in the MCMC
 mcmc.diagnostics(samp.fit)
 #
 # Plot the resulting fit.
 #
-plot(samp.fit,labels=TRUE)
-plot(samp.fit,pie=TRUE)
-plot(samp.fit,what="pmean")
-plot(samp.fit,what="cloud")
-plot(samp.fit,what="density")
+plot(samp.fit,labels=TRUE,rand.eff="receiver")
+plot(samp.fit,pie=TRUE,rand.eff="receiver")
+plot(samp.fit,what="pmean",rand.eff="receiver")
+plot(samp.fit,what="cloud",rand.eff="receiver")
+plot(samp.fit,what="density",rand.eff="receiver")
+
+\dontrun{
+# Fit a 3D latent space model to Sampson's Monks
+samp.fit3 <- ergmm(samplike ~ latent(d=3))
+
+# Plot the first two principal components of the
+# latent space positions
+plot(samp.fit,use.rgl=FALSE)
+# Plot the resulting fit in 3D
+plot(samp.fit,use.rgl=TRUE)
+}
 }
 \keyword{graphs}
 \keyword{hplot}
