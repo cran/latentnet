@@ -4,6 +4,14 @@
 #define PROP_NONE (65535-1)
 #define PROP_ALL (65535-2)
 
+#ifndef TRUE
+#define TRUE (!0)
+#endif /* TRUE */
+
+#ifndef FALSE
+#define FALSE 0
+#endif /* FALSE */
+
 /* The structure to house the state of MCMC for a given iteration.
  * Includes only values that change from iteration to iteration.
  * Also includes the "sub-states" of MCMC: proposed Z and proposed coef,
@@ -74,6 +82,7 @@ struct ERGMM_MCMC_Model_struct{
   double *dconst;
   unsigned int verts, latent, coef, clusters;
   unsigned int sociality;
+  double (*latent_eff)(double *u, double *v, unsigned int dim);
 } ;
 
 typedef struct ERGMM_MCMC_Model_struct ERGMM_MCMC_Model;

@@ -2,8 +2,6 @@
 #define ERGMM_SAMPLER_H
 
 #include "ergmm_structs.h"
-#define FALSE 0
-#define TRUE !0
 
 /* First 1 positions in the outlists are reserved for special values:
    [0] Iteration with the highest likelihood so far.
@@ -25,7 +23,9 @@ void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 			int *n, int *p, int *d, int *G,
 			  
 			int *dir, int *viY, double *vdY,
-			int *family, int *iconsts, double *dconsts,
+			int *family,
+			int *iconsts, double *dconsts,
+			int *latent_eff, 
 
 			double *vX,
 			  
@@ -73,7 +73,9 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 
 		     unsigned int dir, int **iY, double **dY,
 
-		     unsigned int family, int *iconsts, double *dconsts,
+		     unsigned int family,
+		     int *iconsts, double *dconsts,
+		     unsigned int latent_eff,
 
 		     double ***X,
 

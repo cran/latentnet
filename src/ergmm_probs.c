@@ -12,10 +12,8 @@
 #include "mvnorm.h"
 #include "wishart.h"
 #include "ergmm_families.h"
+#include "ergmm_latent_effects.h"
 #include "ergmm_probs.h"
-
-#define FALSE 0
-#define TRUE !0
 
 //#define VERBOSE 1
 //#define SUPER_VERBOSE 1
@@ -25,6 +23,7 @@
 void ERGMM_lp_Y_wrapper(int *n, int *p, int *d,
 			int *dir, int *viY, double *vdY,
 			int *family, int *iconsts, double *dconsts,
+			int *latent_eff,
 			double *vX, double *vZ,
 			double *coef,
 			double *sender, double *receiver, int *sociality,
@@ -63,10 +62,12 @@ void ERGMM_lp_Y_wrapper(int *n, int *p, int *d,
 			    *d, // latent
 			    *p, // coef
 			    0,
-			    *sociality};
+			    *sociality,
+			    latent_eff ? ERGMM_MCMC_latent_eff[*latent_eff-1] : NULL
+  };
   
   // Precompute the normalizing constant.
-  ERGMM_MCMC_set_lp_Yconst[*family](&model);
+  ERGMM_MCMC_set_lp_Yconst[*family-1](&model);
 
   ERGMM_MCMC_Par params = {Z, // Z
 			   coef, // coef
@@ -99,7 +100,7 @@ void ERGMM_lp_Y_wrapper(int *n, int *p, int *d,
 /*R_INLINE*/ double ERGMM_MCMC_etaij(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *par,unsigned int i,unsigned int j){
   double eta=0;
   unsigned int k;
-  if(model->latent) eta-=dvector_dist(par->Z[i],par->Z[j],model->latent);
+  if(model->latent) eta+=model->latent_eff(par->Z[i],par->Z[j],model->latent);
   
   for(k=0;k<model->coef;k++) eta+=par->coef[k]*model->X[k][i][j];
   
