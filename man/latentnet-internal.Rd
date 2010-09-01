@@ -64,7 +64,6 @@
 \alias{ergmm.geodesicmatrix.edgelist}
 \alias{ergmm.get.model}
 \alias{ergmm.initvals}
-\alias{find.clusters} 
 
 \alias{GS.orth.matrix} 
 \alias{P.free.all}
@@ -101,6 +100,8 @@
 \alias{get.beta.eff}
 \alias{scale.ergmm.model}
 \alias{scale}
+\alias{get.beta.ext}
+\alias{as.mcmc}
 
 \alias{post.predict.C}
 \alias{post.predict.R}
@@ -111,6 +112,8 @@
 %
 % These might be worth documenting
 %
+
+\alias{mbc.VII.EM}
 
 \alias{print.ergmm.model}
 \alias{ergmm.model}
