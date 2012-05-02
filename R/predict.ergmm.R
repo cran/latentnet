@@ -39,12 +39,14 @@ post.predict.C<-function(model,sample,control,MKL=FALSE){
           n = as.integer(n),
           p = as.integer(p),
           d = as.integer(d),
+          latent=as.integer(NVL(model[["latentID"]],0)),
+          family=as.integer(NVL(model[["familyID"]],0)),
+          res=as.integer(with(model,c(sender,receiver,sociality))),
           
-          dir=is.directed(model[["Yg"]]),
-          family=as.integer(model[["familyID"]]),
+          dir=as.integer(is.directed(model[["Yg"]])),
           iconsts=as.integer(model[["iconsts"]]),
           dconsts=as.double(model[["dconsts"]]),
-          family=as.integer(model[["latentID"]]),
+
           
           X=as.double(unlist(model[["X"]])),
           
@@ -52,12 +54,13 @@ post.predict.C<-function(model,sample,control,MKL=FALSE){
           beta = as.double(sample[["beta"]]), # coef
           sender = if(model[["sociality"]]) as.double(sample[["sociality"]]) else as.double(sample[["sender"]]),
           receiver = as.double(sample[["receiver"]]),
-          sociality = as.double(model[["sociality"]]),
-          observed=as.integer(observed),
+          
+          observed=as.integer(NVL(observed,-1)),
           
           EY=double(n*n),
-          s.MKL=if(MKL) integer(1) else integer(0),
+          s.MKL=if(MKL) as.integer(TRUE) else as.integer(FALSE),
           verbose=as.integer(control[["verbose"]]),
+
           PACKAGE="latentnet")
   EY<-array(ret[["EY"]],dim=c(1,n,n))[1,,] 
   if(MKL) attr(EY,"s.MKL")<-ret[["s.MKL"]]+1 # C counts from 0; R counts from 1

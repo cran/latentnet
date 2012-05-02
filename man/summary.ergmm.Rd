@@ -45,18 +45,19 @@ bic.ergmm(object)
 }
 
 \examples{
+\donttest{
 data(sampson)
-# Fit the model for cluster sizes 1 through 5:
+# Fit the model for cluster sizes 1 through 4:
 fits<-list(
            ergmm(samplike~euclidean(d=2,G=1)),
            ergmm(samplike~euclidean(d=2,G=2)),
            ergmm(samplike~euclidean(d=2,G=3)),
-           ergmm(samplike~euclidean(d=2,G=4)),
-           ergmm(samplike~euclidean(d=2,G=5))
+           ergmm(samplike~euclidean(d=2,G=4))
            )
 
 \dontrun{
-sapply(fits,plot)
+# Optionally, plot all fits.
+lapply(fits,plot)
 }
 
 # Compute the BICs for the fits and plot them:
@@ -68,7 +69,7 @@ with(bics,interaction.plot(G,Component,BIC,type="b",xlab="Clusters", ylab="BIC")
 bestG<-with(bics[bics$Component=="overall",],G[which.min(BIC)])
 summary(fits[[bestG]])
 plot(fits[[bestG]])
-
+}
 }
 
 \keyword{graphs}

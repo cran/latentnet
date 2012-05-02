@@ -1,13 +1,17 @@
-if(!exists("gof", mode="function")){
-  gof <- function(object, ...)
-    UseMethod("gof")
+.gof <- function(object, ...)
+  UseMethod("gof")
+
+.gof.default <- function(object,...) {
+  classes <- setdiff(gsub(pattern="^gof.",replacement="",as.vector(methods("gof"))), "default")
+  stop("Goodness-of-Fit methods have been implemented only for class(es) ",
+       .paste.and(paste('"',classes,'"',sep="")), " in the packages loaded.")
 }
 
 gof.ergmm <- function (object, ..., nsim=100,
                       GOF=~idegree+odegree+distance, 
 		      verbose=FALSE) {
 
-  if(!require(ergm,quiet=TRUE)) stop("gof.ergmm requires package 'ergm' to use.")
+  if(!require(ergm,quietly=TRUE)) stop("gof.ergmm requires package 'ergm' to use.")
   formula <- object[["model"]][["formula"]]
 
   trms <- ergm.getterms(formula)
@@ -124,7 +128,7 @@ gof.ergmm <- function (object, ..., nsim=100,
  
   # Simulate an exponential family random graph model
 
-  SimNetworkSeriesObj <- simulate(object,n=nsim)
+  SimNetworkSeriesObj <- simulate(object,nsim=nsim)
 
   if(verbose){cat("\nCollating simulations\n")}
 
