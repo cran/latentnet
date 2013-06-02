@@ -1,5 +1,5 @@
-b2e7264ed2cabf82891a498fcff50b50 *ChangeLog
-cbe2a6671ca36a894c4961222285119e *DESCRIPTION
+10df44c2b7b8d69eb959198555badc24 *ChangeLog
+ff5f2cc2812c2b75cb0b2d6a6eb4223b *DESCRIPTION
 45c79875e86a3b28d0766a4cb131ec2b *LICENSE
 4c0bfeb976da1da76e122528bb0af14a *NAMESPACE
 2afd6a782403c2c5814a89fb78d1dfc8 *R/InitErgmm.fixed.R
@@ -25,7 +25,7 @@ f872f668153b185bfff0166b1b25f4e9 *R/ergmm.probs.R
 6e92bbe72873d4090aadb903e30f3a3b *R/gof.ergmm.R
 72add0d34ef3eaca7126f702bc656184 *R/label.switching.R
 87324989124ced33e8073f0965364a23 *R/latent.R
-e5f6e3e0dc9716a86d5b6e6f253ac8b2 *R/mcmc.diagnostics.ergmm.R
+b65b0701e3e6d32cf8b9656174c19796 *R/mcmc.diagnostics.ergmm.R
 cf524b986c426700f262bbb3ec120ffe *R/merge.ergmm.R
 c4365427305357ca4fd6a5b27289003d *R/plot.ergmm.R
 32c20360211674f3c2b21b05c7ad6c34 *R/predict.ergmm.R
@@ -37,7 +37,7 @@ c4365427305357ca4fd6a5b27289003d *R/plot.ergmm.R
 eba47f9e1cadfbb92d4d8dc201b623e6 *R/summary.ergmm.R
 f8aa93abf0804041b77343df46100533 *R/utilities.R
 86d675acd01ae10db3a6cd2460190b83 *R/zzz.R
-ae33aa90c45a9a46321cb344d7eb91a1 *data/davis.RData
+91f565d8984d7542c5d8f45d887a4c46 *data/davis.RData
 18828ef45128d6ff809ceec9e223382b *data/sampson.RData
 cfb863ef6ff1570812623f27c4a81ba7 *data/tribes.RData
 908141ef3c268947053a02bc349a4c37 *inst/CITATION
@@ -50,17 +50,17 @@ ea5f502360fbd600c871f392ba80abeb *man/ergmm.Rd
 0235ee5fe55d16f87009b9dc0f4d46b4 *man/ergmm.prior.Rd
 a7ef3e9b123516a780c74cd0797d91ca *man/families.ergmm.Rd
 c3a4c48f01f328a7dbf48621bc9b6056 *man/gof.ergmm.Rd
-823926ef58907e627f47a321c4031f4d *man/latentnet-internal.Rd
+3c327e9432d298736fbe7c47a1871740 *man/latentnet-internal.Rd
 747f27d1b4d1791202fae21d50107bd2 *man/latentnet.Rd
 dc0110196b090de1917dba78f483ee00 *man/mcmc.diagnostics.ergmm.Rd
 9d18ab276535321e28fb203adee7d875 *man/merge.ergmm.Rd
-dd1474d888655633ea0bf7c253d5330c *man/plot.ergmm.Rd
+d19b77301a86d8aad576059caab4a0f5 *man/plot.ergmm.Rd
 f07570d4d6250a2b312c3c487fd17b93 *man/predict.ergmm.Rd
 481aa49c8a8a1814ea6773b8d09e2813 *man/sampson.Rd
 fca818fa7ff42c3f5bca2bd0b7c6bf86 *man/simulate.ergmm.Rd
-944acac148d3481b343c7cd72bd9278c *man/summary.ergmm.Rd
+95a0175ed4d5b57afae4a96416f97413 *man/summary.ergmm.Rd
 b9ed7f687f31548a5f8a9382b483e727 *man/terms.ergmm.Rd
-4e5094607c44272ec952a73ec835af9e *man/tribes.Rd
+8a7e600d2b5658e9f618facef73071a3 *man/tribes.Rd
 2a6f9e9e044a78154d3cfda5936d6f48 *src/Makevars
 c81fd366876f9ad10bfb630969c6185c *src/P_alloc.c
 cb16c83894f6f36e18e47dbeba0006ef *src/P_alloc.h
@@ -91,7 +91,7 @@ fa9d74785234d2f9f7144f69561a3d16 *src/post_predict.h
 2e43580d6ac27233ff43e241ddebfd3d *src/procrustes.h
 1d6a8dc76cd0f23b8315275a5f24a12a *src/wishart.c
 744d9d7e5707e3735b3fd86ec68eb181 *src/wishart.h
-01cffa0fc499c762ad43ec584e019c7f *tests/examples.R
+01013943b8718ad0aa2bc460d4dd8845 *tests/examples.R
 b6e51793d4e9ab2e9d444670b9f1e920 *tests/missing.R
 6979440c9231dbe4c9fbe626e107bf3a *tests/nolatent.R
 2ce49fc7c595f3ac254b8e69213f09e3 *tests/nomcmc.R

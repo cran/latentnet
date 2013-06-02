@@ -1,6 +1,6 @@
 Package: latentnet
-Version: 2.4-4
-Date: 2013-03-05
+Version: 2.4-5
+Date: 2013-06-02
 Title: Latent position and cluster models for statistical networks
 Authors@R: c( person("Pavel N.", "Krivitsky", role=c("aut","cre"),
         email="krivitsky@stat.psu.edu"), person("Mark S.", "Handcock",
@@ -13,10 +13,10 @@ Depends: statnet.common, network, abind, tools, mvtnorm, coda, sna
 Suggests: KernSmooth, snowFT, ergm, rgl, heplots
 License: GPL-3 + file LICENSE
 URL: http://www.statnet.org
-Packaged: 2013-03-06 02:18:50 UTC; pavel
+Packaged: 2013-06-02 06:52:14 UTC; pavel
 Author: Pavel N. Krivitsky [aut, cre], Mark S. Handcock [aut], Susan M.
         Shortreed [ctb], Jeremy Tantrum [ctb], Peter D. Hoff [ctb]
 Maintainer: Pavel N. Krivitsky <krivitsky@stat.psu.edu>
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2013-03-06 18:42:24
+Date/Publication: 2013-06-03 07:25:06
