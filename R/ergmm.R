@@ -1,3 +1,12 @@
+#  File R/ergmm.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 ergmm <- function(formula,response=NULL,family="Bernoulli",fam.par=NULL,
                   control=ergmm.control(),
                   user.start=list(),
@@ -15,7 +24,7 @@ ergmm <- function(formula,response=NULL,family="Bernoulli",fam.par=NULL,
     with(control,
          if(sample.size%%threads || (burnin/interval)%%threads)
          stop("Please make the MCMC sample size and the ratio burnin/interval a multiple of the number of threads."))
-    if(!require(snowFT))
+    if(!requireNamespace("snowFT", quietly=TRUE))
       stop("Package 'snowFT' is required for multithreaded MCMC.")
   }
   

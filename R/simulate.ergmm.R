@@ -1,3 +1,12 @@
+#  File R/simulate.ergmm.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 simulate.ergmm<-function(object, nsim=1, seed=NULL,...){
   extraneous.argcheck(...)
   
@@ -92,6 +101,10 @@ sim.1.ergmm<-function(model,par,prior=list()){
     if(is.null(mypar[["receiver.var"]]))
       mypar[["receiver.var"]]<-with(prior,receiver.var*receiver.var.df/rchisq(1,receiver.var.df))
     mypar[["receiver"]]<-rnorm(nv,0,sqrt(mypar[["receiver.var"]]))
+  }
+
+  if(model[["dispersion"]] && is.null(mypar[["dispersion"]])){
+    mypar[["dispersion"]]<-with(prior,dispersion*dispersion.df/rchisq(1,dispersion.df))
   }
 
   eta<-ergmm.eta(model,mypar)

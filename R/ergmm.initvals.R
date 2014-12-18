@@ -1,3 +1,12 @@
+#  File R/ergmm.initvals.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 ergmm.initvals <- function(model,user.start,prior,control){
   if(control[["verbose"]]) cat("Generating initial values for MCMC:\n")
   need.to.fit<-list(beta=model[["p"]]>0 && is.null(user.start[["beta"]]), ## beta
@@ -11,7 +20,8 @@ ergmm.initvals <- function(model,user.start,prior,control){
                     Z.pK=model[["G"]]>0 && is.null(user.start[["pZ.K"]]),
                     sender.var=model[["sender"]] && is.null(user.start[["sender.var"]]), ## sender
                     receiver.var=model[["receiver"]] && is.null(user.start[["receiver.var"]]), ## receiver
-                    sociality.var=model[["sociality"]] && is.null(user.start[["sociality.var"]])
+                    sociality.var=model[["sociality"]] && is.null(user.start[["sociality.var"]]),
+                    dispersion=model[["dispersion"]] && is.null(user.start[["dispersion"]])
                     )
 
   Yg<- model[["Yg"]]
@@ -61,7 +71,7 @@ ergmm.initvals <- function(model,user.start,prior,control){
   }
 
   if(need.to.fit[["Z.mean"]]){
-    pm[["Z.mean"]]<-t(sapply(1:G,function(g) apply(subset(pm[["Z"]][i.keep,],pm[["Z.K"]][i.keep]==g),2,mean)))
+    pm[["Z.mean"]]<-do.call(rbind,lapply(1:G,function(g) apply(subset(pm[["Z"]][i.keep,,drop=FALSE],pm[["Z.K"]][i.keep]==g),2,mean)))
   }
 
   logit<-function(p) log(p/(1-p))
@@ -100,6 +110,10 @@ ergmm.initvals <- function(model,user.start,prior,control){
     pm[["receiver.var"]]<-var(pm[["receiver"]])
   }
 
+  if(need.to.fit[["dispersion"]]){
+    pm[["dispersion"]]<-1
+  }
+
   if(control[["verbose"]]) cat("Finished.\n")
   
   if(control[["verbose"]]) cat("Finding the conditional posterior mode... ")
@@ -115,7 +129,8 @@ ergmm.initvals <- function(model,user.start,prior,control){
                       Z.pK=model[["G"]]>0,
                       sender.var=model[["sender"]], ## sender
                       receiver.var=model[["receiver"]], ## receiver
-                      sociality.var=model[["sociality"]]
+                      sociality.var=model[["sociality"]],
+                      dispersion=model[["dispersion"]]
                       )
     user.start<-list()
   }

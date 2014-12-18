@@ -1,3 +1,12 @@
+/*  File src/mbc_sampler.c in package latentnet, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
+ *
+ *  This software is distributed under the GPL-3 license.  It is free,
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
+ *
+ *  Copyright 2003-2014 Statnet Commons
+ */
 /*********************************************/
 /* Bayesian model-based clustering routines. */
 /*********************************************/
@@ -131,6 +140,7 @@ void MBC_MCMC_init(unsigned int sample_size,
 			  0,
 			  NULL,
 			  0,
+			  0, // dispersion
 			  Z_K, // Z_K
 			  0, // llk
 			  NULL, // lpedge
@@ -138,7 +148,8 @@ void MBC_MCMC_init(unsigned int sample_size,
 			  0, // lpLV
 			  0, // lpcoef
 			  0, // lpRE
-			  0 // lpREV
+			  0, // lpREV
+			  0  // lpdispersion
   };
 
   ERGMM_MCMC_MCMCState start = {&state,
@@ -152,6 +163,7 @@ void MBC_MCMC_init(unsigned int sample_size,
 				PROP_NONE, // prop_coef
 				PROP_NONE, // prop_LV
 				PROP_NONE, // prop_REV
+				PROP_NONE, // prop_dispersion
 				FALSE, // after_Gibbs
 				NULL // update_order
   };
@@ -162,6 +174,7 @@ void MBC_MCMC_init(unsigned int sample_size,
 				 NULL, // lpRE
 				 lpLV_mcmc,
 				 NULL, //lpREV,
+				 NULL, //lpdispersion
 				 NULL, // Z
 				 NULL, // Z_rate_move
 				 NULL, // coef
@@ -169,6 +182,7 @@ void MBC_MCMC_init(unsigned int sample_size,
 				 Z_mean_mcmc,Z_var_mcmc,Z_pK_mcmc,
 				 NULL,NULL,
 				 NULL,NULL,
+				 NULL, // dispersion_mcmc
 				 K_mcmc};
 
   if(model.clusters>0)

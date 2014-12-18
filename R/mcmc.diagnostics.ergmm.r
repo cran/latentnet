@@ -1,19 +1,21 @@
-.mcmc.diagnostics <- function(x, ...)
-  UseMethod("mcmc.diagnostics")
-  
-.mcmc.diagnostics.default <- function(x,...){
-  stop("An object must be given as an argument ")
-}
-
-mcmc.diagnostics.ergmm <- function(x,which.diags=c("cor","acf","trace","raftery"),
+#  File R/mcmc.diagnostics.ergmm.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
+mcmc.diagnostics.ergmm <- function(object,which.diags=c("cor","acf","trace","raftery"),
                                    burnin=FALSE,
                                    which.vars=NULL,
                                    vertex.i=c(1),...){
   extraneous.argcheck(...)
   
-  if(is.null(x[["sample"]])) stop("MCMC was not run for this ERGMM fit.")
+  if(is.null(object[["sample"]])) stop("MCMC was not run for this ERGMM fit.")
 
-  x <- as.mcmc.list.ergmm(x,burnin,which.vars,vertex.i)
+  x <- as.mcmc.list.ergmm(object,burnin,which.vars,vertex.i)
   oldask=par("ask")
   on.exit(par(ask=oldask))
   par(ask=dev.interactive())
@@ -76,6 +78,7 @@ as.mcmc.ergmm<-as.mcmc.list.ergmm<-function(x,burnin=FALSE,
                                                            Z=cbind(rep(vertex.i,each=d),rep(1:d,length(vertex.i))),
                                                            sender=vertex.i,
                                                            receiver=vertex.i,
-                                                           sociality=vertex.i) else which.vars,
+                                                           sociality=vertex.i,
+                                                           dispersion=1) else which.vars,
                               start,thin)
 }

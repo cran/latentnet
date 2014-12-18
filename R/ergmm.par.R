@@ -1,9 +1,19 @@
+#  File R/ergmm.par.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 # Utilities for dealing with MCMC output produced by *.MCMC.C functions.
 
 ERGMM.PAR_VAR_NAMES<-c("beta","Z","sender","receiver","sociality",
                        "Z.var","Z.mean","Z.K",
-                       "sender.var","receiver.var","sociality.var")
-ERGMM.PAR_LLK_NAMES<-c("beta","Z","sender","receiver","sociality")
+                       "sender.var","receiver.var","sociality.var",
+                       "dispersion")
+ERGMM.PAR_LLK_NAMES<-c("beta","Z","sender","receiver","sociality","dispersion")
 
 del.iteration<-function(mcmcsample,i){
   for(name in names(mcmcsample)){

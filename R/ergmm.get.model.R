@@ -1,3 +1,12 @@
+#  File R/ergmm.get.model.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 ergmm.get.model <- function(formula,response,family,fam.par,prior){
   
   terms<-terms(formula)
@@ -32,6 +41,7 @@ ergmm.get.model <- function(formula,response,family,fam.par,prior){
               sender=FALSE,
               receiver=FALSE,
               sociality=FALSE,
+              dispersion=FALSE,
               intercept=as.logical(attr(terms,"intercept")),
               prior=list() ## Only here for convenience.
               )
@@ -40,7 +50,10 @@ ergmm.get.model <- function(formula,response,family,fam.par,prior){
 
   latentnet.terms<-.ergmm.available.terms()
   
-  for (term in as.list(attr(terms,"variables"))[-(1:2)]){
+  termlist <- as.list(attr(terms,"variables"))[-(1:2)]
+  
+  for (i in seq_along(termlist)){
+    term <- termlist[[i]]
     if(as.character(if(length(term)>1) term[[1]] else term) %in% latentnet.terms){
       if (is.call(term)){
         init.call<-list()
@@ -54,8 +67,8 @@ ergmm.get.model <- function(formula,response,family,fam.par,prior){
       model <- eval(as.call(init.call), attr(terms,".Environment"))
     }else{
 
-      model <- do.call(.import.ergm.term, c(model=list(model),
-                                           if(is.call(term)) c(list(as.character(term[[1]])), as.list(term)[-1]) else as.character(term)))
+      model <- do.call(.import.ergm.term, c(model=list(model), term.index=i,
+                                           if(is.call(term)) c(list(as.character(term[[1]])), as.character(term)[-1]) else as.character(term)))
     }
   }
 

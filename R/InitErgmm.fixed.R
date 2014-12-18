@@ -1,3 +1,12 @@
+#  File R/InitErgmm.fixed.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 .ergmm.add.fixed<-function(model, X, mean, var, coef.names=NULL, where=c("append","prepend")){
   where <- match.arg(where)
   
@@ -48,10 +57,13 @@
   model
 }
 
-.import.ergm.term <-function(model, term.name, ..., mean=0, var=9){
+.import.ergm.term <-function(model, term.index, term.name, ..., mean=0, var=9){
   Yg<-model[["Yg"]]
   f <- ~Yg
-  f[[3]] <- as.call(c(list(term.name), ...))
+  
+  # this is a stupid hack to pick out one term from the formula; is there a better way?
+  f[[3]] <- as.list(attr(terms(model$formula), 'variables'))[[term.index+2]]
+  #f[[3]] <- as.call(c(list(term.name), ...))
   if(!is.dyad.independent(f)) warning("Term `", term.name, "` induces dyadic dependence. Likelihood will be effectively replaced by pseudolikelihood.", call.=FALSE)
   if(has.loops(Yg)) warning("Imported ergm term `", term.name, "` will set its dyadic covariate for self-loops, X[i,i,k], to 0. Use `loopfactor` and `loopcov` to model self-loops.", call.=FALSE)
   
@@ -150,7 +162,7 @@ InitErgmm.latentcov<-function (model, x, attrname=NULL,
   #Coerce x to an adjacency matrix
   if(is.network(x)){
     xm<-as.matrix.network(x,matrix.type="adjacency",attrname)
-    cn<-attrname
+    cn<-if(!is.null(attrname)) attrname else paste("network",length(model[["X"]])+1)
   }else if(is.character(x)){
     xm<-as.matrix.network(model[["Yg"]],matrix.type="adjacency",x)
     cn<-x

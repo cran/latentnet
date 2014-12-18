@@ -1,12 +1,12 @@
-.gof <- function(object, ...)
-  UseMethod("gof")
-
-.gof.default <- function(object,...) {
-  classes <- setdiff(gsub(pattern="^gof.",replacement="",as.vector(methods("gof"))), "default")
-  stop("Goodness-of-Fit methods have been implemented only for class(es) ",
-       paste.and(paste('"',classes,'"',sep="")), " in the packages loaded.")
-}
-
+#  File R/gof.ergmm.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 gof.ergmm <- function (object, ..., nsim=100,
                       GOF=~idegree+odegree+distance, 
 		      verbose=FALSE) {

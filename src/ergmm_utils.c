@@ -1,3 +1,12 @@
+/*  File src/ergmm_utils.c in package latentnet, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
+ *
+ *  This software is distributed under the GPL-3 license.  It is free,
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
+ *
+ *  Copyright 2003-2014 Statnet Commons
+ */
 /***********************************************************************/
 /* Utility functions, mostly involving higher-level matrix operations. */
 /***********************************************************************/
@@ -82,6 +91,7 @@ void copy_MCMC_Par(ERGMM_MCMC_Model *model, ERGMM_MCMC_Par *source, ERGMM_MCMC_P
   if(source->sender) dest->sender_var=source->sender_var;
   if(!model->sociality && tocopy(receiver)) copy_dvector(source->receiver,dest->receiver,model->verts);
   if(source->receiver) dest->receiver_var=source->receiver_var;
+  if(model->dispersion) dest->dispersion=source->dispersion;
   if(tocopy(Z_K)) copy_ivector((int *) source->Z_K,(int *) dest->Z_K,model->verts);
 #undef tocopy
 

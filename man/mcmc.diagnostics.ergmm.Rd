@@ -1,7 +1,15 @@
+%  File man/mcmc.diagnostics.ergmm.Rd in package latentnet, part of the Statnet suite
+%  of packages for network analysis, http://statnet.org .
+%
+%  This software is distributed under the GPL-3 license.  It is free,
+%  open source, and has the attribution requirements (GPL Section 7) at
+%  http://statnet.org/attribution
+%
+%  Copyright 2003-2014 Statnet Commons
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{mcmc.diagnostics.ergmm}
 \alias{mcmc.diagnostics.ergmm}
 \alias{mcmc.diagnostics}
-\alias{mcmc.diagnostics.default} 
 \title{Conduct MCMC diagnostics on an ERGMM fit}
 \description{
   This function creates simple diagnostic plots for the MCMC sampled
@@ -10,13 +18,13 @@
   and suggests the run length required.
 }
 \usage{
-\method{mcmc.diagnostics}{ergmm}(x,which.diags=c("cor","acf","trace","raftery"),
+\method{mcmc.diagnostics}{ergmm}(object,which.diags=c("cor","acf","trace","raftery"),
                                  burnin=FALSE,
                                  which.vars=NULL,
                                  vertex.i=c(1),\dots)
 }
 \arguments{
-  \item{x}{ An object of class \code{\link[=ergmm.object]{ergmm}}. }
+  \item{object}{ An object of class \code{\link[=ergmm.object]{ergmm}}. }
   \item{which.diags}{A list of diagnostics to produce. "cor" is the
     correlation matrix of the statistics, "acf" plots the
     autocorrelation functions, "trace" produces trace plots and density

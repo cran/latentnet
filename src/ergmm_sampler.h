@@ -1,3 +1,12 @@
+/*  File src/ergmm_sampler.h in package latentnet, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
+ *
+ *  This software is distributed under the GPL-3 license.  It is free,
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
+ *
+ *  Copyright 2003-2014 Statnet Commons
+ */
 #ifndef ERGMM_SAMPLER_H
 #define ERGMM_SAMPLER_H
 
@@ -28,7 +37,7 @@ void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 
 			double *vX,
 			  
-			double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc,
+			double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc, double *lpdispersion_mcmc,
 			   
 			double *vZ_start,
 
@@ -55,6 +64,9 @@ void ERGMM_MCMC_wrapper(int *sample_size, int *interval,
 			double *sender_mcmc, double *receiver_mcmc,
 			double *sender_var_mcmc, double *receiver_var_mcmc,
 
+			double *dispersion_start, double *dispersion_prior,
+			double *dispersion_prior_df, double *dispersion_mcmc,
+
 			int *vobserved_ties,
 			double *deltas,
 			double *coef_eff_sender,
@@ -77,7 +89,7 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 
 		     double ***X,
 
-		     double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc,
+		     double *llk_mcmc, double *lpZ_mcmc, double *lpcoef_mcmc, double *lpRE_mcmc, double *lpLV_mcmc, double *lpREV_mcmc, double *lpdispersion_mcmc,
 
 		     double **Z_start,
 		     double *Z_pK_start, double **Z_mean_start, double *Z_var_start, unsigned int *Z_K_start,
@@ -97,6 +109,9 @@ void ERGMM_MCMC_init(unsigned int sample_size, unsigned int interval,
 		     double receiver_var_prior, double receiver_var_prior_df,
 		     double *sender_mcmc, double *receiver_mcmc,
 		     double *sender_var_mcmc, double *receiver_var_mcmc,
+		     double dispersion_start, double dispersion_prior,
+		     double dispersion_prior_df, double *dispersion_mcmc,
+
 		     unsigned int sociality,
 		     unsigned int **observed_ties,
 

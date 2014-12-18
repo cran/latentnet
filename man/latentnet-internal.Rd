@@ -1,3 +1,12 @@
+%  File man/latentnet-internal.Rd in package latentnet, part of the Statnet suite
+%  of packages for network analysis, http://statnet.org .
+%
+%  This software is distributed under the GPL-3 license.  It is free,
+%  open source, and has the attribution requirements (GPL Section 7) at
+%  http://statnet.org/attribution
+%
+%  Copyright 2003-2014 Statnet Commons
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{latentnet-internal}
 \title{Internal latentnet Objects}
 
@@ -142,6 +151,8 @@
 \alias{ergmm.lpREV.grad}
 \alias{ergmm.lpZ}
 \alias{ergmm.lpZ.grad}
+\alias{ergmm.lpdispersion}
+\alias{ergmm.lpdispersion.grad}
 \alias{ergmm.eta}
 \alias{ergmm.EY}
 \alias{lp.works}

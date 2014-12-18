@@ -1,3 +1,12 @@
+#  File tests/nolatent.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 library(latentnet)
 
 data(sampson)
@@ -25,4 +34,15 @@ print(summary(monks.nm))
 monks.dnm<-ergmm(samplike~nodematch("group",diff=TRUE))
 mcmc.diagnostics(monks.dnm)
 print(summary(monks.dnm))
+
+# tests importing of ergm terms with local variable as inputs
+set.seed(1)
+nw <- samplike
+n <- network.size(samplike)
+covar <- matrix(rbinom(n^2, 1, 0.2), nrow=n)
+covar.nw <- network(covar)
+test3 <- ergmm(nw ~ euclidean(d = 2) + edgecov(covar)) 
+test4 <- ergmm(nw ~ euclidean(d = 2) + edgecov(covar.nw)) 
+
+
 }, "Some non-latent-space")

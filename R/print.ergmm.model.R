@@ -1,3 +1,12 @@
+#  File R/print.ergmm.model.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2014 Statnet Commons
+#######################################################################
 print.ergmm.model<-function(x,...){
   cat("Exponential Random Graph Mixed Model definition\n")
   cat("Formula: ")
@@ -20,4 +29,5 @@ print.ergmm.model<-function(x,...){
   if(x[["sender"]]) cat("- random sender effects\n")
   if(x[["receiver"]]) cat("- random receiver effects\n")
   if(x[["sociality"]]) cat("- random sociality effects\n")
+  if(x[["dispersion"]]) cat("- dispersion parameter\n")
 }
