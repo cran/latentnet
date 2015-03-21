@@ -1,12 +1,3 @@
-#  File R/mcmc.diagnostics.ergmm.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 mcmc.diagnostics.ergmm <- function(object,which.diags=c("cor","acf","trace","raftery"),
                                    burnin=FALSE,
                                    which.vars=NULL,
@@ -54,12 +45,6 @@ mcmc.diagnostics.ergmm <- function(object,which.diags=c("cor","acf","trace","raf
     invisible(rd)
   }
 }
-
-# We have to redefine this generic, since we need to pass additional arguments to as.mcmc().
-as.mcmc<-function(x,...) UseMethod("as.mcmc")
-as.mcmc.default <- function(x, ...) coda:::as.mcmc.default(x)
-as.mcmc.list.default <- function(x, ...) coda:::as.mcmc.list.default(x)
-as.mcmc.mcmc.list <- function(x, ...) coda:::as.mcmc.mcmc.list(x)
 
 as.mcmc.ergmm<-as.mcmc.list.ergmm<-function(x,burnin=FALSE,
                              which.vars=NULL,

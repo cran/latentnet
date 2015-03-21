@@ -1,12 +1,3 @@
-#  File R/ergmm.initvals.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 ergmm.initvals <- function(model,user.start,prior,control){
   if(control[["verbose"]]) cat("Generating initial values for MCMC:\n")
   need.to.fit<-list(beta=model[["p"]]>0 && is.null(user.start[["beta"]]), ## beta
@@ -138,7 +129,7 @@ ergmm.initvals <- function(model,user.start,prior,control){
     if(control[["verbose"]]>1) cat(i,"")
     pm.old<-pm
     pm<-find.mpe(model,pm,
-                 given=merge.lists(list(Z.K=pm[["Z.K"]]),user.start),
+                 given=.merge.lists(list(Z.K=pm[["Z.K"]]),user.start),
                  prior=prior,control=control,fit.vars=need.to.fit)
     if(is.null(pm)) stop("Problem fitting. Starting values may have to be supplied by the user.")
     if(need.to.fit[["Z.K"]])pm[["Z.K"]]<-try(mbc.VII.EM(G,pm[["Z"]],resume=list(Z.mean=pm[["Z.mean"]],Z.var=pm[["Z.var"]],Z.pK=pm[["Z.pK"]]))[["Z.K"]])

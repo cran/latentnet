@@ -1,12 +1,3 @@
-%  File man/ergmm.Rd in package latentnet, part of the Statnet suite
-%  of packages for network analysis, http://statnet.org .
-%
-%  This software is distributed under the GPL-3 license.  It is free,
-%  open source, and has the attribution requirements (GPL Section 7) at
-%  http://statnet.org/attribution
-%
-%  Copyright 2003-2014 Statnet Commons
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{ergmm}
 \alias{ergmm}
 \alias{latent}
@@ -132,14 +123,14 @@ plot(samp.fit)
 #
 # Using Sampson's Monk data, lets fit a latent clustering random effects model
 #
-samp.fit <- ergmm(samplike ~ euclidean(d=2, G=3)+rreceiver)
+samp.fit2 <- ergmm(samplike ~ euclidean(d=2, G=3)+rreceiver)
 #
 # See if we have convergence in the MCMC
-mcmc.diagnostics(samp.fit)
+mcmc.diagnostics(samp.fit2)
 #
 # Plot the fit.
 #
-plot(samp.fit)
+plot(samp.fit2, pie=TRUE)
 }
 }
 \keyword{graphs}

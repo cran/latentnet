@@ -1,16 +1,8 @@
-#  File R/summary.ergmm.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 summary.ergmm <- function (object, point.est=c(
                                      if(!is.null(object[["mle"]])) "mle",
-                                     if(!is.null(object[["sample"]])) c("pmean","mkl")
-                                     ), quantiles=c(.025,.975),se="mle"%in%point.est,...)
+                                     if(!is.null(object[["sample"]])) c("pmean","mkl")),
+                           quantiles=c(.025,.975),se="mle"%in%point.est,
+                           bic.eff.obs=c("ties", "dyads", "actors"), ...)
 {
   extraneous.argcheck(...)
   ## Just for convenience.
@@ -158,8 +150,8 @@ summary.ergmm <- function (object, point.est=c(
     summ[["pmode"]]<-object[["pmode"]]
   }
 
-  if(!is.null(object[["mkl"]])){
-    summ[["bic"]]<-bic.ergmm(object)
+  if(!is.null(object[["mkl"]]) && !is.null(bic.eff.obs)){
+    summ[["bic"]]<-bic.ergmm(object, eff.obs = bic.eff.obs, ...)
   }
 
   class(summ)<-'summary.ergmm'
@@ -244,7 +236,8 @@ print.summary.ergmm<-function(x,...){
   }
 }
 
-bic.ergmm<-function(object){
+bic.ergmm<-function(object, eff.obs=c("ties", "dyads", "actors"), ...){
+  extraneous.argcheck(...)
   if(is.null(object[["mkl"]])){
     stop("MKL estimates were not computed for this fit.")
   }
@@ -253,9 +246,17 @@ bic.ergmm<-function(object){
 
   n<-network.size(model[["Yg"]])
   
+  if(is.character(eff.obs)){
+    eff.obs <- switch(match.arg(eff.obs),
+                      ties = {if(!all(match(model[["Ym"]], c(0,1)) > 0, na.rm=TRUE)) warning('Number of "ties" in a valued network may not be well-defined.'); network.edgecount(model[["Yg"]])},
+                      dyads = network.dyadcount(model[["Yg"]]),
+                      actors = n)
+  }
+  
+  
   condZRE<-with(object,find.mle(model,mkl,given=list(Z=mkl[["Z"]],sender=mkl[["sender"]],receiver=mkl[["receiver"]],sociality=mkl[["sociality"]]),control=object[["control"]]))
 
-  bic<-with(model,list(Y = -2*condZRE[["lpY"]] + (p+n*d + (sender + receiver + sociality)*n )*log(n),
+  bic<-with(model,list(Y = -2*condZRE[["lpY"]] + (p)*log(eff.obs),
                               Z =
                               if(d>0){
                                 if(G>0){
@@ -277,8 +278,10 @@ bic.ergmm<-function(object){
                               )
             )
 
-  if(model[["sender"]] || model[["receiver"]] || model[["sociality"]] || model[["G"]]==0)
-    warning("Theory for BIC has not been developed for random actor (sender, receiver, and sociality) effects. Similarly, it may not be appropriate to use BIC to compare clustered models with the unclustered model. Their use in latentnet is entirely heuristic.")
+  if(!.latentnetEnv$BIC.warned){
+    message("NOTE: It is not certain whether it is appropriate to use latentnet's BIC to select latent space dimension, whether or not to include actor-specific random effects, and to compare clustered models with the unclustered model.")
+    .latentnetEnv$BIC.warned <- TRUE
+  }
   
   bic[["overall"]]<-sum(unlist(bic))
   

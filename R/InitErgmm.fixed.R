@@ -1,12 +1,3 @@
-#  File R/InitErgmm.fixed.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 .ergmm.add.fixed<-function(model, X, mean, var, coef.names=NULL, where=c("append","prepend")){
   where <- match.arg(where)
   
@@ -168,7 +159,8 @@ InitErgmm.latentcov<-function (model, x, attrname=NULL,
     cn<-x
   }else{
     xm<-as.matrix(x)
-    cn<-if(!is.null(attrname)) attrname else paste("matrix",length(model[["X"]])+1)
+    cn<-if(!is.null(attrname)) attrname else 
+				paste("latentcov", as.character(sys.call(0)[[3]]),	sep = ".")
   }
 
   .ergmm.add.fixed(model, xm, mean, var, cn)

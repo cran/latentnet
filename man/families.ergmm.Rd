@@ -1,12 +1,3 @@
-%  File man/families.ergmm.Rd in package latentnet, part of the Statnet suite
-%  of packages for network analysis, http://statnet.org .
-%
-%  This software is distributed under the GPL-3 license.  It is free,
-%  open source, and has the attribution requirements (GPL Section 7) at
-%  http://statnet.org/attribution
-%
-%  Copyright 2003-2014 Statnet Commons
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{families.ergmm}
 \alias{families.ergmm}
 \alias{family}
@@ -33,7 +24,6 @@
 \alias{EY.fs}
 \alias{EY.Poisson.log}
 \alias{EY.normal.identity}
-\alias{mk.lp.optim.fs}
 \alias{pY.fs}
 \alias{pY.Poisson.log}
 \alias{pY.Bernoulli.logit}

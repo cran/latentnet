@@ -1,12 +1,3 @@
-#  File R/ergmm.MCMC.C.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 ### ergmm.MCMC.C: This is a pretty minimal R function that prepares the R data to be
 ### passed into the C function, calls the C function to estimate the latent space model,
 ### and then puts the C data back into readable R storage. The hope is to separate the
@@ -261,6 +252,7 @@ ergmm.MCMC.snowFT<-function(threads, reps, model.l, start.l, prior.l, control.l,
                                          function(i) lpsum(mcmc.out.l[[i]][["mcmc.pmode"]])))]][["mcmc.pmode"]]
   result.list<-list(sample=list(),mcmc.mle=mcmc.mle,mcmc.pmode=mcmc.pmode)
   for(i in 1:length(mcmc.out.l)) result.list[["sample"]][[i]]<-mcmc.out.l[[i]][["sample"]]
+  class(result.list$sample) <- "ergmm.mcmc.list.list"
   result.list
 }
 

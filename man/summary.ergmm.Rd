@@ -1,12 +1,3 @@
-%  File man/summary.ergmm.Rd in package latentnet, part of the Statnet suite
-%  of packages for network analysis, http://statnet.org .
-%
-%  This software is distributed under the GPL-3 license.  It is free,
-%  open source, and has the attribution requirements (GPL Section 7) at
-%  http://statnet.org/attribution
-%
-%  Copyright 2003-2014 Statnet Commons
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{summary.ergmm}
 \alias{summary.ergmm}
 \alias{print.summary.ergmm}
@@ -21,9 +12,10 @@
 \method{summary}{ergmm}(object, point.est=c(
                                      if(!is.null(object[["mle"]])) "mle",
                                      if(!is.null(object[["sample"]])) c("pmean","mkl")
-                                     ), quantiles=c(.025,.975),se="mle"\%in\%point.est,\dots)
+                                     ), quantiles=c(.025,.975),se="mle"\%in\%point.est,
+                                     bic.eff.obs=c("ties", "dyads", "actors"),\dots)
 
-bic.ergmm(object)
+bic.ergmm(object, eff.obs=c("ties", "dyads", "actors"), ...)
 }
 
 \arguments{
@@ -35,8 +27,28 @@ bic.ergmm(object)
   \code{"mkl"} (if MCMC was run).}
   \item{quantiles}{ Posterior quantiles (credible intervals) to compute. }
   \item{se}{ Whether to compute standard errors. Defaults to \code{TRUE}
-  if MLE was fit.}
-  \item{\dots}{Additional arguments. Currently unused.}
+    if MLE was fit.}
+  \item{eff.obs, bic.eff.obs}{What effective sample size to use for BIC calculation?
+    \describe{
+      
+      \item{\code{"ties"}}{the number of non-missing ties in the
+	network. This is the approach recommended by Handcock et
+	al. (2007) and the default. Not well-defined for valued networks.}
+
+      \item{\code{"dyads"}}{the number of non-missing dyads (potential
+	ties) in the network.}
+
+      \item{\code{"actors"}}{the number of actors in the network. The
+	default prior to 2.7.0.}
+
+      \item{a number}{to specify a specific sample size.}
+
+      \item{\code{NULL}}{Don't compute the BIC at all. Mostly for
+	internal use.}
+    }
+  }
+      
+  \item{\dots}{Additional arguments. }
 }
 \value{
   For \code{summary}, an object of class
@@ -44,10 +56,40 @@ bic.ergmm(object)
   available.
 
   The BICs are available as the element "bic" of the object
-  returned. Note that BIC computed for the random effects models may not
-  be correct.
-
+  returned.
+  
   \code{bic.ergmm} returns the BIC for the model directly.
+}
+\details{
+  Note that BIC computed for the random effects models uses the
+  same formualtion as Handcock et al., so it is likely correct, but
+  has not been peer-reviewed.
+
+  This BIC can be (reasonably) safely used to select the number of
+  clusters or which fixed effects to include in the model. It is not
+  clear whether it is appropriate to use this BIC to select the
+  dimension of latent space and whether or not to include random actor
+  effects. These considerations are independent of the bug described
+  below.
+
+  Prior to version 2.7.0, there was a bug in BIC calculation that used
+  \eqn{p + n(d+r+s)} as the sample size (where \eqn{p} is the number of
+  fixed effects, \eqn{n} the number of actors, \eqn{d}, the latent space
+  dimension, and \eqn{r} and \eqn{s} indicators of presence of sender
+  and receiver (or sociality) effects). This value should have been just
+  \eqn{p}.
+
+  The following applications could have produced different results:
+  \itemize{
+    \item{Using the BIC to select latent space dimension.}
+    \item{Using the BIC to decide whether or not to include random
+      effects.}
+  }
+  The following applications could not (i.e., would be off by a constant):
+  \itemize{
+    \item{Using the BIC to select the number of clusters.}
+    \item{Using the BIC to select the fixed effects to be used.}
+  }
 }
 \seealso{ \code{\link{ergmm.object}},
   \code{\link{ergmm}}
@@ -56,7 +98,13 @@ bic.ergmm(object)
 \references{ Chris Fraley and Adrian E. Raftery
   (2002). \emph{Model-based clustering, discriminant analysis, and
   density estimation}. Journal of the American Statistical Association,
-  97(458), 611-631.
+97(458), 611-631.
+
+  Mark S. Handcock, Adrian E. Raftery and Jeremy Tantrum (2007).
+ \emph{Model-Based Clustering for Social Networks}.
+ Journal of the Royal Statistical Society: Series A (Statistics in
+ Society), 170(2), 301-354.
+
 }
 
 \examples{

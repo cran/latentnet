@@ -1,12 +1,3 @@
-%  File man/davis.Rd in package latentnet, part of the Statnet suite
-%  of packages for network analysis, http://statnet.org .
-%
-%  This software is distributed under the GPL-3 license.  It is free,
-%  open source, and has the attribution requirements (GPL Section 7) at
-%  http://statnet.org/attribution
-%
-%  Copyright 2003-2014 Statnet Commons
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{davis}
 \title{Southern Women Data Set (Davis) as a bipartite ``network'' object}
 \alias{davis}
@@ -103,11 +94,6 @@ this data set is protected by the Creative Commons License
 \url{http://creativecommons.org/licenses/by-nc-nd/2.5/}.
 
 When publishing results obtained using this data set the original authors
-should be cited.  In addition this package should be cited as:
-
-Mark S. Handcock, David Hunter, Carter T. Butts, Steven M. Goodreau,
-and Martina Morris. 2003 
-\emph{statnet: An R package for the Statistical Modeling of Social Networks}
-\url{http://www.csde.washington.edu/statnet}.
+should be cited.  In addition this package should be cited.
 }
 \keyword{datasets}

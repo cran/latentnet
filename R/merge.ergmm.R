@@ -1,12 +1,3 @@
-#  File R/merge.ergmm.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 ## A routine to merge replications of ergmm calls with same inputs
 ## but different random seeds and/or starting values.
 
@@ -64,7 +55,7 @@ combine.2ergmm<-function(fit1,fit2){
   fit1[["sampling.start"]]<-c(fit1[["sampling.start"]],fit2[["sampling.start"]])
 
   # MCMC sample itself
-  fit1[["sample"]]<-stack.ergmm.par.list.list(c(unstack.ergmm.par.list(fit1[["sample"]]),unstack.ergmm.par.list(fit2[["sample"]])))
+  fit1[["sample"]]<-.stack.ergmm.par.list.list(c(unstack.ergmm.par.list(fit1[["sample"]]),unstack.ergmm.par.list(fit2[["sample"]])))
 
   # Control
   if(!("controls" %in% names(fit1)))

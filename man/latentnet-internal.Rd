@@ -1,123 +1,5 @@
-%  File man/latentnet-internal.Rd in package latentnet, part of the Statnet suite
-%  of packages for network analysis, http://statnet.org .
-%
-%  This software is distributed under the GPL-3 license.  It is free,
-%  open source, and has the attribution requirements (GPL Section 7) at
-%  http://statnet.org/attribution
-%
-%  Copyright 2003-2014 Statnet Commons
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \name{latentnet-internal}
 \title{Internal latentnet Objects}
-
-%
-% Genuinely internal
-%
-
-\alias{nterms.model}
-\alias{ergmm.tofit.resolve}
-\alias{extraneous.argcheck}
-\alias{inv.fit.vars}
-\alias{is.latent}
-\alias{is.latent.cluster}
-\alias{is.receiver}
-\alias{is.sender}
- 
-\alias{pack.optim}
-\alias{path.to.me}   
-\alias{proc.sample.ergmm}
-\alias{proc.Z.mean.C} 
-\alias{reg.fit.vars}
-
-\alias{not.given}
-\alias{nullapply}
-\alias{thin.ergmm}
-\alias{trimmed.mean}
-\alias{unpack.optim}  
-
-\alias{ergmm.tuner}
-\alias{ergmm.labelswitch}
-\alias{klswitch.C}
-\alias{labelswitch.sample.ergmm}
-\alias{which.perm.nearest}
-\alias{ergmm.MCMCacf} 
-\alias{ergmm.permutation}
-\alias{ergmm.statseval}
-
-\alias{FIT_ALL}
-\alias{FIT_MLE}
-\alias{ERGMM.PAR_LLK_NAMES}
-\alias{ERGMM.PAR_VAR_NAMES}
-\alias{PRIOR_NAMES}
-
-\alias{bayesmbc}
-\alias{bayesmbc.MCMC.C}
-
-\alias{dsclinvchisq}
-\alias{nlog.double.eps}
-\alias{robust.inverse}
-
-\alias{coords.1D} 
-\alias{ergmm.drawcircle}
-\alias{ergmm.drawpie}
-\alias{ergmm.midarrow}
-\alias{ergmm.plotting.region}
-\alias{ergmm.plotting.vertex.radius} 
-\alias{THra3d}
-\alias{THron3d}
-
-\alias{ergmm.fit.deps}
-\alias{ergmm.geodesicmatrix}
-\alias{ergmm.geodesicmatrix.edgelist}
-\alias{ergmm.get.model}
-\alias{ergmm.initvals}
-
-\alias{GS.orth.matrix} 
-\alias{P.free.all}
-\alias{procOPA}
-\alias{procOPA.default}
-\alias{procOPA.ergmm.model}
-
-\alias{cmp.lists}
-\alias{merge.lists}
-\alias{sum.lists}
-\alias{filter.list}
-\alias{zero.list}
-
-\alias{best.avail.Z.K.ref.ergmm}
-\alias{best.avail.Z.ref.ergmm}
-
-\alias{gmmajump}
-
-\alias{ergmm.MCMC.C}
-\alias{ergmm.MCMC.snowFT}
-\alias{ergmm.MCMC.snowFT.slave}
-\alias{run.proposal}
-\alias{run.proposal.snowFT}
-\alias{run.proposal.snowFT.slave}
-\alias{bayesmbc.snowFT}
-\alias{klswitch.snowFT}
-\alias{klswitch.step2.snowFT.slave}
-\alias{backoff.check}
-
-\alias{seldrop}
-\alias{sim.1.ergmm}
-\alias{switch.Q.K}
-\alias{labelswitch.K}
-\alias{get.beta.eff}
-\alias{scale.ergmm.model}
-\alias{scale}
-\alias{get.beta.ext}
-\alias{as.mcmc}
-\alias{as.mcmc.default}
-\alias{as.mcmc.mcmc.list}
-\alias{as.mcmc.list.default}
-
-\alias{post.predict.C}
-\alias{post.predict.R}
-
-\alias{combine.2ergmm}
-
 
 %
 % These might be worth documenting
@@ -176,11 +58,11 @@
 \alias{xtabs.ergmm}
 \alias{clust.homogeneity}
 
-\alias{procr}
-\alias{procr.ergmm.model}
-\alias{procr.matrix}
-\alias{procr.sample.ergmm}
-\alias{procrustes.Z.mean.C}
+%% \alias{procr}
+%% \alias{procr.ergmm.model}
+%% \alias{procr.matrix}
+%% \alias{procr.sample.ergmm}
+%% \alias{procrustes.Z.mean.C}
 
 \description{
   Internal latentnet functions.

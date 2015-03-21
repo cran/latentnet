@@ -1,12 +1,3 @@
-#  File R/plot.ergmm.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
-#
-#  This software is distributed under the GPL-3 license.  It is free,
-#  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
-#
-#  Copyright 2003-2014 Statnet Commons
-#######################################################################
 plot3d.ergmm<-function(x,...){
   plot.ergmm(x,rgl=TRUE,...)
 }
@@ -117,7 +108,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
                     deparse(substitute(x)),sep="")
 
   }else if(what=="mle"){
-    summ<-summary(x,point.est=c("mle"),se=FALSE)
+    summ<-summary(x,point.est=c("mle"),se=FALSE, bic.eff.obs=NULL)
     Z.pos <- summ[["mle"]][["Z"]]
     summ<-summ[["mle"]]
     Z.mean<-summ[["Z.mean"]]
@@ -130,7 +121,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
                     deparse(substitute(x)))
 
   }else if(what=="pmean"){
-    summ<-summary(x,point.est=c("pmean"))
+    summ<-summary(x,point.est=c("pmean"), bic.eff.obs=NULL)
     Z.pos <- summ[["pmean"]][["Z"]]
     summ<-summ[["pmean"]]
     Z.mean<-summ[["Z.mean"]]
@@ -142,7 +133,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
                     deparse(substitute(x)))
 
   }else if(what=="mkl"){
-    summ<-summary(x,point.est=c("pmean","mkl"))
+    summ<-summary(x,point.est=c("pmean","mkl"), bic.eff.obs=NULL)
     Z.pos <- summ[["mkl"]][["Z"]]
     if(!is.null(x[["mkl"]][["mbc"]])){
       Z.mean<-summ[["mkl"]][["mbc"]][["Z.mean"]]
@@ -160,7 +151,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
                     deparse(substitute(x)))
 
   }else if(what=="pmode"){
-    summ<-summary(x,point.est=c("pmode"))
+    summ<-summary(x,point.est=c("pmode"), bic.eff.obs=NULL)
     Z.pos <- summ[["pmode"]][["Z"]]
     summ<-summ[["pmode"]]
     Z.mean<-summ[["Z.mean"]]
@@ -172,7 +163,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
                     deparse(substitute(x)))
 
   }else if(what=="cloud"){
-    summ<-summary(x,point.est=c("pmean","mkl"))
+    summ<-summary(x,point.est=c("pmean","mkl"), bic.eff.obs=NULL)
     Z.pos <- summ[["mkl"]][["Z"]]
     if(d!=2) stop("Cloud plots are only available for 2D latent space models.")
     
@@ -204,7 +195,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
       density.par[["mfrow"]]<-rep(min(ceiling(sqrt(wanted)),4),2)
     }
     
-    summ<-summary(x,point.est=c("pmean","mkl"))
+    summ<-summary(x,point.est=c("pmean","mkl"), bic.eff.obs=NULL)
     Z.pos <- summ[["mkl"]][["Z"]]
     if(d!=2) stop("Density plots are only available for 2D latent space models.")
 
@@ -258,7 +249,7 @@ plot.ergmm <- function(x, ..., vertex.cex=1, vertex.sides=16*ceiling(sqrt(vertex
   }else stop("Invalid latent space position estimate type.")
 
   if(!is.null(Z.ref)){
-    R<-procr(Z.pos,Z.ref,scale=FALSE,reflect=TRUE)
+    R<-.procr(Z.pos,Z.ref,scale=FALSE,reflect=TRUE)
     Z.pos<-Z.pos%*%R
     if(G) Z.mean<-Z.mean%*%R
   }

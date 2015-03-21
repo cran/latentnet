@@ -1,12 +1,3 @@
-/*  File src/post_predict.c in package latentnet, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
- *
- *  This software is distributed under the GPL-3 license.  It is free,
- *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
- *
- *  Copyright 2003-2014 Statnet Commons
- */
 /**********************************************************/
 /* Utilities for computing posterior dyad expected values */
 /**********************************************************/
@@ -103,7 +94,7 @@ void post_pred_wrapper(int *S,
 			    0, // clusters
 			    res[2], // sociality
           res[3], // dispersion
-			    latent_eff ? ERGMM_MCMC_latent_eff[*latent_eff-1] : NULL
+			    *latent_eff ? ERGMM_MCMC_latent_eff[*latent_eff-1] : NULL
   };
   
   for(unsigned int s=0; s<*S; s++){

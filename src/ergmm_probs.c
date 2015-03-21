@@ -1,12 +1,3 @@
-/*  File src/ergmm_probs.c in package latentnet, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
- *
- *  This software is distributed under the GPL-3 license.  It is free,
- *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
- *
- *  Copyright 2003-2014 Statnet Commons
- */
 /******************************************************/
 /* Functions to compute probabilities and likelihoods */
 /******************************************************/
@@ -88,7 +79,7 @@ void ERGMM_lp_Y_wrapper(int *n, int *p, int *d, int *latent_eff, int *family, in
 			    0,
 			    res[2],
 			    dispersion!=0?1:0,
-			    latent_eff ? ERGMM_MCMC_latent_eff[*latent_eff-1] : NULL
+			    *latent_eff ? ERGMM_MCMC_latent_eff[*latent_eff-1] : NULL
   };
   
   // Precompute the normalizing constant.
