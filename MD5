@@ -1,6 +1,6 @@
-e00b60f57c686b06736bc3bccca27f7f *ChangeLog
-6630ef7d4385e289d3d003a35dc400e0 *DESCRIPTION
-c0e2705f3891df1d85d242f1ef836be6 *LICENSE
+4496c095f2279ab3f5f1c44384f012a6 *ChangeLog
+2cd2d5a21ce266cfe1133c2d4cd24adc *DESCRIPTION
+8baf15f2d7dd07ba006028098a8b2208 *LICENSE
 3c3edb7dfedb43817f1749444f8ef3a9 *NAMESPACE
 4c1f01db32ec6603571fcd7eed84b506 *R/InitErgmm.fixed.R
 f5f65644642bb79d991c26f38182bf1a *R/InitErgmm.latent.R
@@ -32,10 +32,10 @@ f22e5d91f4ee0367f5d089e356884323 *R/gof.ergmm.R
 73b66abeb58754978f71ac11fa59c61c *R/print.ergmm.R
 4227fe26ce56a5dafa790e04c81f4b53 *R/print.ergmm.model.R
 3b8dff4da2bf98718b948fc5e4c10fc0 *R/procrustes.R
-223d80fdbba0556498e9d04e045b9de5 *R/simulate.ergmm.R
-208676de933c7f42cc8cfb4d06156a50 *R/summary.ergmm.R
+5ec9e3588bf183a11f41840908156d72 *R/simulate.ergmm.R
+dfa7a3f25d25be3e1da281f608394041 *R/summary.ergmm.R
 f8aa93abf0804041b77343df46100533 *R/utilities.R
-1987aba5a719490effce5e25f543526a *R/zzz.R
+10a553a0dfc79f5f2a746cb08451d706 *R/zzz.R
 586a1c4b81b6289c9045d8fde70977c0 *data/davis.RData
 ae3667d2e6d60fc5ced6b0f07a1e9090 *data/sampson.RData
 cfb863ef6ff1570812623f27c4a81ba7 *data/tribes.RData
@@ -58,7 +58,7 @@ d19b77301a86d8aad576059caab4a0f5 *man/plot.ergmm.Rd
 f07570d4d6250a2b312c3c487fd17b93 *man/predict.ergmm.Rd
 138a234a35bc938777c76f9a78511c1f *man/sampson.Rd
 fca818fa7ff42c3f5bca2bd0b7c6bf86 *man/simulate.ergmm.Rd
-1f187fdecd38adf9ff4c89dd262ce777 *man/summary.ergmm.Rd
+055c1b9697cb7c71e5994c04ba5fd9ba *man/summary.ergmm.Rd
 23580f3281f8ffd5415f8587bc50dea5 *man/terms.ergmm.Rd
 8a7e600d2b5658e9f618facef73071a3 *man/tribes.Rd
 2a6f9e9e044a78154d3cfda5936d6f48 *src/Makevars
@@ -91,10 +91,9 @@ e7c27437b949a1dd761c61aa0d48e236 *src/post_predict.h
 2e43580d6ac27233ff43e241ddebfd3d *src/procrustes.h
 1d6a8dc76cd0f23b8315275a5f24a12a *src/wishart.c
 744d9d7e5707e3735b3fd86ec68eb181 *src/wishart.h
-01013943b8718ad0aa2bc460d4dd8845 *tests/examples.R
 b6e51793d4e9ab2e9d444670b9f1e920 *tests/missing.R
 f3b359d37d37a69b43ddea0dad1eb88e *tests/nolatent.R
 2ce49fc7c595f3ac254b8e69213f09e3 *tests/nomcmc.R
 2621b381ff78988ab0fce1df51c542bf *tests/nomixing.R
-d8760f798d3810e142742148f7742e8f *tests/normal.R
-64440238f047fcd4d7ac32b5018d29df *tests/onlymcmc.R
+b32506c877222940c66633f76d7d60ce *tests/normal.R
+dd3c60fb5c51cc3177bc8bd4523fad4d *tests/onlymcmc.R

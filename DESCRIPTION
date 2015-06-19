@@ -1,6 +1,6 @@
 Package: latentnet
-Version: 2.7.0
-Date: 2015-03-21
+Version: 2.7.1
+Date: 2015-06-19
 Title: Latent Position and Cluster Models for Statistical Networks
 Authors@R: c(
 	   person("Pavel N.", "Krivitsky", role=c("aut","cre"), email="pavel@uow.edu.au"),
@@ -18,7 +18,7 @@ Suggests: KernSmooth, snowFT, rgl, heplots, rlecuyer, ergm.userterms
 License: GPL-3 + file LICENSE
 URL: http://www.statnet.org
 NeedsCompilation: yes
-Packaged: 2015-03-22 06:59:47 UTC; pavel
+Packaged: 2015-06-19 15:31:50 UTC; pavel
 Author: Pavel N. Krivitsky [aut, cre],
   Mark S. Handcock [aut],
   Susan M. Shortreed [ctb],
@@ -28,4 +28,4 @@ Author: Pavel N. Krivitsky [aut, cre],
   Kirk Li [ctb]
 Maintainer: Pavel N. Krivitsky <pavel@uow.edu.au>
 Repository: CRAN
-Date/Publication: 2015-03-22 08:55:25
+Date/Publication: 2015-06-20 00:36:25
