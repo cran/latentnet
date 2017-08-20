@@ -1,3 +1,12 @@
+/*  File src/matrix_utils.c in package latentnet, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
+ *
+ *  This software is distributed under the GPL-3 license.  It is free,
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
+ *
+ *  Copyright 2003-2017 Statnet Commons
+ */
 /****************************************/
 /* Matrix, vector, and memory utilities */
 /****************************************/
@@ -28,7 +37,7 @@ double *dvector(unsigned int n){
   return a;
 }
 
-/*  Allocates memory for a vector of doubles of length n */
+/*  Allocates memory for a vector of ints of length n */
 int *ivector(unsigned int n){
   if(n<=0) return NULL;
 
@@ -114,7 +123,7 @@ double ***d3array(unsigned int n1,unsigned int n2, unsigned int n3)
   return A;
 }
 
-/*  Allocates memory for an n by m matrix of doubles */
+/*  Allocates memory for an n by m matrix of integers */
 int **imatrix(unsigned int n,unsigned int m)
 {
   if(n<=0 || m<=0) return NULL;

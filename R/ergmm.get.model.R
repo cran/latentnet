@@ -1,3 +1,12 @@
+#  File R/ergmm.get.model.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 ergmm.get.model <- function(formula,response,family,fam.par,prior){
   
   terms<-terms(formula)
@@ -123,7 +132,8 @@ get.beta.eff<-function(model){
 ##               }
 ##                      ))
 ## }
-  
+
+#' @importFrom utils find
 .ergmm.available.terms <- function() sub(grep(x=c(sapply(suppressWarnings(find("^InitErgmm.*$",simple.words=FALSE,mode="function")), ls)),pattern="^InitErgmm.*$",perl=TRUE,value=TRUE),pattern="^InitErgmm\\.",replacement="",perl=TRUE)
 
 .ergmm.add.intercept <- function(model){

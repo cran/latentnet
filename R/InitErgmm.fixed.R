@@ -1,3 +1,12 @@
+#  File R/InitErgmm.fixed.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 .ergmm.add.fixed<-function(model, X, mean, var, coef.names=NULL, where=c("append","prepend")){
   where <- match.arg(where)
   
@@ -29,10 +38,10 @@
   for(i in seq_len(p)){
     xm <- seldrop(X[,,i,drop=FALSE],3)
     # If the network is undirected, symmetrize:
-    if(!is.directed(Yg)) xm <- xm + t(xm)
+    if(!is.directed(Yg)) xm[lower.tri(xm)] <- t(xm)[lower.tri(xm)]
     
     # If the network is bipartite and the matrix has b1*b2 dimensions,
-    # it needs to be augment to (b1+b2)*(b1+b2):
+    # it needs to be augmented to (b1+b2)*(b1+b2):
     if(is.bipartite(Yg)
        && all(dim(xm)==c(Yg%n%"bipartite", network.size(Yg)-Yg%n%"bipartite")))
       xm <- bipartite.augment(xm)
@@ -52,9 +61,8 @@
   Yg<-model[["Yg"]]
   f <- ~Yg
   
-  # this is a stupid hack to pick out one term from the formula; is there a better way?
-  f[[3]] <- as.list(attr(terms(model$formula), 'variables'))[[term.index+2]]
-  #f[[3]] <- as.call(c(list(term.name), ...))
+  f[[3]] <- statnet.common::term.list.formula(model$formula[[3]])[[term.index]]
+
   if(!is.dyad.independent(f)) warning("Term `", term.name, "` induces dyadic dependence. Likelihood will be effectively replaced by pseudolikelihood.", call.=FALSE)
   if(has.loops(Yg)) warning("Imported ergm term `", term.name, "` will set its dyadic covariate for self-loops, X[i,i,k], to 0. Use `loopfactor` and `loopcov` to model self-loops.", call.=FALSE)
   
@@ -77,6 +85,7 @@ InitErgmm.Intercept<-InitErgmm.intercept<-InitErgmm.1<-function(model, mean=0, v
                    "(Intercept)")
 }
 
+#' @export
 InitErgmm.loops<-function (model, mean=0, var=9){
   if(!has.loops(model[["Yg"]]))
     stop("Self-loop term is  meaningless in a network without self-loops", call.=FALSE)
@@ -89,6 +98,7 @@ InitErgmm.loops<-function (model, mean=0, var=9){
   .ergmm.add.fixed(model, diag(1,network.size(model[["Yg"]]),network.size(model[["Yg"]])), mean, var, "loops")
 }
 
+#' @export
 InitErgmm.loopcov <- function (model, attrname, mean=0, var=9){
   if(!has.loops(model[["Yg"]]))
     stop("Self-loop covariates are meaningless in a network without self-loops", call.=FALSE)
@@ -106,6 +116,7 @@ InitErgmm.loopcov <- function (model, attrname, mean=0, var=9){
   .ergmm.add.fixed(model, xm, mean, var, cn)
 }
 
+#' @export
 InitErgmm.loopfactor <- function (model, attrname, base=1, mean=0, var=9){
   if(!has.loops(model[["Yg"]]))
     stop("Self-loop covariates are meaningless in a network without self-loops", call.=FALSE)
@@ -142,6 +153,7 @@ InitErgmm.loopfactor <- function (model, attrname, base=1, mean=0, var=9){
   model
 }
 
+#' @export
 InitErgmm.latentcov<-function (model, x, attrname=NULL,
                                mean=0, var=9) 
 {
@@ -166,6 +178,7 @@ InitErgmm.latentcov<-function (model, x, attrname=NULL,
   .ergmm.add.fixed(model, xm, mean, var, cn)
 }
 
+#' @export
 InitErgmm.sendercov<-function (model, attrname, force.factor=FALSE, mean=0, var=9) 
 {
   if(!has.loops(model[["Yg"]])) warning("Term `sendercov` is deprecated for networks without self-loops. Use `nodeocov`, `nodecov`, `nodeofactor`, or `nodefactor` from package `ergm` instead.")
@@ -199,6 +212,8 @@ InitErgmm.sendercov<-function (model, attrname, force.factor=FALSE, mean=0, var=
   }
   model
 }
+
+#' @export
 InitErgmm.receivercov<-function (model, attrname, force.factor=FALSE, mean=0, var=9) 
 {
   if(!has.loops(model[["Yg"]])) warning("Term `receivercov` is deprecated for networks without self-loops. Use `nodeicov`, `nodecov`, `nodeifactor`, or `nodefactor` from package `ergm` instead.")
@@ -233,6 +248,7 @@ InitErgmm.receivercov<-function (model, attrname, force.factor=FALSE, mean=0, va
   model
 }
 
+#' @export
 InitErgmm.socialitycov<-function (model, attrname, force.factor=FALSE, mean=0, var=9) 
 {
   if(!has.loops(model[["Yg"]])) warning("Term `receivercov` is deprecated for networks without self-loops. Use `nodeicov`, `nodecov`, `nodeifactor`, or `nodefactor` from package `ergm` instead.")

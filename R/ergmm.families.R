@@ -1,3 +1,12 @@
+#  File R/ergmm.families.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 ### family-specific functions
 
 # Here, nlog.double.eps=-log(.Machine[["double.eps"]]) defined in .onLoad is used to
@@ -13,6 +22,7 @@ lpYc.Bernoulli.logit<-function(Y,eta,dispersion=NULL,fam.par=NULL){
 pY.Bernoulli.logit<-function(Y=1,eta,dispersion=NULL,fam.par=NULL){
   ifelse(eta>=.latentnetEnv$nlog.double.eps,exp(eta*(Y-1)),exp(eta*Y)/(exp(eta)+1))
 }
+#' @importFrom stats rbinom
 dlpY.deta.Bernoulli.logit<-function(Y,eta,dispersion=NULL,fam.par=NULL) Y-EY.Bernoulli.logit(eta,fam.par)
 rsm.Bernoulli.logit<-function(eta,dispersion=NULL,fam.par=NULL){
   n<-dim(eta)[1]
@@ -40,6 +50,7 @@ EY.binomial.logit<-function(eta,dispersion=NULL,fam.par) fam.par[["trials"]]/(1+
 
 ## Poisson log
 
+#' @importFrom stats dpois rpois
 lpY.Poisson.log<-function(Y,eta,dispersion=NULL,fam.par=NULL) dpois(Y,EY.Poisson.log(eta,dispersion=NULL,fam.par),TRUE)
 lpYc.Poisson.log<-function(Y,eta,dispersion=NULL,fam.par=NULL) Y*eta-exp(eta)
 pY.Poisson.log<-function(Y,eta,dispersion=NULL,fam.par=NULL) dpois(Y,EY.Poisson.log(eta,dispersion=NULL,fam.par),FALSE)
@@ -52,6 +63,7 @@ EY.Poisson.log<-function(eta,dispersion=NULL,fam.par=NULL) exp(eta)
 
 ## normal identity
 
+#' @importFrom stats dnorm rnorm
 lpY.normal.identity<-function(Y,eta,dispersion=NULL,fam.par=NULL) dnorm(Y,eta,sqrt(dispersion),TRUE)
 lpYc.normal.identity<-function(Y,eta,dispersion=NULL,fam.par=NULL) -(Y-eta)^2/dispersion/2-log(dispersion)/2
 pY.normal.identity<-function(Y,eta,dispersion=NULL,fam.par=NULL) dnorm(Y,eta,sqrt(dispersion),FALSE)

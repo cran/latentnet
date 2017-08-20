@@ -1,3 +1,12 @@
+/*  File src/ergmm_latent_effects.c in package latentnet, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
+ *
+ *  This software is distributed under the GPL-3 license.  It is free,
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
+ *
+ *  Copyright 2003-2017 Statnet Commons
+ */
 /********************************************************/
 /* Types of latent space effects supported by latentnet */
 /********************************************************/
@@ -9,7 +18,8 @@
 
 double (*ERGMM_MCMC_latent_eff[N_LATENT_EFF])(double *u, double *v, unsigned int dim)={
   ERGMM_MCMC_latent_eff_negative_Euclidean_distance,
-  ERGMM_MCMC_latent_eff_dot_product
+  ERGMM_MCMC_latent_eff_dot_product,
+  ERGMM_MCMC_latent_eff_negative_Euclidean_distance2
 };
 
 /* 
@@ -36,3 +46,15 @@ double ERGMM_MCMC_latent_eff_dot_product(double *u, double *v, unsigned int dim)
   return(prod);
 }
 
+/* 
+   2 Negative Euclidean distance squared
+*/ 
+double ERGMM_MCMC_latent_eff_negative_Euclidean_distance2(double *u, double *v, unsigned int dim){
+  unsigned int k;
+  double dist,dist2=0;
+  for(k=0;k<dim;k++){
+    dist=u[k]-v[k];
+    dist2+=dist*dist;
+  }
+  return(-dist2);
+}

@@ -1,6 +1,6 @@
 Package: latentnet
-Version: 2.7.1
-Date: 2015-06-19
+Version: 2.8.0
+Date: 2017-08-20
 Title: Latent Position and Cluster Models for Statistical Networks
 Authors@R: c(
 	   person("Pavel N.", "Krivitsky", role=c("aut","cre"), email="pavel@uow.edu.au"),
@@ -9,23 +9,29 @@ Authors@R: c(
 	   person("Jeremy", "Tantrum", role=c("ctb")),
 	   person("Peter D.", "Hoff", role=c("ctb")),
 	   person("Li","Wang",role=c("ctb"),email="lxwang@gmail.com"),
-           person("Kirk","Li",role=c("ctb"),email="kirkli@uw.edu")
+           person("Kirk","Li",role=c("ctb"),email="kirkli@uw.edu"),
+	   person("Jake","Fisher",role=c("ctb"),email="jcf26@duke.edu"),
+	   person("Jordan T.", "Bates", role=c("ctb"),email="jtbates@gmail.com")	   
 	   )
 Description: Fit and simulate latent position and cluster models for statistical networks. 
 Depends: R (>= 2.8.0), statnet.common, network, ergm (>= 3.2.0)
-Imports: sna, mvtnorm, abind, coda (>= 0.17.1), tools
+Imports: sna, mvtnorm, abind, coda (>= 0.17.1), tools, MASS
 Suggests: KernSmooth, snowFT, rgl, heplots, rlecuyer, ergm.userterms
+BugReports: https://github.com/statnet/latentnet/issues
 License: GPL-3 + file LICENSE
 URL: http://www.statnet.org
+RoxygenNote: 6.0.1
 NeedsCompilation: yes
-Packaged: 2015-06-19 15:31:50 UTC; pavel
+Packaged: 2017-08-20 10:44:13 UTC; pavel
 Author: Pavel N. Krivitsky [aut, cre],
   Mark S. Handcock [aut],
   Susan M. Shortreed [ctb],
   Jeremy Tantrum [ctb],
   Peter D. Hoff [ctb],
   Li Wang [ctb],
-  Kirk Li [ctb]
+  Kirk Li [ctb],
+  Jake Fisher [ctb],
+  Jordan T. Bates [ctb]
 Maintainer: Pavel N. Krivitsky <pavel@uow.edu.au>
 Repository: CRAN
-Date/Publication: 2015-06-20 00:36:25
+Date/Publication: 2017-08-20 14:45:02 UTC

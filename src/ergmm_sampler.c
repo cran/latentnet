@@ -1,3 +1,12 @@
+/*  File src/ergmm_sampler.c in package latentnet, part of the Statnet suite
+ *  of packages for network analysis, http://statnet.org .
+ *
+ *  This software is distributed under the GPL-3 license.  It is free,
+ *  open source, and has the attribution requirements (GPL Section 7) at
+ *  http://statnet.org/attribution
+ *
+ *  Copyright 2003-2017 Statnet Commons
+ */
 /****************************************************************************/
 /* Top-level functions for sampling from an ERGMM's posterior distribution. */
 /****************************************************************************/
@@ -162,7 +171,7 @@ void ERGMM_MCMC_wrapper(int *sample_size,
   for(k=0;k<*p;k++){
     for(i=0;i<*n;i++){
       for(j=0;j<*n;j++){
-	X[k][i][j] = vX[ k*(*n)*(*n) + i*(*n) + j ];
+	X[k][i][j] = vX[ k*(*n)*(*n) + j*(*n) + i ];
       }
     }
   }

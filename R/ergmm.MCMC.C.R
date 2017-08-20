@@ -1,3 +1,12 @@
+#  File R/ergmm.MCMC.C.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 ### ergmm.MCMC.C: This is a pretty minimal R function that prepares the R data to be
 ### passed into the C function, calls the C function to estimate the latent space model,
 ### and then puts the C data back into readable R storage. The hope is to separate the
@@ -11,6 +20,7 @@
 ### to the actual run.
 
 
+#' @useDynLib latentnet
 ergmm.MCMC.C<-function(model, start, prior, control, sample.size=NULL, interval=NULL){
   Ym.noNA<- Ym <-model[["Ym"]]
   Ym.noNA[is.na(Ym.noNA)]<-0
@@ -236,6 +246,7 @@ ergmm.MCMC.snowFT<-function(threads, reps, model.l, start.l, prior.l, control.l,
   if(any(l.sizes!=param.sets & l.sizes!=1)) stop("Length of each input list must be either 1 or a single other number.")
 
   if(!requireNamespace("snowFT",quietly=TRUE)) stop("Package 'snowFT' is required for multithreaded MCMC.")
+  #' @importFrom stats runif
   mcmc.out.l<-snowFT::performParallel(threads,rep(1:param.sets,reps),
                               ergmm.MCMC.snowFT.slave,
                               lib=.latentnetEnv$path.to.me,

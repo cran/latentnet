@@ -1,3 +1,12 @@
+#  File R/utilities.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 #
 # Return TRUE iff object x is a ergmm fit object
 # or a latent model
@@ -38,6 +47,7 @@ thin.ergmm<-function(x,by,...){
   x
 }
 
+#' @importFrom stats xtabs
 xtabs.ergmm<-function(x,ref,min.plurality=0){
   ref->Reference
   apply(attr(x[["sample"]],"Q"),1,which.max)->Fitted
@@ -60,6 +70,7 @@ clust.homogeneity<-function(x,ref,soft=TRUE,marg=FALSE){
     p.K<-apply(xtabs.ergmm(x,ref),1,function(y)sum((y/sum(y))^2))    
   }
 
+  #' @importFrom stats weighted.mean
   if(marg) weighted.mean(p.K,tabulate(ref)*(tabulate(ref)-1))
   else p.K
 }

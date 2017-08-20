@@ -1,3 +1,12 @@
+#  File R/ergmm.tuner.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 nterms.model<-function(model){
   (model[["p"]]
    +(if(model[["d"]]) 1 else 0)
@@ -57,6 +66,7 @@ get.sample.deltas<-function(model,sample,control){
     beta.rate<-beta.rate+mean(sample[["beta.rate"]][use.draws])/control[["threads"]]
 
     beta.ext<-get.beta.ext(model,sample)
+    #' @importFrom stats ar
     beta.ext.ar.eff<-1/(1-apply(beta.ext,2,function(b) ar(b,order.max=1,aic=FALSE)$ar))
     acf.adjust<-acf.adjust*beta.ext.ar.eff/exp(mean(log(beta.ext.ar.eff)))
 

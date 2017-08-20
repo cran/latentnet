@@ -1,13 +1,67 @@
+#  File R/simulate.ergmm.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
+#' Draw from the distribution of an Exponential Random Graph Mixed Model
+#' 
+#' If passed a \code{\link[=ergmm.object]{ergmm}} fit object, \code{simulate}
+#' is used to simulate networks from the posterior of an exponetial random
+#' graph mixed model fit. Alternatively, a
+#' \code{ergmm.model} can be passed to
+#' simulate based on a particular parametr configuration.
+#' 
+#' A sample of networks is randomly drawn from the specified model. If a needed
+#' value of \code{par} is missing, it is generated from its prior distribution.
+#' 
+#' @aliases simulate simulate.ergmm.model simulate.ergmm
+#' @param object either an object of class \code{\link[=ergmm.object]{ergmm}}
+#' for posterior simulation, or an object of class
+#' \code{ergmm.model} for a specific model.
+#' @param nsim number of networks to draw (independently)
+#' @param seed random seed to use; defaults to using the current state of the
+#' random number generator
+#' @param par a list with the parameter configuration based on which to
+#' simulate
+#' @param prior a list with the prior distribution parameters that deviate from
+#' their defaults
+#' @param \dots Additional arguments. Currently unused.
+#' @return If \code{nsim = 1}, \code{simulate} returns an object of class
+#' \code{\link[network]{network}}. Otherwise, an object of class
+#' \code{network.series} that is a list consisting of the following elements:
+#' \item{\$formula}{The formula used to generate the sample.}
+#' \item{\$networks}{A list of the generated networks.}
+#' @seealso \code{\link{ergmm}}, \code{ network},
+#' \code{\link[network]{print.network}}
+#' @keywords graphs models nonlinear nonparametric cluster datagen
+#' @examples
+#' 
+#' #
+#' # Fit a short MCMC run: just the MCMC.
+#' #
+#' data(sampson)
+#' gest <- ergmm(samplike ~ euclidean(d=2,G=3),
+#'               control=ergmm.control(burnin=100,interval=5,sample.size=100),tofit="mcmc")
+#' #
+#' # Draw from the posterior
+#' #
+#' g.sim <- simulate(gest)
+#' plot(g.sim)
+#' #
+#' # Draw from the first draw from the posterior
+#' #
+#' g.sim <- with(gest,simulate(model,par=sample[[1]],prior=prior))
+#' plot(g.sim)
+#' @importFrom stats simulate
+#' @export
 simulate.ergmm<-function(object, nsim=1, seed=NULL,...){
   extraneous.argcheck(...)
-  
-  ## If the random seed has been specified, save the old seed, to
-  ## pick up where it left off. If not, don't.
-  if(!is.null(seed)){
-    old.seed<-.Random.seed
-    .Random.seed<-seed
-  }else runif(1) # This is needed to initialize .Random.seed if it isn't already.
-  start.seed<-.Random.seed
+
+  old.seed <- .save_set_seed(seed)
   
   l<-list()
   for(i in 1:nsim){
@@ -15,43 +69,40 @@ simulate.ergmm<-function(object, nsim=1, seed=NULL,...){
     l[[i]]<-sim.1.ergmm(object[["model"]],object[["sample"]][[iter]],object[["prior"]])
   }
   
-  if(!is.null(seed)) .Random.seed<-old.seed
+  .restore_set_seed(old.seed)
 
   if(nsim > 1){
     l <- list(formula = object[["model"]][["formula"]], networks = l,
                      stats = NULL, coef=NULL)
-    attr(l,"class")<-"network.series"
+    attr(l,"class")<-"network.list"
   }else{
     l <- l[[1]]
   }
   return(l)
 }
 
+#' @rdname simulate.ergmm
+#' @export
 simulate.ergmm.model<-function(object,nsim=1,seed=NULL,par,prior=list(),...){
   extraneous.argcheck(...)
-  
-  ## If the random seed has been specified, save the old seed, to
-  ## pick up where it left off. If not, don't.
-  if(!is.null(seed)){
-    old.seed<-.Random.seed
-    .Random.seed<-seed
-  }else runif(1) # This is needed to initialize .Random.seed if it isn't already.
-  start.seed<-.Random.seed
+
+  old.seed <- .save_set_seed(seed)
 
   l<-list()
   for(i in 1:nsim){
     l[[i]]<-sim.1.ergmm(object,par,prior)
   }
   
-  if(!is.null(seed)) .Random.seed<-old.seed
+  .restore_set_seed(old.seed)
 
   if(nsim==1) return(l[[1]])
   else{
-    attr(l,"class")<-"network.series"
+    attr(l,"class")<-"network.list"
     return(l)
   }
 }
-  
+
+#' @importFrom stats rchisq
 sim.1.ergmm<-function(model,par,prior=list()){
   nv<-network.size(model[["Yg"]])
   mypar<-par

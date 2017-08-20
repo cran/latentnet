@@ -1,3 +1,12 @@
+#  File R/ergmm.probs.R in package latentnet, part of the Statnet suite
+#  of packages for network analysis, http://statnet.org .
+#
+#  This software is distributed under the GPL-3 license.  It is free,
+#  open source, and has the attribution requirements (GPL Section 7) at
+#  http://statnet.org/attribution
+#
+#  Copyright 2003-2017 Statnet Commons
+#######################################################################
 not.given<-function(name,theta,given){
   is.null(given[[name]]) && !is.null(theta[[name]])
 }
@@ -380,6 +389,7 @@ find.mpe<-function(model,start,given=list(),prior=list(),control,fit.vars=NULL,o
   G<-model[["G"]]
   d<-model[["d"]]
   
+  #' @importFrom stats optim
   vmpe <- ##try(
               optim(par=start.vals,fn=optim.fs[["f"]],gr=optim.fs[["grad.f"]],
                     method="L-BFGS-B",
@@ -404,7 +414,7 @@ find.mpe<-function(model,start,given=list(),prior=list(),control,fit.vars=NULL,o
 
   mpe<-.merge.lists(mpe,given)
   mpe[["Z.K"]]<-.merge.lists(start,given)[["Z.K"]]
-  mpe[["Z.pK"]]<-if(!is.null(mpe[["Z.K"]])) tabulate(mpe[["Z.K"]])/n
+  mpe[["Z.pK"]]<-if(!is.null(mpe[["Z.K"]])) tabulate(mpe[["Z.K"]],G)/n
   
   if(mlp)
     mpe[["mlp"]]<-ergmm.lp(model,mpe,prior=prior,given=given,opt=opt)
@@ -600,6 +610,7 @@ ergmm.lpBeta.grad<-function(theta,prior,given=list()){
   deriv
 }
 
+#' @importFrom stats dchisq
 dsclinvchisq<-function(x,df,scale=1,log=FALSE){
   if(log) dchisq(df*scale/x,df,log=TRUE)+log(df)+log(scale)-2*log(x)
   else dchisq(df*scale/x,df,log=FALSE)*df*scale/x/x
