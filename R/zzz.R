@@ -5,7 +5,7 @@
 #  open source, and has the attribution requirements (GPL Section 7) at
 #  http://statnet.org/attribution
 #
-#  Copyright 2003-2017 Statnet Commons
+#  Copyright 2003-2018 Statnet Commons
 #######################################################################
 # Create a place for package-wide global variables.
 .latentnetEnv <- new.env()
@@ -19,6 +19,7 @@
   .latentnetEnv$BIC.warned <- FALSE
 }
 
+#' @importFrom statnet.common statnetStartupMessage
 .onAttach <- function(lib, pkg){
   sm <- statnetStartupMessage("latentnet",c("statnet"),FALSE)
   if(!is.null(sm)) packageStartupMessage(sm,

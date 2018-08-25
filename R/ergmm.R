@@ -5,7 +5,7 @@
 #  open source, and has the attribution requirements (GPL Section 7) at
 #  http://statnet.org/attribution
 #
-#  Copyright 2003-2017 Statnet Commons
+#  Copyright 2003-2018 Statnet Commons
 #######################################################################
 
 ## If the random seed has been specified, save the old seed, to
@@ -142,7 +142,7 @@
 #' #
 #' plot(samp.fit2, pie=TRUE)
 #' }
-#' @import network ergm statnet.common
+#' @import network ergm
 #' @export ergmm
 ergmm <- function(formula,response=NULL,family="Bernoulli",fam.par=NULL,
                   control=control.ergmm(),

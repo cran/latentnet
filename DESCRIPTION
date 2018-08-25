@@ -1,9 +1,9 @@
 Package: latentnet
-Version: 2.8.0
-Date: 2017-08-20
+Version: 2.9.0
+Date: 2018-08-25
 Title: Latent Position and Cluster Models for Statistical Networks
 Authors@R: c(
-	   person("Pavel N.", "Krivitsky", role=c("aut","cre"), email="pavel@uow.edu.au"),
+	   person("Pavel N.", "Krivitsky", role=c("aut","cre"), email="pavel@uow.edu.au", comment=c(ORCID="0000-0002-9101-3362")),
 	   person("Mark S.", "Handcock", role=c("aut"), email="handcock@stat.ucla.edu"),
 	   person("Susan M.", "Shortreed", role=c("ctb")),
 	   person("Jeremy", "Tantrum", role=c("ctb")),
@@ -14,16 +14,18 @@ Authors@R: c(
 	   person("Jordan T.", "Bates", role=c("ctb"),email="jtbates@gmail.com")	   
 	   )
 Description: Fit and simulate latent position and cluster models for statistical networks. 
-Depends: R (>= 2.8.0), statnet.common, network, ergm (>= 3.2.0)
+Depends: R (>= 2.8.0), statnet.common (>= 3.1.0), network, ergm (>=
+        3.9.0)
 Imports: sna, mvtnorm, abind, coda (>= 0.17.1), tools, MASS
 Suggests: KernSmooth, snowFT, rgl, heplots, rlecuyer, ergm.userterms
 BugReports: https://github.com/statnet/latentnet/issues
 License: GPL-3 + file LICENSE
 URL: http://www.statnet.org
-RoxygenNote: 6.0.1
+Encoding: UTF-8
+RoxygenNote: 6.1.0
 NeedsCompilation: yes
-Packaged: 2017-08-20 10:44:13 UTC; pavel
-Author: Pavel N. Krivitsky [aut, cre],
+Packaged: 2018-08-25 12:44:24 UTC; pavel
+Author: Pavel N. Krivitsky [aut, cre] (<https://orcid.org/0000-0002-9101-3362>),
   Mark S. Handcock [aut],
   Susan M. Shortreed [ctb],
   Jeremy Tantrum [ctb],
@@ -34,4 +36,4 @@ Author: Pavel N. Krivitsky [aut, cre],
   Jordan T. Bates [ctb]
 Maintainer: Pavel N. Krivitsky <pavel@uow.edu.au>
 Repository: CRAN
-Date/Publication: 2017-08-20 14:45:02 UTC
+Date/Publication: 2018-08-25 22:12:31 UTC
