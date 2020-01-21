@@ -1,11 +1,11 @@
 /*  File src/ergmm_families.c in package latentnet, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
+ *  of packages for network analysis, https://statnet.org .
  *
  *  This software is distributed under the GPL-3 license.  It is free,
  *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
+ *  https://statnet.org/attribution
  *
- *  Copyright 2003-2018 Statnet Commons
+ *  Copyright 2003-2020 Statnet Commons
  */
 /****************************************************************/
 /* Families of dyad weight distributions supported by latentnet */
@@ -27,8 +27,7 @@
 const unsigned int ERGMM_MCMC_is_discrete[N_FAMILIES]={TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE};
 const unsigned int ERGMM_MCMC_to_cont[N_FAMILIES]={3,4,5,3,4,5,6};
 
-double (*ERGMM_MCMC_lp_edge[N_FAMILIES])(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
-					 unsigned int, unsigned int)={
+ERGMM_MCMC_lp_edge_t ERGMM_MCMC_lp_edge[N_FAMILIES]={
   ERGMM_MCMC_lp_edge_Bernoulli_logit,
   ERGMM_MCMC_lp_edge_binomial_logit,
   ERGMM_MCMC_lp_edge_Poisson_log,
@@ -38,7 +37,7 @@ double (*ERGMM_MCMC_lp_edge[N_FAMILIES])(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
   ERGMM_MCMC_lp_edge_normal_identity
 };
   
-void (*ERGMM_MCMC_set_lp_Yconst[N_FAMILIES])(ERGMM_MCMC_Model *)={
+ERGMM_MCMC_set_lp_Yconst_t ERGMM_MCMC_set_lp_Yconst[N_FAMILIES]={
   ERGMM_MCMC_set_lp_Yconst_Bernoulli_logit,
   ERGMM_MCMC_set_lp_Yconst_binomial_logit,
   ERGMM_MCMC_set_lp_Yconst_Poisson_log,
@@ -48,8 +47,7 @@ void (*ERGMM_MCMC_set_lp_Yconst[N_FAMILIES])(ERGMM_MCMC_Model *)={
   ERGMM_MCMC_set_lp_Yconst_normal_identity
 };
   
-double (*ERGMM_MCMC_E_edge[N_FAMILIES])(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
-					unsigned int, unsigned int)={
+ERGMM_MCMC_E_edge_t ERGMM_MCMC_E_edge[N_FAMILIES]={
   ERGMM_MCMC_E_edge_Bernoulli_logit,
   ERGMM_MCMC_E_edge_binomial_logit,
   ERGMM_MCMC_E_edge_Poisson_log,

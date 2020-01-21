@@ -1,11 +1,11 @@
 /*  File src/ergmm_families.h in package latentnet, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
+ *  of packages for network analysis, https://statnet.org .
  *
  *  This software is distributed under the GPL-3 license.  It is free,
  *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
+ *  https://statnet.org/attribution
  *
- *  Copyright 2003-2018 Statnet Commons
+ *  Copyright 2003-2020 Statnet Commons
  */
 #ifndef ERGMM_FAMILIES_H
 #define ERGMM_FAMILIES_H
@@ -18,11 +18,15 @@
 extern const unsigned int ERGMM_MCMC_is_discrete[];
 extern const unsigned int ERGMM_MCMC_to_cont[];
 
-double (*ERGMM_MCMC_lp_edge[N_FAMILIES])(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
-					 unsigned int, unsigned int);
-void (*ERGMM_MCMC_set_lp_Yconst[N_FAMILIES])(ERGMM_MCMC_Model *);  
-double (*ERGMM_MCMC_E_edge[N_FAMILIES])(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
-					unsigned int, unsigned int);
+typedef double (*ERGMM_MCMC_lp_edge_t)(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
+                                       unsigned int, unsigned int);
+typedef void (*ERGMM_MCMC_set_lp_Yconst_t)(ERGMM_MCMC_Model *);
+typedef double (*ERGMM_MCMC_E_edge_t)(ERGMM_MCMC_Model *, ERGMM_MCMC_Par *,
+                                      unsigned int, unsigned int);
+
+extern ERGMM_MCMC_lp_edge_t ERGMM_MCMC_lp_edge[];
+extern ERGMM_MCMC_set_lp_Yconst_t ERGMM_MCMC_set_lp_Yconst[];
+extern ERGMM_MCMC_E_edge_t ERGMM_MCMC_E_edge[];
 
 /* Family # */
 /* 0 */

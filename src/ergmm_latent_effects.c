@@ -1,11 +1,11 @@
 /*  File src/ergmm_latent_effects.c in package latentnet, part of the Statnet suite
- *  of packages for network analysis, http://statnet.org .
+ *  of packages for network analysis, https://statnet.org .
  *
  *  This software is distributed under the GPL-3 license.  It is free,
  *  open source, and has the attribution requirements (GPL Section 7) at
- *  http://statnet.org/attribution
+ *  https://statnet.org/attribution
  *
- *  Copyright 2003-2018 Statnet Commons
+ *  Copyright 2003-2020 Statnet Commons
  */
 /********************************************************/
 /* Types of latent space effects supported by latentnet */
@@ -16,7 +16,7 @@
 
 /* Define "lookup tables" for latent space effects. */
 
-double (*ERGMM_MCMC_latent_eff[N_LATENT_EFF])(double *u, double *v, unsigned int dim)={
+ERGMM_MCMC_latent_eff_t ERGMM_MCMC_latent_eff[N_LATENT_EFF]={
   ERGMM_MCMC_latent_eff_negative_Euclidean_distance,
   ERGMM_MCMC_latent_eff_dot_product,
   ERGMM_MCMC_latent_eff_negative_Euclidean_distance2

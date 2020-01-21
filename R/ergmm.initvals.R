@@ -1,11 +1,11 @@
 #  File R/ergmm.initvals.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
+#  of packages for network analysis, https://statnet.org .
 #
 #  This software is distributed under the GPL-3 license.  It is free,
 #  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
+#  https://statnet.org/attribution
 #
-#  Copyright 2003-2018 Statnet Commons
+#  Copyright 2003-2020 Statnet Commons
 #######################################################################
 ergmm.initvals <- function(model,user.start,prior,control){
   if(control[["verbose"]]) cat("Generating initial values for MCMC:\n")
@@ -69,12 +69,12 @@ ergmm.initvals <- function(model,user.start,prior,control){
   
   if(need.to.fit[["Z.var"]]){
     #' @importFrom stats var
-    if(!is.null(pm[["Z.K"]])) pm[["Z.var"]]<-sapply(1:G,function(g) var(c(subset(pm[["Z"]][i.keep,],pm[["Z.K"]][i.keep]==g))))
+    if(!is.null(pm[["Z.K"]])) pm[["Z.var"]]<-sapply(seq_len(G),function(g) var(c(subset(pm[["Z"]][i.keep,],pm[["Z.K"]][i.keep]==g))))
     else pm[["Z.var"]]<-var(c(pm[["Z"]][i.keep,]))
   }
 
   if(need.to.fit[["Z.mean"]]){
-    pm[["Z.mean"]]<-do.call(rbind,lapply(1:G,function(g) apply(subset(pm[["Z"]][i.keep,,drop=FALSE],pm[["Z.K"]][i.keep]==g),2,mean)))
+    pm[["Z.mean"]]<-do.call(rbind,lapply(seq_len(G),function(g) apply(subset(pm[["Z"]][i.keep,,drop=FALSE],pm[["Z.K"]][i.keep]==g),2,mean)))
   }
 
   logit<-function(p) log(p/(1-p))

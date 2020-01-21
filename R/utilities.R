@@ -1,11 +1,11 @@
 #  File R/utilities.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
+#  of packages for network analysis, https://statnet.org .
 #
 #  This software is distributed under the GPL-3 license.  It is free,
 #  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
+#  https://statnet.org/attribution
 #
-#  Copyright 2003-2018 Statnet Commons
+#  Copyright 2003-2020 Statnet Commons
 #######################################################################
 #
 # Return TRUE iff object x is a ergmm fit object
@@ -63,7 +63,7 @@ clust.homogeneity<-function(x,ref,soft=TRUE,marg=FALSE){
     p.K<-sapply(sort(unique(ref)),function(g.ref){
       Z.K.g.ref<-x[["sample"]][["Z.K"]][,ref==g.ref,drop=FALSE]
       n.g.ref<-dim(Z.K.g.ref)[2]
-      mean(sapply(2:n.g.ref,function(i) mean(sapply(1:(i-1),function(j) mean(Z.K.g.ref[,i]==Z.K.g.ref[,j])))))
+      mean(sapply(seq_len(n.g.ref)[-1],function(i) mean(sapply(seq_len(i-1),function(j) mean(Z.K.g.ref[,i]==Z.K.g.ref[,j])))))
     }
            )
   }else{

@@ -1,11 +1,11 @@
 #  File R/simulate.ergmm.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
+#  of packages for network analysis, https://statnet.org .
 #
 #  This software is distributed under the GPL-3 license.  It is free,
 #  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
+#  https://statnet.org/attribution
 #
-#  Copyright 2003-2018 Statnet Commons
+#  Copyright 2003-2020 Statnet Commons
 #######################################################################
 #' Draw from the distribution of an Exponential Random Graph Mixed Model
 #' 
@@ -64,7 +64,7 @@ simulate.ergmm<-function(object, nsim=1, seed=NULL,...){
   old.seed <- .save_set_seed(seed)
   
   l<-list()
-  for(i in 1:nsim){
+  for(i in seq_len(nsim)){
     iter<-floor(runif(1,1,object[["control"]][["sample.size"]]+1))
     l[[i]]<-sim.1.ergmm(object[["model"]],object[["sample"]][[iter]],object[["prior"]])
   }
@@ -89,7 +89,7 @@ simulate.ergmm.model<-function(object,nsim=1,seed=NULL,par,prior=list(),...){
   old.seed <- .save_set_seed(seed)
 
   l<-list()
-  for(i in 1:nsim){
+  for(i in seq_len(nsim)){
     l[[i]]<-sim.1.ergmm(object,par,prior)
   }
   
@@ -115,7 +115,7 @@ sim.1.ergmm<-function(model,par,prior=list()){
       if(is.null(mypar[["Z.mean"]]))
         mypar[["Z.mean"]]<-matrix(rnorm(model[["G"]]*model[["d"]],0,sqrt(prior[["Z.mean.var"]])),nrow=model[["G"]])
       if(is.null(mypar[["Z.K"]]))
-        mypar[["Z.K"]]<-sample(1:model[["G"]],nv,replace=TRUE)
+        mypar[["Z.K"]]<-sample(seq_len(model[["G"]]),nv,replace=TRUE)
     }
     
     if(is.null(mypar[["Z.var"]]))

@@ -1,11 +1,11 @@
 #  File R/ergmm.permutation.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
+#  of packages for network analysis, https://statnet.org .
 #
 #  This software is distributed under the GPL-3 license.  It is free,
 #  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
+#  https://statnet.org/attribution
 #
-#  Copyright 2003-2018 Statnet Commons
+#  Copyright 2003-2020 Statnet Commons
 #######################################################################
 ergmm.permutation <- function(n)
 {
@@ -20,10 +20,10 @@ ergmm.permutation <- function(n)
       if (i==(n-1))
         temp2 <- rbind(temp2,cbind(n,temp))
       else
-        temp2 <- rbind(temp2,cbind(temp[,1:i],n,temp[,(i+1):(n-1)]))
+        temp2 <- rbind(temp2,cbind(temp[,seq_len(i)],n,temp[,(i+1):(n-1)]))
     }
   }
-  colnames(temp2)<-1:n
+  colnames(temp2)<-seq_len(n)
   return(temp2)
 }
 

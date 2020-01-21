@@ -1,11 +1,11 @@
 #  File R/predict.ergmm.R in package latentnet, part of the Statnet suite
-#  of packages for network analysis, http://statnet.org .
+#  of packages for network analysis, https://statnet.org .
 #
 #  This software is distributed under the GPL-3 license.  It is free,
 #  open source, and has the attribution requirements (GPL Section 7) at
-#  http://statnet.org/attribution
+#  https://statnet.org/attribution
 #
-#  Copyright 2003-2018 Statnet Commons
+#  Copyright 2003-2020 Statnet Commons
 #######################################################################
 #' Predicted Dyad Values for an ERGMM.
 #' 
@@ -63,8 +63,8 @@ post.predict.C<-function(model,sample,control,MKL=FALSE){
   ## Figure out the design matrix.
   observed<-observed.dyads(model[["Yg"]])
 
-  if((observed==(diag(n)==0) && is.directed(model[["Yg"]])) ||
-     (observed==lower.tri(diag(n)) && !is.directed(model[["Yg"]])))
+  if((all(observed==(diag(n)==0)) && is.directed(model[["Yg"]])) ||
+     (all(observed==lower.tri(diag(n))) && !is.directed(model[["Yg"]])))
     observed<-NULL
 
   ret<-.C("post_pred_wrapper",
@@ -105,7 +105,7 @@ post.predict.C<-function(model,sample,control,MKL=FALSE){
 post.predict.R<-function(model,sample,control,MKL=FALSE){
   EY.f<-EY.fs[[model[["familyID"]]]]
   EY<-matrix(0,network.size(model[["Yg"]]),network.size(model[["Yg"]]))
-  for(i in 1:control[["sample.size"]]){
+  for(i in seq_len(control[["sample.size"]])){
     state<-sample[[i]]
     eta<-ergmm.eta(model,state)
     EY<-EY+EY.f(eta,model[["fam.par"]])
@@ -117,7 +117,7 @@ post.predict.R<-function(model,sample,control,MKL=FALSE){
     min.dev<-Inf
     model[["Ym"]]<-EY
     model[["Ym"]][!observed.dyads(model[["Yg"]])]<-NA
-    for(i in 1:control[["sample.size"]]){
+    for(i in seq_len(control[["sample.size"]])){
       state<-sample[[i]]
       dev<--ergmm.lpY(model,state,up.to.const=TRUE)
       if(dev<min.dev){
