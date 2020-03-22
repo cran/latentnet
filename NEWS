@@ -1,4 +1,13 @@
-2.10.0
+2.10.5
+	Fix for a C-level bug exposed by link-time optimization.
+
+        Fix for a C-level memory issue exposed by UBSAN.
+
+        Miscelanious fixes for code analysis warnings.
+
+        Miscellaneous documentation improvements.
+
+2.10.1
 	Changes for compatibility with GCC 10.
 
         latentnet can now fit models with no fixed effects.
