@@ -5,7 +5,7 @@
  *  open source, and has the attribution requirements (GPL Section 7) at
  *  https://statnet.org/attribution .
  *
- *  Copyright 2003-2022 Statnet Commons
+ *  Copyright 2003-2024 Statnet Commons
  */
 #ifndef P_ALLOC_H
 #define P_ALLOC_H
@@ -27,9 +27,9 @@ typedef struct PMemNode_struct PMemNode;
 
 #ifdef DEBUG
 void *P_alloc(size_t nmemb, size_t size);
-void P_free_all();
+void P_free_all(void);
 void P_free_after(PMemNode *bookmark);
-PMemNode *P_bookmark();
+PMemNode *P_bookmark(void);
 #endif
 
 #endif

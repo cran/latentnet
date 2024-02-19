@@ -5,7 +5,7 @@
  *  open source, and has the attribution requirements (GPL Section 7) at
  *  https://statnet.org/attribution .
  *
- *  Copyright 2003-2022 Statnet Commons
+ *  Copyright 2003-2024 Statnet Commons
  */
 /**********************************************************************/
 /* Routines for memory management similar in functionality to R_alloc */
@@ -20,7 +20,7 @@
 
 PMemNode *PMemNodes=NULL;
 #ifdef DEBUG
-/*R_INLINE*/ void P_print_alloc(){
+/*R_INLINE*/ void P_print_alloc(void){
   Rprintf("%p",(void*) PMemNodes);
   if(PMemNodes) Rprintf("(%p)",PMemNodes->data);
 }
@@ -63,11 +63,11 @@ void *P_alloc(size_t nmemb, size_t size){
   }
 }
 
-void P_free_all(){
+void P_free_all(void){
   P_free_after(NULL);
 }
 
-PMemNode *P_bookmark(){
+PMemNode *P_bookmark(void){
   return PMemNodes;
 }
 
